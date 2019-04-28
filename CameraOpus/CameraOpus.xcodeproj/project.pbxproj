@@ -1,0 +1,166 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BA2427062276629F00218C3E /* CameraOpus.metal in Sources */ = {isa = PBXBuildFile; fileRef = BA2427052276629F00218C3E /* CameraOpus.metal */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		BA2427022276629F00218C3E /* CameraOpus.metallib */ = {isa = PBXFileReference; explicitFileType = "archive.metal-library"; includeInIndex = 0; path = CameraOpus.metallib; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA2427052276629F00218C3E /* CameraOpus.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CameraOpus.metal; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		BA2426FB2276629F00218C3E = {
+			isa = PBXGroup;
+			children = (
+				BA2427042276629F00218C3E /* CameraOpus */,
+				BA2427032276629F00218C3E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BA2427032276629F00218C3E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BA2427022276629F00218C3E /* CameraOpus.metallib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BA2427042276629F00218C3E /* CameraOpus */ = {
+			isa = PBXGroup;
+			children = (
+				BA2427052276629F00218C3E /* CameraOpus.metal */,
+			);
+			path = CameraOpus;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BA2427012276629F00218C3E /* CameraOpus */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA2427092276629F00218C3E /* Build configuration list for PBXNativeTarget "CameraOpus" */;
+			buildPhases = (
+				BA2427002276629F00218C3E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CameraOpus;
+			productName = CameraOpus;
+			productReference = BA2427022276629F00218C3E /* CameraOpus.metallib */;
+			productType = "com.apple.product-type.metal-library";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		BA2426FC2276629F00218C3E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1020;
+				ORGANIZATIONNAME = CameraOpus;
+				TargetAttributes = {
+					BA2427012276629F00218C3E = {
+						CreatedOnToolsVersion = 10.2;
+					};
+				};
+			};
+			buildConfigurationList = BA2426FF2276629F00218C3E /* Build configuration list for PBXProject "CameraOpus" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = BA2426FB2276629F00218C3E;
+			productRefGroup = BA2427032276629F00218C3E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BA2427012276629F00218C3E /* CameraOpus */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BA2427002276629F00218C3E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BA2427062276629F00218C3E /* CameraOpus.metal in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		BA2427072276629F00218C3E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		BA2427082276629F00218C3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+		BA24270A2276629F00218C3E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		BA24270B2276629F00218C3E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BA2426FF2276629F00218C3E /* Build configuration list for PBXProject "CameraOpus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BA2427072276629F00218C3E /* Debug */,
+				BA2427082276629F00218C3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BA2427092276629F00218C3E /* Build configuration list for PBXNativeTarget "CameraOpus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BA24270A2276629F00218C3E /* Debug */,
+				BA24270B2276629F00218C3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = BA2426FC2276629F00218C3E /* Project object */;
+}
