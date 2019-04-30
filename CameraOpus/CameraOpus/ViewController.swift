@@ -12,6 +12,10 @@ import AVFoundation
 
 class ViewController: UIViewController, UITextFieldDelegate {
     
+    var session = AVCaptureSession()
+    var photoOutput: AVCapturePhotoOutput?
+    var videoPreviewLayer: AVCaptureVideoPreviewLayer?
+    
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
     
@@ -22,14 +26,30 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var photoPreviewImageView: UIImageView!
     
     @IBAction func takePhoto(_ sender: UIButton) {
+//        do{
+//            let videoPreviewLayerOrientation = try videoPreviewLayer?.connection?.videoOrientation
+//            if let photoOutputConnection = session.photoOutput.connection(with: .video) {
+//                photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
+//            }
+//            var photoSettings = AVCapturePhotoSettings()
+//            // Capture HEIF photos when supported. Enable auto-flash and high-resolution photos.
+//            if  self.photoOutput.availablePhotoCodecTypes.contains(.hevc) {
+//                photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+//            }
+//            if self.videoDeviceInput.device.isFlashAvailable {
+//                photoSettings.flashMode = .auto
+//            }
+//
+//        }
+//        catch{
+//            print("something wrong withc capture")
+//
+//        }
+
     }
     
-    var session = AVCaptureSession()
-    var stillImageOutput: AVCapturePhotoOutput?
-    var videoPreviewLayer: AVCaptureVideoPreviewLayer?
     
-    
-    @IBOutlet weak var v: UIView!
+    //@IBOutlet weak var v: UIView!
     //private let session = AVCaptureSession()
 
 
@@ -46,9 +66,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 session.addInput(DeviceInput)
                 print("was able to add deviceinput")
                 //Now that we set input device lets set output files
-                let photoOutput = AVCapturePhotoOutput()
-                if session.canAddOutput(photoOutput) {
-                    session.addOutput(photoOutput)
+                photoOutput = AVCapturePhotoOutput()
+                if session.canAddOutput(photoOutput!) {
+                    session.addOutput(photoOutput!)
                     print("was able to set deviceoutput")
                     //Now we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
                     videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
