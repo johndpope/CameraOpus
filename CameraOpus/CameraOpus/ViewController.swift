@@ -26,25 +26,40 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var photoPreviewImageView: UIImageView!
     
     @IBAction func takePhoto(_ sender: UIButton) {
-//        do{
-//            let videoPreviewLayerOrientation = try videoPreviewLayer?.connection?.videoOrientation
-//            if let photoOutputConnection = session.photoOutput.connection(with: .video) {
-//                photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
-//            }
-//            var photoSettings = AVCapturePhotoSettings()
-//            // Capture HEIF photos when supported. Enable auto-flash and high-resolution photos.
-//            if  self.photoOutput.availablePhotoCodecTypes.contains(.hevc) {
-//                photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
-//            }
-//            if self.videoDeviceInput.device.isFlashAvailable {
-//                photoSettings.flashMode = .auto
-//            }
-//
-//        }
-//        catch{
-//            print("something wrong withc capture")
-//
-//        }
+        do{
+            let videoPreviewLayerOrientation = try videoPreviewLayer?.connection?.videoOrientation
+            if let photoOutputConnection = photoOutput!.connection(with: .video) {
+                photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
+            }
+            var photoSettings = AVCapturePhotoSettings()
+            // Capture HEIF photos when supported. Enable auto-flash and high-resolution photos.
+            if  photoOutput!.availablePhotoCodecTypes.contains(.hevc) {
+                photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+            }
+            
+            let photoCaptureProcessor = PhotoCaptureProcessor(with: photoSettings, willCapturePhotoAnimation: {
+                // Flash the screen to signal that AVCam took a photo.
+                DispatchQueue.main.async {
+                    self.previewView.videoPreviewLayer.opacity = 0
+                    UIView.animate(withDuration: 0.25) {
+                        self.previewView.videoPreviewLayer.opacity = 1
+                    }
+                }
+            }, completionHandler: { photoCaptureProcessor in
+                // When the capture is complete, remove a reference to the photo capture delegate so it can be deallocated.
+                self.sessionQueue.async {
+                    self.inProgressPhotoCaptureDelegates[photoCaptureProcessor.requestedPhotoSettings.uniqueID] = nil
+                }
+            }
+            )
+            
+            
+            
+        }
+        catch{
+            print("something wrong with capture")
+
+        }
 
     }
     
