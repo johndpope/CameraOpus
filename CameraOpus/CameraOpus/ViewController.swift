@@ -17,7 +17,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var textInput: UITextField!
     
-    @IBOutlet weak var imview: UIImageView!
+    
     
     @IBOutlet weak var v: UIView!
 

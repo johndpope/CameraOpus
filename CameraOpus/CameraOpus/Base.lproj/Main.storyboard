@@ -43,10 +43,6 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kni-3Q-jMw">
-                                <rect key="frame" x="67" y="103" width="240" height="128"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            </imageView>
                             <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xWN-av-G8M">
                                 <rect key="frame" x="67" y="290" width="240" height="128"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -65,7 +61,6 @@
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
-                        <outlet property="imview" destination="kni-3Q-jMw" id="Kkz-51-5vX"/>
                         <outlet property="textInput" destination="cDr-p1-CKB" id="6VV-Gx-QNV"/>
                         <outlet property="textLabel" destination="Bxa-6c-qYa" id="hjO-Iu-qUO"/>
                         <outlet property="v" destination="xWN-av-G8M" id="7G9-c4-Nka"/>
