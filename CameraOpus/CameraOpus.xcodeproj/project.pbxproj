@@ -15,6 +15,7 @@
 		BA24272A227664F900218C3E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA242728227664F900218C3E /* LaunchScreen.storyboard */; };
 		BA242735227664F900218C3E /* CameraOpusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA242734227664F900218C3E /* CameraOpusTests.swift */; };
 		BA242740227664F900218C3E /* CameraOpusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24273F227664F900218C3E /* CameraOpusUITests.swift */; };
+		BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9702277CC9100A671B2 /* PreviewView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		BA24273B227664F900218C3E /* CameraOpusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CameraOpusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA24273F227664F900218C3E /* CameraOpusUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraOpusUITests.swift; sourceTree = "<group>"; };
 		BA242741227664F900218C3E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BAADC9702277CC9100A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +106,7 @@
 				BA242720227664F600218C3E /* Main.storyboard */,
 				BA242726227664F900218C3E /* Assets.xcassets */,
 				BA242728227664F900218C3E /* LaunchScreen.storyboard */,
+				BAADC9702277CC9100A671B2 /* PreviewView.swift */,
 				BA24272B227664F900218C3E /* Info.plist */,
 				BA242723227664F600218C3E /* CameraOpus.xcdatamodeld */,
 			);
@@ -260,6 +263,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA24271F227664F600218C3E /* ViewController.swift in Sources */,
+				BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */,
 				BA24271D227664F600218C3E /* AppDelegate.swift in Sources */,
 				BA242725227664F600218C3E /* CameraOpus.xcdatamodeld in Sources */,
 			);
