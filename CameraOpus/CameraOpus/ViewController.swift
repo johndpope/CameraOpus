@@ -17,9 +17,10 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var textInput: UITextField!
     
-    
+    @IBOutlet weak var previewView: PreviewView!
     
     @IBOutlet weak var v: UIView!
+    private let session = AVCaptureSession()
 
     @IBAction func takePhoto(_ sender: UIButton) {
     }
@@ -32,6 +33,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         textInput.delegate = self
+        previewView.session = session
     }
     
     func viewWillAppear(){
