@@ -21,7 +21,7 @@ class PhotoCaptureProcessor: NSObject {
     
     private var photoData: Data?
     
-    private var livePhotoCompanionMovieURL: URL?
+    //private var livePhotoCompanionMovieURL: URL?
     
     private var portraitEffectsMatteData: Data?
     
@@ -33,19 +33,18 @@ class PhotoCaptureProcessor: NSObject {
         self.completionHandler = completionHandler
     }
     
-    private func didFinish() {
-        if let livePhotoCompanionMoviePath = livePhotoCompanionMovieURL?.path {
-            if FileManager.default.fileExists(atPath: livePhotoCompanionMoviePath) {
-                do {
-                    try FileManager.default.removeItem(atPath: livePhotoCompanionMoviePath)
-                } catch {
-                    print("Could not remove file at url: \(livePhotoCompanionMoviePath)")
-                }
-            }
-        }
-        
-        completionHandler(self)
-    }
+//    private func didFinish() {
+//        if let livePhotoCompanionMoviePath = livePhotoCompanionMovieURL?.path {
+//            if FileManager.default.fileExists(atPath: livePhotoCompanionMoviePath) {
+//                do {
+//                    try FileManager.default.removeItem(atPath: livePhotoCompanionMoviePath)
+//                } catch {
+//                    print("Could not remove file at url: \(livePhotoCompanionMoviePath)")
+//                }
+//            }
+//        }
+//        completionHandler(self)
+//    }
     
 }
 
@@ -63,15 +62,18 @@ extension PhotoCaptureProcessor: AVCapturePhotoCaptureDelegate {
     
     /// - Tag: WillCapturePhoto
     func photoOutput(_ output: AVCapturePhotoOutput, willCapturePhotoFor resolvedSettings: AVCaptureResolvedPhotoSettings) {
+        print("in willCapturePhotoFor")
         willCapturePhotoAnimation()
     }
     
     /// - Tag: DidFinishProcessingPhoto
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         
+        print("in didFinishProcessingPhoto")
         if let error = error {
             print("Error capturing photo: \(error)")
         } else {
+            print("in didFinishProcessingPhoto")
             photoData = photo.fileDataRepresentation()
         }
         // Portrait effects matte gets generated only if AVFoundation detects a face.
@@ -97,25 +99,26 @@ extension PhotoCaptureProcessor: AVCapturePhotoCaptureDelegate {
 //    }
     
     /// - Tag: DidFinishProcessingLive
-    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingLivePhotoToMovieFileAt outputFileURL: URL, duration: CMTime, photoDisplayTime: CMTime, resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
-        if error != nil {
-            print("Error processing Live Photo companion movie: \(String(describing: error))")
-            return
-        }
-        livePhotoCompanionMovieURL = outputFileURL
-    }
+//    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingLivePhotoToMovieFileAt outputFileURL: URL, duration: CMTime, photoDisplayTime: CMTime, resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
+//        if error != nil {
+//            print("Error processing Live Photo companion movie: \(String(describing: error))")
+//            return
+//        }
+//        livePhotoCompanionMovieURL = outputFileURL
+//    }
     
     /// - Tag: DidFinishCapture
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
+        print("didFinishCaptureFor")
         if let error = error {
             print("Error capturing photo: \(error)")
-            didFinish()
+            //didFinish()
             return
         }
         
         guard let photoData = photoData else {
             print("No photo data resource")
-            didFinish()
+            //didFinish()
             return
         }
         
@@ -127,13 +130,13 @@ extension PhotoCaptureProcessor: AVCapturePhotoCaptureDelegate {
                     options.uniformTypeIdentifier = self.requestedPhotoSettings.processedFileType.map { $0.rawValue }
                     creationRequest.addResource(with: .photo, data: photoData, options: options)
                     
-                    if let livePhotoCompanionMovieURL = self.livePhotoCompanionMovieURL {
-                        let livePhotoCompanionMovieFileOptions = PHAssetResourceCreationOptions()
-                        livePhotoCompanionMovieFileOptions.shouldMoveFile = true
-                        creationRequest.addResource(with: .pairedVideo,
-                                                    fileURL: livePhotoCompanionMovieURL,
-                                                    options: livePhotoCompanionMovieFileOptions)
-                    }
+//                    if let livePhotoCompanionMovieURL = self.livePhotoCompanionMovieURL {
+//                        let livePhotoCompanionMovieFileOptions = PHAssetResourceCreationOptions()
+//                        livePhotoCompanionMovieFileOptions.shouldMoveFile = true
+//                        creationRequest.addResource(with: .pairedVideo,
+//                                                    fileURL: livePhotoCompanionMovieURL,
+//                                                    options: livePhotoCompanionMovieFileOptions)
+//                    }
                     
                     // Save Portrait Effects Matte to Photos Library only if it was generated
                     if let portraitEffectsMatteData = self.portraitEffectsMatteData {
@@ -148,11 +151,11 @@ extension PhotoCaptureProcessor: AVCapturePhotoCaptureDelegate {
                         print("Error occurred while saving photo to photo library: \(error)")
                     }
                     
-                    self.didFinish()
+                    //self.didFinish()
                 }
                 )
             } else {
-                self.didFinish()
+                //self.didFinish()
             }
         }
     }

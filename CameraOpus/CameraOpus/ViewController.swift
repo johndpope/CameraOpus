@@ -8,9 +8,10 @@
 
 import UIKit
 import AVFoundation
+import Photos
 
 
-class ViewController: UIViewController, UITextFieldDelegate {
+class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate {
     
     var session = AVCaptureSession()
     var photoOutput: AVCapturePhotoOutput?
@@ -25,48 +26,75 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var photoPreviewImageView: UIImageView!
     
-    @IBAction func takePhoto(_ sender: UIButton) {
-        do{
-            let videoPreviewLayerOrientation = try videoPreviewLayer?.connection?.videoOrientation
-            if let photoOutputConnection = photoOutput!.connection(with: .video) {
-                photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
+    func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
+        PHPhotoLibrary.shared().performChanges({
+            print("in fileOutput")
+            let options = PHAssetResourceCreationOptions()
+            options.shouldMoveFile = true
+            let creationRequest = PHAssetCreationRequest.forAsset()
+            creationRequest.addResource(with: .video, fileURL: outputFileURL, options: options)
+        }, completionHandler: { success, error in
+            if !success {
+                print("Opus couldn't save the movie to your photo library: \(String(describing: error))")
             }
-            var photoSettings = AVCapturePhotoSettings()
-            // Capture HEIF photos when supported. Enable auto-flash and high-resolution photos.
-            if  photoOutput!.availablePhotoCodecTypes.contains(.hevc) {
-                photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+            else{
+                print("file should have been outputted")
             }
-            
-            let photoCaptureProcessor = PhotoCaptureProcessor(with: photoSettings, willCapturePhotoAnimation: {
-                // Flash the screen to signal that AVCam took a photo.
-                DispatchQueue.main.async {
-                    self.previewView.videoPreviewLayer.opacity = 0
-                    UIView.animate(withDuration: 0.25) {
-                        self.previewView.videoPreviewLayer.opacity = 1
-                    }
-                }
-            }, completionHandler: { photoCaptureProcessor in
-                // When the capture is complete, remove a reference to the photo capture delegate so it can be deallocated.
-                self.sessionQueue.async {
-                    self.inProgressPhotoCaptureDelegates[photoCaptureProcessor.requestedPhotoSettings.uniqueID] = nil
-                }
-            }
-            )
-            
-            
-            
+            //cleanup()
         }
-        catch{
-            print("something wrong with capture")
-
-        }
-
+        )
     }
     
     
-    //@IBOutlet weak var v: UIView!
-    //private let session = AVCaptureSession()
+    /// - Tag: CapturePhoto
+ 
 
+    @IBAction func capturePhoto(_ sender: UIButton) {
+        
+            do{
+                print("in capturePhoto")
+                let videoPreviewLayerOrientation = try videoPreviewLayer?.connection?.videoOrientation
+                if let photoOutputConnection = photoOutput!.connection(with: .video) {
+                    photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
+                }
+                var photoSettings = AVCapturePhotoSettings()
+                // Capture HEIF photos when supported. Enable auto-flash and high-resolution photos.
+                if  photoOutput!.availablePhotoCodecTypes.contains(.hevc) {
+                    print("photosettings set up")
+                    photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+                }
+                
+                print("about to set up delegate")
+                let photoCaptureProcessor = PhotoCaptureProcessor(with: photoSettings, willCapturePhotoAnimation: {
+                    // Flash the screen to signal that AVCam took a photo.
+                    //we seem to not be getting here
+                    print("in delegate creation")
+                    
+                    DispatchQueue.main.async {
+                        print("in delegate creation 2")
+                        self.previewView.videoPreviewLayer.opacity = 0
+                        UIView.animate(withDuration: 0.25) {
+                            self.previewView.videoPreviewLayer.opacity = 1
+                        }
+                    }
+                }, completionHandler: { _ in
+                    //photoCaptureProcessor in
+                    // When the capture is complete, remove a reference to the photo capture delegate so it can be deallocated.
+                    /*
+                     will better need to understand this part - hopefully im not destrioying my phone
+                     */
+                    //photoCaptureProcessor.inProgressPhotoCaptureDelegates[photoCaptureProcessor.requestedPhotoSettings.uniqueID] = nil
+                }
+                )
+                print("delegate should have been created")
+                //session.inProgressPhotoCaptureDelegates[photoCaptureProcessor.requestedPhotoSettings.uniqueID] = photoCaptureProcessor
+                photoOutput!.capturePhoto(with: photoSettings, delegate: photoCaptureProcessor)
+            }
+            catch{
+                print("something wrong with capture")
+            }
+        }
+    
 
     var error: NSError?
     
