@@ -17,7 +17,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     
     @IBOutlet weak var textInput: UITextField!
     
-    //@IBOutlet weak var previewView: PreviewView!
+    @IBOutlet weak var previewView: PreviewView!
     
     @IBOutlet weak var photoPreviewImageView: UIImageView!
     
@@ -46,21 +46,21 @@ class ViewController: UIViewController, UITextFieldDelegate {
             let DeviceInput = try AVCaptureDeviceInput(device: backCamera)
             if session.canAddInput(DeviceInput) {
                 session.addInput(DeviceInput)
-                //self.videoDeviceInput = DeviceInput
-            //photoOutput = AVCapturePhotoOutput()
-            //if session.canAddOutput(photoOutput) {
-              //  session.addOutput(photoOutput)
-            
-            //}
+                print("was able to add deviceinput")
             }
+            let photoOutput = AVCapturePhotoOutput()
+            if session.canAddOutput(photoOutput) {
+                session.addOutput(photoOutput)
+                print("was able to set deviceoutput")
+            }
+            
         }
         catch{
+            print("there must have been an error in vievDidLoad")
             return
         }
     
     }
-    
-    
     
     func viewWillAppear(){
         //captureSession = AVCaptureSession()
