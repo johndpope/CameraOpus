@@ -28,23 +28,31 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     @IBOutlet weak var photoPreviewImageView: UIImageView!
     
+    
+    // stackoverflow.com/questions/37869963/how-to-use-avcapturephotooutput
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
-        PHPhotoLibrary.shared().performChanges({
-            print("in fileOutput")
-            let options = PHAssetResourceCreationOptions()
-            options.shouldMoveFile = true
-            let creationRequest = PHAssetCreationRequest.forAsset()
-            creationRequest.addResource(with: .video, fileURL: outputFileURL, options: options)
-        }, completionHandler: { success, error in
-            if !success {
-                print("Opus couldn't save the movie to your photo library: \(String(describing: error))")
-            }
-            else{
-                print("file should have been outputted")
-            }
-            //cleanup()
-        }
-        )
+        
+        print("in file Output")
+        let imageData = outputFileURL.dataRepresentation
+        print(imageData)
+        
+  
+//        PHPhotoLibrary.shared().performChanges({
+//            print("in fileOutput")
+//            let options = PHAssetResourceCreationOptions()
+//            options.shouldMoveFile = true
+//            let creationRequest = PHAssetCreationRequest.forAsset()
+//            creationRequest.addResource(with: .video, fileURL: outputFileURL, options: options)
+//        }, completionHandler: { success, error in
+//            if !success {
+//                print("Opus couldn't save the movie to your photo library: \(String(describing: error))")
+//            }
+//            else{
+//                print("file should have been outputted")
+//            }
+//            //cleanup()
+//        }
+//        )
     }
     
     
@@ -72,13 +80,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     //we seem to not be getting here
                     print("in delegate creation")
                     
-                    DispatchQueue.main.async {
-                        print("in delegate creation 2")
                         self.previewView.videoPreviewLayer.opacity = 0
                         UIView.animate(withDuration: 0.25) {
                             self.previewView.videoPreviewLayer.opacity = 1
                         }
-                    }
+                    
                 }, completionHandler: { _ in
                     // When the capture is complete, remove a reference to the photo capture delegate so it can be deallocated.
                     /*
@@ -92,6 +98,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                  This is the main function that is saving the phto
                 */
                 photoOutput!.capturePhoto(with: photoSettings, delegate: photoCaptureProcessor)
+                //photoOutput(_:didFinishProcessingPhoto:error:)
             }
             catch{
                 print("something wrong with capture")
