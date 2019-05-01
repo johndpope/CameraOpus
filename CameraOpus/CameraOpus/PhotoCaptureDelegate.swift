@@ -76,21 +76,6 @@ extension PhotoCaptureProcessor: AVCapturePhotoCaptureDelegate {
             print("in didFinishProcessingPhoto")
             photoData = photo.fileDataRepresentation()
         }
-        // Portrait effects matte gets generated only if AVFoundation detects a face.
-        if var portraitEffectsMatte = photo.portraitEffectsMatte {
-            if let orientation = photo.metadata[ String(kCGImagePropertyOrientation) ] as? UInt32 {
-                portraitEffectsMatte = portraitEffectsMatte.applyingExifOrientation( CGImagePropertyOrientation(rawValue: orientation)! )
-            }
-            let portraitEffectsMattePixelBuffer = portraitEffectsMatte.mattingImage
-            let portraitEffectsMatteImage = CIImage( cvImageBuffer: portraitEffectsMattePixelBuffer, options: [ .auxiliaryPortraitEffectsMatte: true ] )
-            guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB) else {
-                portraitEffectsMatteData = nil
-                return
-            }
-            portraitEffectsMatteData = context.heifRepresentation(of: portraitEffectsMatteImage, format: .RGBA8, colorSpace: linearColorSpace, options: [ CIImageRepresentationOption.portraitEffectsMatteImage: portraitEffectsMatteImage ] )
-        } else {
-            portraitEffectsMatteData = nil
-        }
     }
     
     /// - Tag: DidFinishRecordingLive

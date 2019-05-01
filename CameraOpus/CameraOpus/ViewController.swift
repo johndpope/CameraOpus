@@ -35,6 +35,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("in file Output")
         let imageData = outputFileURL.dataRepresentation
         print(imageData)
+        
+        if error != nil {
+            print("Movie file finishing error")
+        }
     }
     
     func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
@@ -62,29 +66,22 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 //                }
 //
                 print("about to set up delegate")
-                let photoCaptureProcessor = PhotoCaptureProcessor(with: photoSettings, willCapturePhotoAnimation: {
-                    // Flash the screen to signal that AVCam took a photo.
-                    //we seem to not be getting here
-                    print("in delegate creation")
-                    
-                        self.previewView.videoPreviewLayer.opacity = 0
-                        UIView.animate(withDuration: 0.25) {
-                            self.previewView.videoPreviewLayer.opacity = 1
-                        }
-                    
-                }, completionHandler: { _ in
-                    // When the capture is complete, remove a reference to the photo capture delegate so it can be deallocated.
-                    /*
-                     will better need to understand this part - hopefully im not destrioying my phone
-                     */
-                    //photoCaptureProcessor.inProgressPhotoCaptureDelegates[photoCaptureProcessor.requestedPhotoSettings.uniqueID] = nil
-                }
-                )
+//                let photoCaptureProcessor = PhotoCaptureProcessor(with: photoSettings, willCapturePhotoAnimation: {
+//                    // Flash the screen to signal that AVCam took a photo.
+//                    //we seem to not be getting here
+//                    print("will cap")
+//
+//                }, completionHandler: { _ in
+//                    print("hey oh")
+//                    }
+//                )
+                
                 print("delegate should have been created")
+                photoOutput!.capturePhoto(with: photoSettings, delegate: self)
                 /*
                  This is the main function that is saving the phto
                 */
-                photoOutput!.capturePhoto(with: photoSettings, delegate: photoCaptureProcessor)
+                //photoOutput!.capturePhoto(with: photoSettings, delegate: photoCaptureProcessor)
                 print("capturePhoto should have been called")
                 //photoOutput(_:didFinishProcessingPhoto:error:)
             }
@@ -155,3 +152,18 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 
 }
 
+extension ViewController: AVCapturePhotoCaptureDelegate {
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        
+        var photoData: Data?
+        
+        print("in didFinishProcessingPhoto")
+        if let error = error {
+            print("Error capturing photo: \(error)")
+        } else {
+            print("we seem to be error free")
+            photoData = photo.fileDataRepresentation()
+        }
+    }
+        
+}
