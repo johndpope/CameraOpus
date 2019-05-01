@@ -35,26 +35,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("in file Output")
         let imageData = outputFileURL.dataRepresentation
         print(imageData)
-        
-  
-//        PHPhotoLibrary.shared().performChanges({
-//            print("in fileOutput")
-//            let options = PHAssetResourceCreationOptions()
-//            options.shouldMoveFile = true
-//            let creationRequest = PHAssetCreationRequest.forAsset()
-//            creationRequest.addResource(with: .video, fileURL: outputFileURL, options: options)
-//        }, completionHandler: { success, error in
-//            if !success {
-//                print("Opus couldn't save the movie to your photo library: \(String(describing: error))")
-//            }
-//            else{
-//                print("file should have been outputted")
-//            }
-//            //cleanup()
-//        }
-//        )
     }
     
+    func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
+        print("in file output 2")
+    }
+
     
     /// - Tag: CapturePhoto
  
@@ -68,12 +54,13 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
                 }
                 var photoSettings = AVCapturePhotoSettings()
+                photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
                 // Capture HEIF photos when supported. Enable auto-flash and high-resolution photos.
-                if  photoOutput!.availablePhotoCodecTypes.contains(.hevc) {
-                    print("photosettings set up")
-                    photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
-                }
-                
+//                if  photoOutput!.availablePhotoCodecTypes.contains(.hevc) {
+//                    print("photosettings set up")
+//                    photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+//                }
+//
                 print("about to set up delegate")
                 let photoCaptureProcessor = PhotoCaptureProcessor(with: photoSettings, willCapturePhotoAnimation: {
                     // Flash the screen to signal that AVCam took a photo.
@@ -98,6 +85,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                  This is the main function that is saving the phto
                 */
                 photoOutput!.capturePhoto(with: photoSettings, delegate: photoCaptureProcessor)
+                print("capturePhoto should have been called")
                 //photoOutput(_:didFinishProcessingPhoto:error:)
             }
             catch{
