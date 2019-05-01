@@ -78,12 +78,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 
                 print("delegate should have been created")
                 photoOutput!.capturePhoto(with: photoSettings, delegate: self)
+                
+                
                 /*
                  This is the main function that is saving the phto
                 */
                 //photoOutput!.capturePhoto(with: photoSettings, delegate: photoCaptureProcessor)
                 print("capturePhoto should have been called")
-                //photoOutput(_:didFinishProcessingPhoto:error:)
+                
             }
             catch{
                 print("something wrong with capture")
@@ -163,6 +165,23 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
         } else {
             print("we seem to be error free")
             photoData = photo.fileDataRepresentation()
+            
+            
+            PHPhotoLibrary.requestAuthorization { status in
+                guard status == .authorized else { return }
+                
+                PHPhotoLibrary.shared().performChanges({
+                    // Add the captured photo's file data as the main resource for the Photos asset.
+                    let creationRequest = PHAssetCreationRequest.forAsset()
+                    creationRequest.addResource(with: .photo, data: photo.fileDataRepresentation()!, options: nil)
+                }, completionHandler: { success, error in
+                    if !success {
+                        print("Opus couldn't save the photo to your photo library")
+                    }
+                })
+            }
+            
+            
         }
     }
         
