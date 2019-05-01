@@ -17,6 +17,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var photoOutput: AVCapturePhotoOutput?
     var videoPreviewLayer: AVCaptureVideoPreviewLayer?
     
+    var error: NSError?
+    
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
     
@@ -78,7 +80,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                         }
                     }
                 }, completionHandler: { _ in
-                    //photoCaptureProcessor in
                     // When the capture is complete, remove a reference to the photo capture delegate so it can be deallocated.
                     /*
                      will better need to understand this part - hopefully im not destrioying my phone
@@ -87,16 +88,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 }
                 )
                 print("delegate should have been created")
-                //session.inProgressPhotoCaptureDelegates[photoCaptureProcessor.requestedPhotoSettings.uniqueID] = photoCaptureProcessor
+                /*
+                 This is the main function that is saving the phto
+                */
                 photoOutput!.capturePhoto(with: photoSettings, delegate: photoCaptureProcessor)
             }
             catch{
                 print("something wrong with capture")
             }
         }
-    
-
-    var error: NSError?
     
     override func viewDidLoad() {
         super.viewDidLoad()

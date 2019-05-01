@@ -17,6 +17,7 @@
 		BA242740227664F900218C3E /* CameraOpusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24273F227664F900218C3E /* CameraOpusUITests.swift */; };
 		BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9702277CC9100A671B2 /* PreviewView.swift */; };
 		BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */; };
+		BAADC97522791A0600A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC97422791A0500A671B2 /* PreviewView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +54,7 @@
 		BA242741227664F900218C3E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BAADC9702277CC9100A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCaptureDelegate.swift; sourceTree = "<group>"; };
+		BAADC97422791A0500A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +112,7 @@
 				BA242728227664F900218C3E /* LaunchScreen.storyboard */,
 				BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */,
 				BAADC9702277CC9100A671B2 /* PreviewView.swift */,
+				BAADC97422791A0500A671B2 /* PreviewView.swift */,
 				BA24272B227664F900218C3E /* Info.plist */,
 				BA242723227664F600218C3E /* CameraOpus.xcdatamodeld */,
 			);
@@ -270,6 +273,7 @@
 				BA24271D227664F600218C3E /* AppDelegate.swift in Sources */,
 				BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */,
 				BA242725227664F600218C3E /* CameraOpus.xcdatamodeld in Sources */,
+				BAADC97522791A0600A671B2 /* PreviewView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
