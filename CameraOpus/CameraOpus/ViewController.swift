@@ -19,6 +19,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     var error: NSError?
     
+    var depthDataMap: CVPixelBuffer?
+    var depthData: AVDepthData?
+    
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
     
@@ -27,6 +30,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     @IBOutlet weak var previewView: PreviewView!
     
     @IBOutlet weak var photoPreviewImageView: UIImageView!
+    
+    //var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     
     
     // stackoverflow.com/questions/37869963/how-to-use-avcapturephotooutput
@@ -47,7 +52,56 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 
     
     /// - Tag: CapturePhoto
- 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        textInput.delegate = self
+        do{
+            /*
+             this preset line is needed for depth for some reason
+             */
+            session.sessionPreset = .photo
+            //We are trying to set the input device to the session ie the back camera
+            guard let backCamera =  try AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back) else { print("Default video device is unavailable."); return }
+            let DeviceInput = try AVCaptureDeviceInput(device: backCamera)
+            if session.canAddInput(DeviceInput) {
+                session.addInput(DeviceInput)
+                print("was able to add deviceinput")
+                //Now that we set input device lets set output files
+                photoOutput = AVCapturePhotoOutput()
+                if session.canAddOutput(photoOutput!) {
+                    session.addOutput(photoOutput!)
+                    print("was able to set deviceoutput")
+                    if photoOutput!.isDepthDataDeliverySupported {
+                        print("we can add depth")
+                        photoOutput!.isDepthDataDeliveryEnabled = true
+                    }
+                    else{
+                        print("for some reason we can't add depth")
+                    }
+                    //photoOutput!.isDepthDataDeliveryEnabled = true
+                    //Now we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
+                    videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
+                    videoPreviewLayer!.videoGravity =    AVLayerVideoGravity.resizeAspect
+                    videoPreviewLayer!.connection?.videoOrientation =   AVCaptureVideoOrientation.portrait
+                    photoPreviewImageView.layer.addSublayer(videoPreviewLayer!)
+                    print("seems like we have added a subLayer")
+                    /*
+                     *
+                     Configuring the depthdata here
+                     *
+                     */
+                    
+                    //session.commitConfiguration()
+                    session.startRunning()
+                    print("session is running?")
+                }
+            }
+        }
+        catch{
+            print("there must have been an error in vievDidLoad")
+            return
+        }
+    }
 
     @IBAction func capturePhoto(_ sender: UIButton) {
         
@@ -58,27 +112,13 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
                 }
                 var photoSettings = AVCapturePhotoSettings()
+                //photoSettings.isDepthDataDeliveryEnabled = true
                 photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
-                // Capture HEIF photos when supported. Enable auto-flash and high-resolution photos.
-//                if  photoOutput!.availablePhotoCodecTypes.contains(.hevc) {
-//                    print("photosettings set up")
-//                    photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
-//                }
-//
+
                 print("about to set up delegate")
-//                let photoCaptureProcessor = PhotoCaptureProcessor(with: photoSettings, willCapturePhotoAnimation: {
-//                    // Flash the screen to signal that AVCam took a photo.
-//                    //we seem to not be getting here
-//                    print("will cap")
-//
-//                }, completionHandler: { _ in
-//                    print("hey oh")
-//                    }
-//                )
-                
+
                 print("delegate should have been created")
                 photoOutput!.capturePhoto(with: photoSettings, delegate: self)
-                
                 
                 /*
                  This is the main function that is saving the phto
@@ -91,38 +131,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 print("something wrong with capture")
             }
         }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        textInput.delegate = self
-        do{
-            //We are trying to set the input device to the session ie the back camera
-            guard let backCamera =  try AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back) else { print("Default video device is unavailable."); return }
-            let DeviceInput = try AVCaptureDeviceInput(device: backCamera)
-            if session.canAddInput(DeviceInput) {
-                session.addInput(DeviceInput)
-                print("was able to add deviceinput")
-                //Now that we set input device lets set output files
-                photoOutput = AVCapturePhotoOutput()
-                if session.canAddOutput(photoOutput!) {
-                    session.addOutput(photoOutput!)
-                    print("was able to set deviceoutput")
-                    //Now we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
-                    videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
-                    videoPreviewLayer!.videoGravity =    AVLayerVideoGravity.resizeAspect
-                    videoPreviewLayer!.connection?.videoOrientation =   AVCaptureVideoOrientation.portrait
-                    photoPreviewImageView.layer.addSublayer(videoPreviewLayer!)
-                    print("seems like we have added a subLayer")
-                    session.startRunning()
-                    print("session is running?")
-                }
-            }
-        }
-        catch{
-            print("there must have been an error in vievDidLoad")
-            return
-        }
-    }
     
     func viewWillAppear(){
         //captureSession = AVCaptureSession()
@@ -166,10 +174,8 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
             print("we seem to be error free")
             photoData = photo.fileDataRepresentation()
             
-            
             PHPhotoLibrary.requestAuthorization { status in
                 guard status == .authorized else { return }
-                
                 PHPhotoLibrary.shared().performChanges({
                     // Add the captured photo's file data as the main resource for the Photos asset.
                     let creationRequest = PHAssetCreationRequest.forAsset()
