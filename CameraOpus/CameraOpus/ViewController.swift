@@ -114,6 +114,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 var photoSettings = AVCapturePhotoSettings()
                 //photoSettings.isDepthDataDeliveryEnabled = true
                 photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.jpeg])
+                //JUST ADDED
+                photoSettings.isDepthDataDeliveryEnabled =
+                    photoOutput!.isDepthDataDeliverySupported
 
                 print("about to set up delegate")
 
@@ -159,6 +162,40 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     @IBAction func setDefaultLabelText(_ sender: UIButton) {
         textLabel.text = "Default text"
     }
+    
+ 
+//    privatefunc getPoints(avDepthData: AVDepthData)->Array{
+//        let depthData = avDepthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
+//        guard let intrinsicMatrix = avDepthData.cameraCalibrationData?.intrinsicMatrix, let depthDataMap = rectifyDepthData(avDepthData: depthData) else {
+//                return []
+//            }
+//
+//        CVPixelBufferLockBaseAddress(depthDataMap, CVPixelBufferLockFlags(rawValue: 0))
+//
+//        let width = CVPixelBufferGetWidth(depthDataMap)
+//        let height = CVPixelBufferGetHeight(depthDataMap)
+//
+//        var points = Array()
+//        let focalX = Float(width) * (intrinsicMatrix[0][0] / PHOTO_WIDTH)
+//        let focalY = Float(height) * ( intrinsicMatrix[1][1] / PHOTO_HEIGHT)
+//        let principalPointX = Float(width) * (intrinsicMatrix[2][0] / PHOTO_WIDTH)
+//        let principalPointY = Float(height) * (intrinsicMatrix[2][1] / PHOTO_HEIGHT)
+//        for y in 0 ..< height{
+//        for x in 0 ..< width{
+//        guard let Z = getDistance(at: CGPoint(x: x, y: y) , depthMap: depthDataMap, depthWidth: width, depthHeight: height) else {
+//        continue
+//        }
+//
+//        let X = (Float(x) - principalPointX) * Z / focalX
+//        let Y = (Float(y) - principalPointY) * Z / focalY
+//        points.append(PointXYZ(x: X, y: Y, z: Z))
+//        }
+//        }
+//        CVPixelBufferUnlockBaseAddress(depthDataMap, CVPixelBufferLockFlags(rawValue: 0))
+//
+//        return points
+//    }
+    
 
 }
 
@@ -186,6 +223,8 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                     }
                 })
             }
+            
+            //depthtemp = photo.depthData
             
             
         }
