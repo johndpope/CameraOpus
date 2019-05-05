@@ -215,6 +215,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         return CGPoint(x: opticalCenter.x + CGFloat(new_v_point_x), y: opticalCenter.y + CGFloat(new_v_point_y))
     }
     
+    /*
+     For each point (x,y co-ord) (not pixel value, just co-ord ie no RGB) in the rectified image, find each correspondging x,y co-ord in the non rectified image.
+     Take the depth value at the x,y co-ord and put into the right co-ord in the rectified image
+     */
+    
     private func rectifyDepthData(avDepthData: AVDepthData, image: UIImage) -> CVPixelBuffer? {
         guard
             let distortionLookupTable = avDepthData.cameraCalibrationData?.lensDistortionLookupTable,
@@ -227,6 +232,59 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let height = CVPixelBufferGetHeight(originalDepthDataMap)
         // Assumption is that the original depth map is not the same size as the rectified depth map, makes
         // this funtion scale invariant.
+        let scaledCenter = CGPoint(x: (distortionCenter.x / CGFloat(image.size.height)) * CGFloat(width), y: (distortionCenter.y / CGFloat(image.size.width)) * CGFloat(height))
+        CVPixelBufferLockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
+        
+        /*
+         TODO
+         Why are we creating a new pixel buffer instead of a new depthmap here?
+         TODO
+         */
+        var maybePixelBuffer: CVPixelBuffer?
+        let status = CVPixelBufferCreate(nil, width, height, avDepthData.depthDataType, nil, &maybePixelBuffer)
+        
+        assert(status == kCVReturnSuccess && maybePixelBuffer != nil);
+        
+        guard let rectifiedPixelBuffer = maybePixelBuffer else {
+            return nil
+        }
+        
+        CVPixelBufferLockBaseAddress(rectifiedPixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        guard let address = CVPixelBufferGetBaseAddress(originalDepthDataMap) else {
+            return nil
+        }
+        //This is getting the depth values and putting into the new depthmap
+        for y in 0 ..< height{
+            let rowData = CVPixelBufferGetBaseAddress(rectifiedPixelBuffer)! + y * CVPixelBufferGetBytesPerRow(rectifiedPixelBuffer)
+            let data = UnsafeMutableBufferPointer(start: rowData.assumingMemoryBound(to: Float32.self), count: width)
+            
+            //
+            for x in 0 ..< width{
+                let rectifiedPoint = CGPoint(x: x, y: y)
+                let distortedPoint = lensDistortionPoint(for: rectifiedPoint, lookupTable: distortionLookupTable, distortionOpticalCenter: scaledCenter, imageSize: CGSize(width: width, height: height) )
+                
+                let distortedRow = address + Int(distortedPoint.y) * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
+                let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
+                data[x] = distortedData[Int(distortedPoint.x)]
+            }
+        }
+        CVPixelBufferUnlockBaseAddress(rectifiedPixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
+        CVPixelBufferUnlockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
+        return rectifiedPixelBuffer
+    }
+    
+    private func rectifyImage(avDepthData: AVDepthData, image: UIImage) -> CVPixelBuffer? {
+        
+        guard
+            let distortionLookupTable = avDepthData.cameraCalibrationData?.lensDistortionLookupTable,
+            let distortionCenter = avDepthData.cameraCalibrationData?.lensDistortionCenter else {
+                return nil
+        }
+        
+        let originalDepthDataMap = avDepthData.depthDataMap
+        let width = CVPixelBufferGetWidth(originalDepthDataMap)
+        let height = CVPixelBufferGetHeight(originalDepthDataMap)
+      
         let scaledCenter = CGPoint(x: (distortionCenter.x / CGFloat(image.size.height)) * CGFloat(width), y: (distortionCenter.y / CGFloat(image.size.width)) * CGFloat(height))
         CVPixelBufferLockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
         
@@ -260,58 +318,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         CVPixelBufferUnlockBaseAddress(rectifiedPixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
         CVPixelBufferUnlockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
         return rectifiedPixelBuffer
+        
     }
-    
-//    private func rectifyDepthData(avDepthData: AVDepthData) -> CVPixelBuffer? {
-//        guard
-//            // which lookup table to use here??? inverse or not?
-//            let distortionLookupTable = avDepthData.cameraCalibrationData?.inverseLensDistortionLookupTable,
-//            let distortionCenter = avDepthData.cameraCalibrationData?.lensDistortionCenter else {
-//                return nil
-//        }
-//
-//        let originalDepthDataMap = avDepthData.depthDataMap
-//        let width = CVPixelBufferGetWidth(originalDepthDataMap)
-//        let height = CVPixelBufferGetHeight(originalDepthDataMap)
-//        let scaledCenter = CGPoint(x: (distortionCenter.x / CGFloat(PHOTO_WIDTH)) * CGFloat(width), y: (distortionCenter.y / CGFloat(PHOTO_HEIGHT)) * CGFloat(height))
-//        CVPixelBufferLockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
-//
-//        var maybePixelBuffer: CVPixelBuffer?
-//        let status = CVPixelBufferCreate(nil, width, height, avDepthData.depthDataType, nil, &maybePixelBuffer)
-//
-//        assert(status == kCVReturnSuccess && maybePixelBuffer != nil);
-//
-//        guard let rectifiedPixelBuffer = maybePixelBuffer else {
-//            return nil
-//        }
-//
-//        CVPixelBufferLockBaseAddress(rectifiedPixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
-//        guard let address = CVPixelBufferGetBaseAddress(rectifiedPixelBuffer) else {
-//            return nil
-//        }
-//        for y in 0 ..< height{
-//            let rowData = CVPixelBufferGetBaseAddress(originalDepthDataMap)! + y * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
-//            let data = UnsafeBufferPointer(start: rowData.assumingMemoryBound(to: Float32.self), count: width)
-//
-//            for x in 0 ..< width{
-//                let oldPoint = CGPoint(x: x, y: y)
-//                let newPoint = rectifyDepthMap.lensDistortionPoint(for: oldPoint, lookupTable: distortionLookupTable, distortionOpticalCenter: scaledCenter, imageSize: CGSize(width: width, height: height) )
-//                let val = data[x]
-//
-//                let newRow = address + Int(newPoint.y) * CVPixelBufferGetBytesPerRow(rectifiedPixelBuffer)
-//                let newData = UnsafeMutableBufferPointer(start: newRow.assumingMemoryBound(to: Float32.self), count: width)
-//                newData[Int(newPoint.x)] = val
-//            }
-//        }
-//        CVPixelBufferUnlockBaseAddress(rectifiedPixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
-//        CVPixelBufferUnlockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
-//        return rectifiedPixelBuffer
-//    }
-//
-//
-//    private func getPoints(avDepthData: AVDepthData)->Array<Any>{
+
+//    private func getPoints(avDepthData: AVDepthData,  image: UIImage)->Array<Any>{
 //        let depthData = avDepthData.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
-//        guard let intrinsicMatrix = avDepthData.cameraCalibrationData?.intrinsicMatrix, let depthDataMap = rectifyDepthData(avDepthData: depthData) else {
+//        guard let intrinsicMatrix = avDepthData.cameraCalibrationData?.intrinsicMatrix, let depthDataMap = rectifyDepthData(avDepthData: depthData, image: image) else {
 //                return []
 //            }
 //
@@ -320,11 +332,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 //        let width = CVPixelBufferGetWidth(depthDataMap)
 //        let height = CVPixelBufferGetHeight(depthDataMap)
 //
-//        var points = Array()
-//        let focalX = Float(width) * (intrinsicMatrix[0][0] / PHOTO_WIDTH)
-//        let focalY = Float(height) * ( intrinsicMatrix[1][1] / PHOTO_HEIGHT)
-//        let principalPointX = Float(width) * (intrinsicMatrix[2][0] / PHOTO_WIDTH)
-//        let principalPointY = Float(height) * (intrinsicMatrix[2][1] / PHOTO_HEIGHT)
+//        var points = Array<Any>()
+//        let focalX = Float(width) * (intrinsicMatrix[0][0] / (Float) image.size.width)
+//        let focalY = Float(height) * ( intrinsicMatrix[1][1] / (Float) image.size.height)
+//        let principalPointX = Float(width) * (intrinsicMatrix[2][0] / (Float)image.size.width)
+//        let principalPointY = Float(height) * (intrinsicMatrix[2][1] / (Float) image.size.height)
 //        for y in 0 ..< height{
 //        for x in 0 ..< width{
 //        guard let Z = getDistance(at: CGPoint(x: x, y: y) , depthMap: depthDataMap, depthWidth: width, depthHeight: height) else {
@@ -363,13 +375,24 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                     let creationRequest = PHAssetCreationRequest.forAsset()
                     creationRequest.addResource(with: .photo, data: photo.fileDataRepresentation()!, options: nil)
                 }, completionHandler: { success, error in
-                    if !success {
+                    if success{
+                        print("saved image to library")
+                    }
+                    else {
                         print("Opus couldn't save the photo to your photo library")
                     }
                 })
             }
             
             //depthtemp = photo.depthData
+            var cgImage: CGImage?
+            VTCreateCGImageFromCVPixelBuffer(pixelBuffer, options: nil, imageOut: &cgImage)
+            
+            if let cgImage = cgImage {
+                self.init(cgImage: cgImage)
+            } else {
+                return nil
+            }
             
             
         }
