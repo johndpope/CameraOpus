@@ -162,7 +162,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     @IBAction func setDefaultLabelText(_ sender: UIButton) {
         textLabel.text = "Default text"
     }
-    
+    /*
+     To create a rectilinear image we must begin with an empty destination buffer and iterate through it
+     row by row, calling the sample implementation below for each point in the output image, passing the
+     lensDistortionLookupTable to find the corresponding value in the distorted image, and write it to your
+     output buffer.
+     
+     ie we know that the lensDistortionLookupTable is correct,
+     */
     
     func lensDistortionPoint(for point: CGPoint, lookupTable: Data, distortionOpticalCenter opticalCenter: CGPoint, imageSize: CGSize) -> CGPoint {
         // The lookup table holds the relative radial magnification for n linearly spaced radii.
@@ -218,6 +225,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let originalDepthDataMap = avDepthData.depthDataMap
         let width = CVPixelBufferGetWidth(originalDepthDataMap)
         let height = CVPixelBufferGetHeight(originalDepthDataMap)
+        // Assumption is that the original depth map is not the same size as the rectified depth map, makes
+        // this funtion scale invariant.
         let scaledCenter = CGPoint(x: (distortionCenter.x / CGFloat(image.size.height)) * CGFloat(width), y: (distortionCenter.y / CGFloat(image.size.width)) * CGFloat(height))
         CVPixelBufferLockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
         
@@ -231,22 +240,21 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         }
         
         CVPixelBufferLockBaseAddress(rectifiedPixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
-        guard let address = CVPixelBufferGetBaseAddress(rectifiedPixelBuffer) else {
+        guard let address = CVPixelBufferGetBaseAddress(originalDepthDataMap) else {
             return nil
         }
         for y in 0 ..< height{
-            let rowData = CVPixelBufferGetBaseAddress(originalDepthDataMap)! + y * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
-            let data = UnsafeBufferPointer(start: rowData.assumingMemoryBound(to: Float32.self), count: width)
+            let rowData = CVPixelBufferGetBaseAddress(rectifiedPixelBuffer)! + y * CVPixelBufferGetBytesPerRow(rectifiedPixelBuffer)
+            let data = UnsafeMutableBufferPointer(start: rowData.assumingMemoryBound(to: Float32.self), count: width)
             
+            //right now we are useing scaled center though we are unsure whether it should be distortion center
             for x in 0 ..< width{
-                let oldPoint = CGPoint(x: x, y: y)
-                let newPoint = lensDistortionPoint(for: oldPoint, lookupTable: distortionLookupTable, distortionOpticalCenter: scaledCenter, imageSize: CGSize(width: width, height: height) )
-                let val = data[x]
+                let rectifiedPoint = CGPoint(x: x, y: y)
+                let distortedPoint = lensDistortionPoint(for: rectifiedPoint, lookupTable: distortionLookupTable, distortionOpticalCenter: scaledCenter, imageSize: CGSize(width: width, height: height) )
                 
-                let newRow = address + Int(newPoint.y) * CVPixelBufferGetBytesPerRow(rectifiedPixelBuffer)
-                let newData = UnsafeMutableBufferPointer(start: newRow.assumingMemoryBound(to: Float32.self), count: width)
-                print(newPoint)
-                newData[Int(newPoint.x)] = val
+                let distortedRow = address + Int(distortedPoint.y) * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
+                let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
+                data[x] = distortedData[Int(distortedPoint.x)]
             }
         }
         CVPixelBufferUnlockBaseAddress(rectifiedPixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
