@@ -328,30 +328,32 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("the width is %@", height)
     }
     
-    func getDistance(at: CGPoint, avPhoto: AVCapturePhoto)->Float?{
+    /*
+ At the moment we are looking at values in the original depth map, this will need to change when we look at values in the new one
+     */
+    
+    func getDistance(at: CGPoint, avPhoto: AVDepthData)->Float?{
         print("in getDistance")
-        let depthM = avPhoto.depthData?.depthDataMap
-        guard let address = CVPixelBufferGetBaseAddress(depthM!) else {
+        let depthM = avPhoto.depthDataMap
+        print("did we get here?")
+        
+        CVPixelBufferLockBaseAddress(depthM, CVPixelBufferLockFlags(rawValue: 0))
+        
+        guard let address = CVPixelBufferGetBaseAddress(depthM) else {
             print("an error in getDistance")
             return nil
         }
-        var maybePixelBuffer: CVPixelBuffer?
-        
-        let width = CVPixelBufferGetWidth(depthM!)
-        let height = CVPixelBufferGetHeight(depthM!)
+       
+        let width = CVPixelBufferGetWidth(depthM)
+        let height = CVPixelBufferGetHeight(depthM)
         print("depthdatamap width is ", width)
         print("depthdatamap height is ", height)
-        let status = CVPixelBufferCreate(nil, width, height, avPhoto.depthData!.depthDataType, nil, &maybePixelBuffer)
         
-        guard let rectifiedPixelBuffer = maybePixelBuffer else {
-            print("weird error")
-            return 42.00
-        }
-        
-        let distortedRow =  address + (Int(at.y)  * CVPixelBufferGetBytesPerRow(rectifiedPixelBuffer)) //+ Int(at.x)
+        let distortedRow =  address + (Int(at.y)  * CVPixelBufferGetBytesPerRow(depthM)) //+ Int(at.x)
         let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
         
         let valToReturn = distortedData[Int(at.x)]
+        print("we searched for depth at ", at.x, " ",at.y)
         print("depth value is ", valToReturn)
         return valToReturn
         
@@ -424,9 +426,9 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         let avDepthData = photo.depthData?.depthDataMap
                        
                         let cgTestPointOne = CGPoint(x: 3,y: 5)
-                        self.getDistance(at: cgTestPointOne, avPhoto: photo)
-                        let cgTestPointTwo = CGPoint(x: 14,y: 60)
-                        self.getDistance(at: cgTestPointOne, avPhoto: photo)
+                        self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
+                        //let cgTestPointTwo = CGPoint(x: 14,y: 60)
+                        //self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
                         
                     }
                     else {
