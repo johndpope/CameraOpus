@@ -352,6 +352,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let distortedRow =  address + (Int(at.y)  * CVPixelBufferGetBytesPerRow(depthM)) //+ Int(at.x)
         let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
         
+        /*
+         Keep in mind that this value is disparity (1/m)
+        */
         let valToReturn = distortedData[Int(at.x)]
         print("we searched for depth at ", at.x, " ",at.y)
         print("depth value is ", valToReturn)
@@ -359,6 +362,38 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         //return 4.2
     }
+    
+    func createBitmapContext(cgImage: CGImage) -> CGContext {
+        
+        // Get image width, height
+        let pixelsWide = cgImage.width
+        let pixelsHigh = cgImage.height
+        print("width is ", pixelsWide)
+        print("height is ", pixelsHigh)
+        
+        let bitmapBytesPerRow = pixelsWide * 4
+        let bitmapByteCount = bitmapBytesPerRow * Int(pixelsHigh)
+        
+        // Use the generic RGB color space.
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        
+        // Allocate memory for image data. This is the destination in memory
+        // where any drawing to the bitmap context will be rendered.
+        let bitmapData = malloc(bitmapByteCount)
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        let size = CGSize(width: pixelsWide, height: pixelsHigh)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        // create bitmap
+        let context = CGContext(data: bitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
+                                bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
+        
+        // draw the image onto the context
+        let rect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
+        context?.draw(cgImage, in: rect)
+        
+        return context!
+    }
+    
 
 //    private func getPoints(avDepthData: AVDepthData,  image: UIImage)->Array<Any>{
 //        let depthData = avDepthData. converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
@@ -418,11 +453,26 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         //getting information about pixel format type in cg file
                         let temp = photo.cgImageRepresentation()
                         let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
+                        
+                        let pixelsWide = cgim.width
+                        let pixelsHigh = cgim.height
+                        print("cg width is ", pixelsWide)
+                        print("cg height is ", pixelsHigh)
+                        
+                        // developer.apple.com/videos/play/wwdc2017/508/
+                        // image pixels significantly more than depth pixels
+                        // 4032 x 3024 vs 768 x 576
+                        
+                        
                         print("cg rep")
                         self.testRect(image: cgim)
                         print("finsihed testrect")
                         
-                        //getting depthmap info and testing depth functions
+                        /*
+                         * Testing depth functions
+                         *
+                         */
+                        
                         let avDepthData = photo.depthData?.depthDataMap
                        
                         let cgTestPointOne = CGPoint(x: 3,y: 5)
