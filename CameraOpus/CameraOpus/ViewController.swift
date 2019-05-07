@@ -347,7 +347,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let outputCGImage = otherContext!.makeImage()!
         //scale 1 is the same scale as CGimage, 0 orientation is up?
         print("about to create UIimage to be saved")
-        let outputImage = UIImage(cgImage: outputCGImage, scale: 1, orientation: .up)
+        let outputImage = UIImage(cgImage: outputCGImage, scale: 1, orientation: .right)
         UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
         
         free(data)
@@ -573,6 +573,12 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         print("we found distortionLookupTable and distortionCenter and about to enter rectifyPixel")
                         
                         self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: distortionCenter!)
+                        
+                        let scaledCenter = CGPoint(x: (distortionCenter!.x / CGFloat(pixelsHigh)) * CGFloat(pixelsWide), y: (distortionCenter!.y / CGFloat(pixelsWide)) * CGFloat(pixelsHigh))
+                        
+                        print("2nd call to rectifyPixel")
+                        
+                        self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: scaledCenter)
                         
                     }
                     else {
