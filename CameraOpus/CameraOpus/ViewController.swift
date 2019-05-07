@@ -568,12 +568,11 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                             we test the general image pixel rectification in here
                         */
                         
-                        
                         let distortionLookupTable = avDepthData?.cameraCalibrationData?.lensDistortionLookupTable
                         let distortionCenter = avDepthData?.cameraCalibrationData?.lensDistortionCenter
                         print("we found distortionLookupTable and distortionCenter and about to enter rectifyPixel")
                         
-                        rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable, distortionOpticalCenter opticalCenter: distortionCenter)
+                        self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: distortionCenter!)
                         
                     }
                     else {
