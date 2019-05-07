@@ -277,15 +277,84 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      TODO once we know how to create pixel buffers
      */
     
-    private func rectifyImData(avDepthData: AVDepthData, image: CGImage) {//-> CVPixelBuffer? {
-//        guard
-//            let distortionLookupTable = avDepthData.cameraCalibrationData?.lensDistortionLookupTable,
-//            let distortionCenter = avDepthData.cameraCalibrationData?.lensDistortionCenter else {
-//                return nil
-//        }
-        return
+    func rectifyPixelData(cgImage: CGImage, lookupTable: Data, distortionOpticalCenter opticalCenter: CGPoint) {
+        
+        // Get image width, height
+        let pixelsWide = cgImage.width
+        let pixelsHigh = cgImage.height
+        print("width is ", pixelsWide)
+        print("height is ", pixelsHigh)
+        
+        let bitmapBytesPerRow = pixelsWide * 4
+        let bitmapByteCount = bitmapBytesPerRow * Int(pixelsHigh)
+        
+        // Use the generic RGB color space.
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        print("device colour space all good")
+        
+        // Allocate memory for image data. This is the destination in memory
+        // where any drawing to the bitmap context will be rendered.
+        let bitmapData = malloc(bitmapByteCount)
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        let size = CGSize(width: pixelsWide, height: pixelsHigh)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        // create bitmap
+        let context = CGContext(data: bitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
+                                bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
+        
+        print("created first context")
+        
+        // draw the image onto the context
+        let rect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
+        context?.draw(cgImage, in: rect)
+        print("should have written first image to buffer")
+        
+        let data = context!.data
+        print("about to bind memory to buffer")
+        let dataBuf = data!.bindMemory(to: UInt8.self, capacity: pixelsWide * pixelsHigh * 4)
+        
+        //let dataType = UnsafePointer<UInt8>(data)
+        
+        //destination buffer
+        let newBitmapData = malloc(bitmapByteCount)
+        //let newBitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        //let newSize = CGSize(width: pixelsWide, height: pixelsHigh)
+        let otherContext = CGContext(data: newBitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
+                                     bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
+        let otherRect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
+        otherContext?.draw(cgImage, in: otherRect)
+        
+        let newData = otherContext!.data
+        let newDataBuf = newData!.bindMemory(to: UInt8.self, capacity: pixelsWide * pixelsHigh * 4)
+        //let pixelBuffer = buffer.bindMemory(to: RGBA32.self, capacity: pixelsWide * pixelsHigh)
+        
+        for row in 0 ..< Int(pixelsHigh) {
+            for column in 0 ..< Int(pixelsWide) {
+                var point = lensDistortionPoint(point: CGPoint(x: column, y: row), lookupTable: lookupTable, distortionOpticalCenter: opticalCenter, imageSize: CGSize(width: pixelsWide, height: pixelsHigh))
+                let rectifiedPointer = 4*((Int(pixelsWide) * row + column))
+                let distortedPointer = 4*((Int(pixelsWide) * Int(point.y)) + Int(point.x))
+                //let offset = row * width + column
+                newDataBuf[rectifiedPointer] = dataBuf[distortedPointer]
+                newDataBuf[rectifiedPointer + 1] = dataBuf[distortedPointer + 1]
+                newDataBuf[rectifiedPointer + 2] = dataBuf[distortedPointer + 2]
+                newDataBuf[rectifiedPointer + 3] = dataBuf[distortedPointer + 3]
+                //let val = data![distortedPointer]
+                //newData[rectifiedPointer]
+            }
+        }
+        
+        print("about to create output image")
+        let outputCGImage = otherContext!.makeImage()!
+        //scale 1 is the same scale as CGimage, 0 orientation is up?
+        print("about to create UIimage to be saved")
+        let outputImage = UIImage(cgImage: outputCGImage, scale: 1, orientation: .up)
+        UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+        
+        free(data)
+        free(newData)
+        
+        //return context!
     }
-    
     
     func testRect(image: CGImage){
         
@@ -331,72 +400,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 //        // Make sure and release colorspace before returning
 //        return context!
 //    }
-    
-    func createBitmapContext(cgImage: CGImage, lookupTable: Data, distortionOpticalCenter opticalCenter: CGPoint) -> CGContext {
-        
-        // Get image width, height
-        let pixelsWide = cgImage.width
-        let pixelsHigh = cgImage.height
-        print("width is ", pixelsWide)
-        print("height is ", pixelsHigh)
-        
-        let bitmapBytesPerRow = pixelsWide * 4
-        let bitmapByteCount = bitmapBytesPerRow * Int(pixelsHigh)
-        
-        // Use the generic RGB color space.
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
-        
-        // Allocate memory for image data. This is the destination in memory
-        // where any drawing to the bitmap context will be rendered.
-        let bitmapData = malloc(bitmapByteCount)
-        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
-        let size = CGSize(width: pixelsWide, height: pixelsHigh)
-        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
-        // create bitmap
-        let context = CGContext(data: bitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
-                                bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
-        
-        // draw the image onto the context
-        let rect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
-        context?.draw(cgImage, in: rect)
-        
-        let data = context!.data
-        let dataBuf = data!.bindMemory(to: UInt8.self, capacity: pixelsWide * pixelsHigh * 4)
-        
-        //let dataType = UnsafePointer<UInt8>(data)
-        
-        //destination buffer
-        let newBitmapData = malloc(bitmapByteCount)
-        //let newBitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
-        //let newSize = CGSize(width: pixelsWide, height: pixelsHigh)
-        let otherContext = CGContext(data: newBitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
-                                bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
-        let otherRect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
-        otherContext?.draw(cgImage, in: otherRect)
-       
-        let newData = otherContext!.data
-        let newDataBuf = newData!.bindMemory(to: UInt8.self, capacity: pixelsWide * pixelsHigh * 4)
-        
-        for row in 0 ..< Int(pixelsHigh) {
-            for column in 0 ..< Int(pixelsWide) {
-                var point = lensDistortionPoint(point: CGPoint(x: column, y: row), lookupTable: lookupTable, distortionOpticalCenter: opticalCenter, imageSize: CGSize(width: pixelsWide, height: pixelsHigh))
-                let rectifiedPointer = 4*((Int(pixelsWide) * row + column))
-                let distortedPointer = 4*((Int(pixelsWide) * Int(point.y)) + Int(point.x))
-                //let offset = row * width + column
-                newDataBuf[rectifiedPointer] = dataBuf[distortedPointer]
-                newDataBuf[rectifiedPointer + 1] = dataBuf[distortedPointer + 1]
-                newDataBuf[rectifiedPointer + 2] = dataBuf[distortedPointer + 2]
-                newDataBuf[rectifiedPointer + 3] = dataBuf[distortedPointer + 3]
-                //let val = data![distortedPointer]
-                //newData[rectifiedPointer]
-            }
-        }
-        
-        free(data)
-        free(newData)
-        
-        return context!
-    }
+
     
 //    func getPixelColorAtLocation(point:CGPoint, inImage:CGImage) -> RFour {
 //        // Create off screen bitmap context to draw the image into. Format ARGB is 4 bytes for each pixel: Alpa, Red, Green, Blue
@@ -538,48 +542,10 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         let pixelsHigh = cgim.height
                         print("cg width is ", pixelsWide)
                         print("cg height is ", pixelsHigh)
-                        
-                        let bitmapBytesPerRow = pixelsWide * 4
-                        let bitmapByteCount = bitmapBytesPerRow * Int(pixelsHigh)
-                        
-                        // Use the generic RGB color space.
-                        let colorSpace = CGColorSpaceCreateDeviceRGB()
-                        
-                        // Allocate memory for image data. This is the destination in memory
-                        // where any drawing to the bitmap context will be rendered.
-                        let bitmapData = malloc(bitmapByteCount)
-                        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
-                        let size = CGSize(width: pixelsWide, height: pixelsHigh)
-                        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
-                        // create bitmap
-                        let context = CGContext(data: bitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
-                                                bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
-                        
-                        //context?.data
-                        
-                        context!.draw(cgim, in: CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh))
-                        
-                        guard let buffer = context?.data else {
-                            print("unable to get context data")
-                            return
-                        }
-                        
-                        //let pixelBuffer = buffer.bindMemory(to: RGBA32.self, capacity: pixelsWide * pixelsHigh)
-
-                        
-                        // draw the image onto the context
-                        let rect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
-                        
-                        
-                        
-                        
-                        //let cont = self.createBitmapContext(cgImage: cgim)
-                        print("context was created")
-                        
+                    
                         // developer.apple.com/videos/play/wwdc2017/508/
                         // image pixels significantly more than depth pixels
                         // 4032 x 3024 vs 768 x 576
-                        
                         
                         print("cg rep")
                         self.testRect(image: cgim)
@@ -590,12 +556,24 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                          *
                          */
                         
-                        let avDepthData = photo.depthData?.depthDataMap
+                        let avDepthData = photo.depthData
                        
                         let cgTestPointOne = CGPoint(x: 3,y: 5)
                         self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
+                        print("finished messing with depth")
                         //let cgTestPointTwo = CGPoint(x: 14,y: 60)
                         //self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
+                        
+                        /*
+                            we test the general image pixel rectification in here
+                        */
+                        
+                        
+                        let distortionLookupTable = avDepthData?.cameraCalibrationData?.lensDistortionLookupTable
+                        let distortionCenter = avDepthData?.cameraCalibrationData?.lensDistortionCenter
+                        print("we found distortionLookupTable and distortionCenter and about to enter rectifyPixel")
+                        
+                        rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable, distortionOpticalCenter opticalCenter: distortionCenter)
                         
                     }
                     else {
