@@ -9,6 +9,7 @@
 import UIKit
 import AVFoundation
 import Photos
+import CoreMotion
 
 
 class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate {
@@ -21,6 +22,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     var depthDataMap: CVPixelBuffer?
     var depthData: AVDepthData?
+    var motionManager: CMMotionManager?
     
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
@@ -78,6 +80,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     else{
                         print("for some reason we can't add depth")
                     }
+                    
+                    
+                    /*
+                        Set up accelerometer and gyroscope
+                     */
+                    
+                    motionManager = CMMotionManager()
+                    //motionManager!.startAccelerometerUpdates()
+                    
+                    
                     //photoOutput!.isDepthDataDeliveryEnabled = true
                     //Now we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
                     videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
@@ -367,73 +379,105 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
-    
-//    func createARGBBitmapContext(inImage: CGImage) -> CGContext {
-//        var bitmapByteCount = 0
-//        var bitmapBytesPerRow = 0
-//
-//        //Get image width, height
-//        let pixelsWide = inImage.width
-//        let pixelsHigh = inImage.height
-//        print("the width of inImage is ", pixelsWide)
-//        print("the height of inImage is ", pixelsHigh)
-//
-//        // Declare the number of bytes per row. Each pixel in the bitmap in this
-//        // example is represented by 4 bytes; 8 bits each of red, green, blue, and
-//        // alpha.
-//        bitmapBytesPerRow = Int(pixelsWide) * 4
-//        bitmapByteCount = bitmapBytesPerRow * Int(pixelsHigh)
-//
-//        // Use the generic RGB color space.
-//        let colorSpace = CGColorSpaceCreateDeviceRGB()
-//
-//        // Allocate memory for image data. This is the destination in memory
-//        // where any drawing to the bitmap context will be rendered.
-//        let bitmapData = malloc(bitmapByteCount)
-//
-//        // Create the bitmap context. We want pre-multiplied ARGB, 8-bits
-//        // per component. Regardless of what the source image format is
-//        // (CMYK, Grayscale, and so on) it will be converted over to the format
-//        // specified here by CGBitmapContextCreate.
-//        let context = CGContext(data: bitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8, bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
-//
-//        // Make sure and release colorspace before returning
-//        return context!
-//    }
+    func createDepthImageFromMap(avDepthData: AVDepthData) {
+        
+        print("in depth image mpa")
+        /*
+         First we need to normalize the depth numbers in the pixel buffer
+         Then we will convert to greyscale.
+         Why greyscale you say? Because depth pixels are single channel
+         */
+        
+        let originalDepthDataMap = avDepthData.depthDataMap
+        let width = CVPixelBufferGetWidth(originalDepthDataMap)
+        let height = CVPixelBufferGetHeight(originalDepthDataMap)
+        print("depthmap width is ",width )
+        print("depthmap height is ", height)
+        CVPixelBufferLockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
+        
+        /*
+         TODO
+         Why are we creating a new pixel buffer instead of a new depthmap here?
+         TODO
+         */
+        var maybePixelBuffer: CVPixelBuffer?
+        let status = CVPixelBufferCreate(nil, width, height, avDepthData.depthDataType, nil, &maybePixelBuffer)
+        
+        //assert(status == kCVReturnSuccess && maybePixelBuffer != nil);
+        
+        guard let PB = maybePixelBuffer else {
+            return
+        }
+        
+        CVPixelBufferLockBaseAddress(PB, CVPixelBufferLockFlags(rawValue: 0))
+        guard let address = CVPixelBufferGetBaseAddress(originalDepthDataMap) else {
+            print("we have an error in export depth map")
+            return
+        }
+        //let floatBuffer = unsafeBitCast(address, to: UnsafeMutablePointer<Float>.self)
 
+        //let data = UnsafeMutableBufferPointer(start: rowData.assumingMemoryBound(to: Float32.self), count: width)
+        
+        var minPixel: Float = Float.greatestFiniteMagnitude
+        var maxPixel: Float = -Float.greatestFiniteMagnitude
+        
+        for y in 0 ..< height{
+            
+            if(y == 400){
+                print("we got to 400")
+            }
+            
+            if(y == 200){
+                print("we got to 200")
+            }
+            
+            if(y == 300){
+                print("we got to 300")
+            }
+            
+            if(y == 570){
+                print("we got to 300")
+            }
+            
+            let distortedRow = address + y * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
+            let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
+            for x in 0 ..< width{
+                let pixel =  distortedData[x]
+                minPixel = min(pixel, minPixel)
+                maxPixel = max(pixel, maxPixel)
+            }
+        }
+        
+        //let floatBuffer = unsafeBitCast(address, to: UnsafeMutablePointer<Float32>.self)
+        
+        print("The min depth value is ",minPixel)
+        print("The max depth value is ",maxPixel)
+        
+        let range = maxPixel - minPixel
+        print("The range is ",range)
+        
+        minPixel = Float.greatestFiniteMagnitude
+        maxPixel = -Float.greatestFiniteMagnitude
+        
+        for y in 0 ..< height {
+            
+            let distortedRow = address + y * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
+            let distortedData = UnsafeMutableBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
+            
+            for x in 0 ..< width {
+                let pixel =  distortedData[x]
+                distortedData[x] = (pixel - minPixel) / range
+                minPixel = min(distortedData[x], minPixel)
+                maxPixel = max(distortedData[x], maxPixel)
+            }
+        }
+        
+        print("The new min is ", minPixel)
+        print("The new max is ", maxPixel)
+        
+        CVPixelBufferUnlockBaseAddress(PB, CVPixelBufferLockFlags(rawValue: 0))
+    }
     
-//    func getPixelColorAtLocation(point:CGPoint, inImage:CGImage) -> RFour {
-//        // Create off screen bitmap context to draw the image into. Format ARGB is 4 bytes for each pixel: Alpa, Red, Green, Blue
-//        let context = self.createARGBBitmapContext(inImage)
-//
-//        let pixelsWide = CGImageGetWidth(inImage)
-//        let pixelsHigh = CGImageGetHeight(inImage)
-//        let rect = CGRect(x:0, y:0, width:Int(pixelsWide), height:Int(pixelsHigh))
-//
-//        //Clear the context
-//        CGContextClearRect(context, rect)
-//
-//        // Draw the image to the bitmap context. Once we draw, the memory
-//        // allocated for the context for rendering will then contain the
-//        // raw image data in the specified color space.
-//        CGContextDrawImage(context, rect, inImage)
-//
-//        // Now we can get a pointer to the image data associated with the bitmap
-//        // context.
-//        let data = CGBitmapContextGetData(context)
-//        let dataType = UnsafePointer<UInt8>(data)
-//
-//        let offset = 4*((Int(pixelsWide) * Int(point.y)) + Int(point.x))
-//        let alpha = dataType[offset]
-//        let red = dataType[offset+1]
-//        let green = dataType[offset+2]
-//        let blue = dataType[offset+3]
-//        meColour = Rfour(red: CGFloat(red)/255.0, green: CGFloat(green)/255.0, blue: CGFloat(blue)/255.0, alpha: CGFloat(alpha)/255.0)
-//
-//        // Free image data memory for the context
-//        free(data)
-//        return color;
-//    }
     
     func testRectDepth(avDepthData: AVDepthData, image: UIImage){
         let originalDepthDataMap = avDepthData.depthDataMap
@@ -473,6 +517,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let valToReturn = distortedData[Int(at.x)]
         print("we searched for depth at ", at.x, " ",at.y)
         print("depth value is ", valToReturn)
+        
+        CVPixelBufferUnlockBaseAddress(depthM, CVPixelBufferLockFlags(rawValue: 0))
+        
         return valToReturn
         
         //return 4.2
@@ -572,13 +619,15 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         let distortionCenter = avDepthData?.cameraCalibrationData?.lensDistortionCenter
                         print("we found distortionLookupTable and distortionCenter and about to enter rectifyPixel")
                         
-                        self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: distortionCenter!)
+                        //self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: distortionCenter!)
                         
-                        let scaledCenter = CGPoint(x: (distortionCenter!.x / CGFloat(pixelsHigh)) * CGFloat(pixelsWide), y: (distortionCenter!.y / CGFloat(pixelsWide)) * CGFloat(pixelsHigh))
+                        //let scaledCenter = CGPoint(x: (distortionCenter!.x / CGFloat(pixelsHigh)) * CGFloat(pixelsWide), y: (distortionCenter!.y / CGFloat(pixelsWide)) * CGFloat(pixelsHigh))
                         
-                        print("2nd call to rectifyPixel")
+                       // print("2nd call to rectifyPixel")
                         
-                        self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: scaledCenter)
+                       // self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: scaledCenter)
+                        
+                        self.createDepthImageFromMap(avDepthData: avDepthData!)
                         
                     }
                     else {
