@@ -23,6 +23,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var depthDataMap: CVPixelBuffer?
     var depthData: AVDepthData?
     var motionManager: CMMotionManager?
+    var accelFlag = 0
+    var gyroFlag = 0
+    var firstShotTaken = false
+    
     
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
@@ -34,7 +38,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     @IBOutlet weak var photoPreviewImageView: UIImageView!
     
     //var outputSynchronizer: AVCaptureDataOutputSynchronizer?
-    
     
     // stackoverflow.com/questions/37869963/how-to-use-avcapturephotooutput
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
@@ -50,6 +53,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
         print("in file output 2")
+    }
+    
+    func outputAccelData(acceleration: CMAcceleration){
+        print("teh accel is ", acceleration.x)
+        print("teh accel is ", acceleration.y)
+        print("teh accel is ", acceleration.z)
+        print(" ")
+        
     }
 
     
@@ -87,8 +98,29 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                      */
                     
                     motionManager = CMMotionManager()
-                    //motionManager!.startAccelerometerUpdates()
                     
+                    if (motionManager!.isGyroAvailable){
+                        print("we have access to the gyro")
+                        gyroFlag = 1
+                    }
+                    if(motionManager!.isAccelerometerAvailable){
+                        print("we have access to the accel")
+                        accelFlag = 1
+                    }
+                    
+                    // we start running the accel right away but not the gyro
+                    if(accelFlag == 1){
+                        motionManager?.accelerometerUpdateInterval = 10.0
+                        motionManager!.startAccelerometerUpdates(
+                            to: OperationQueue.current!,
+                            withHandler: {(accelData: CMAccelerometerData?, errorOC: Error?) in
+                                self.outputAccelData(acceleration: accelData!.acceleration)
+                        })
+                        print("running accelerometer")
+                        
+                        
+                        
+                    }
                     
                     //photoOutput!.isDepthDataDeliveryEnabled = true
                     //Now we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
@@ -114,11 +146,30 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             return
         }
     }
+    
+    func outputGyroData(gyroMeasure: CMRotationRate){
+        print("teh xaxis is ", gyroMeasure.x)
+        print("teh yaxis is ", gyroMeasure.y)
+        print("teh zaxis is ", gyroMeasure.z)
+        print(" ")
+        
+    }
 
     @IBAction func capturePhoto(_ sender: UIButton) {
         
             do{
                 print("in capturePhoto")
+                
+                if(gyroFlag == 1){
+                    motionManager?.gyroUpdateInterval = 10.0
+                    motionManager!.startGyroUpdates(
+                        to: OperationQueue.current!,
+                        withHandler: {(gyroData: CMGyroData?, errorOC: Error?) in
+                            self.outputGyroData(gyroMeasure: gyroData!.rotationRate)
+                    })
+                    print("running gyro")
+                }
+                
                 let videoPreviewLayerOrientation = try videoPreviewLayer?.connection?.videoOrientation
                 if let photoOutputConnection = photoOutput!.connection(with: .video) {
                     photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
@@ -135,11 +186,22 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 print("delegate should have been created")
                 photoOutput!.capturePhoto(with: photoSettings, delegate: self)
                 
-                /*
-                 This is the main function that is saving the phto
-                */
-                //photoOutput!.capturePhoto(with: photoSettings, delegate: photoCaptureProcessor)
                 print("capturePhoto should have been called")
+                
+                /*
+                 We will need to stop the accelerometer at some point in the future
+                 Ideally we should have some function that is called when the app is closed or stops being used
+                 How we decide to stop
+                 */
+                if(accelFlag == 1){
+                    motionManager!.stopAccelerometerUpdates()
+                    print("stopping accelerometer")
+                }
+                
+                if(gyroFlag == 1){
+                    //motionManager!.stopGyroUpdates()
+                    print("stopping gyro")
+                }
                 
             }
             catch{
@@ -334,6 +396,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let otherContext = CGContext(data: newBitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
                                      bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
         let otherRect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
+        
+        /*
+         TODO
+         We should double check that drawing the image into the output buffer does not mean we are getting the same image twice
+         */
+        
         otherContext?.draw(cgImage, in: otherRect)
         
         let newData = otherContext!.data
@@ -355,7 +423,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             }
         }
         
-        print("about to create output image")
+        print("about to create rectify pixel output image")
         let outputCGImage = otherContext!.makeImage()!
         //scale 1 is the same scale as CGimage, 0 orientation is up?
         print("about to create UIimage to be saved")
@@ -381,6 +449,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     func createDepthImageFromMap(avDepthData: AVDepthData) {
         
+        var avDepthData = avDepthData
+        
         print("in depth image mpa")
         /*
          First we need to normalize the depth numbers in the pixel buffer
@@ -388,7 +458,17 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
          Why greyscale you say? Because depth pixels are single channel
          */
         
+        
+        /*
+         Added this line because of a tutorial, its unclear whether I actually need it
+         */
+        if avDepthData.depthDataType != kCVPixelFormatType_DisparityFloat32 {
+            avDepthData = avDepthData.converting(toDepthDataType: kCVPixelFormatType_DisparityFloat32)
+        }
+        
         let originalDepthDataMap = avDepthData.depthDataMap
+        
+        
         let width = CVPixelBufferGetWidth(originalDepthDataMap)
         let height = CVPixelBufferGetHeight(originalDepthDataMap)
         print("depthmap width is ",width )
@@ -400,11 +480,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
          Why are we creating a new pixel buffer instead of a new depthmap here?
          TODO
          */
+        
         var maybePixelBuffer: CVPixelBuffer?
         let status = CVPixelBufferCreate(nil, width, height, avDepthData.depthDataType, nil, &maybePixelBuffer)
         
         //assert(status == kCVReturnSuccess && maybePixelBuffer != nil);
         
+        
+        /*
+         This whole reference to PB (and ensuing references) may be completely superflous
+        */
         guard let PB = maybePixelBuffer else {
             return
         }
@@ -414,35 +499,25 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             print("we have an error in export depth map")
             return
         }
-        //let floatBuffer = unsafeBitCast(address, to: UnsafeMutablePointer<Float>.self)
 
-        //let data = UnsafeMutableBufferPointer(start: rowData.assumingMemoryBound(to: Float32.self), count: width)
+        //let tcmage = CIImage(cvPixelBuffer: PB)
+        //let tcontext = CIContext(options: nil)
+        //let tcgImage = tcontext.createCGImage(tcmage, from: tcmage.extent)!
+        //print("about to create  test UIimage to be saved")
+        //let toutputImage = UIImage(cgImage: tcgImage, scale: 1, orientation: .right)
+        //UIImageWriteToSavedPhotosAlbum(toutputImage, nil, nil, nil)
         
-        var minPixel: Float = Float.greatestFiniteMagnitude
-        var maxPixel: Float = -Float.greatestFiniteMagnitude
+        
+        var minPixel: Float = 1.0
+        var maxPixel: Float = 0.0
         
         for y in 0 ..< height{
-            
-            if(y == 400){
-                print("we got to 400")
-            }
-            
-            if(y == 200){
-                print("we got to 200")
-            }
-            
-            if(y == 300){
-                print("we got to 300")
-            }
-            
-            if(y == 570){
-                print("we got to 300")
-            }
             
             let distortedRow = address + y * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
             let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
             for x in 0 ..< width{
                 let pixel =  distortedData[x]
+                //print(y,x," ", pixel)
                 minPixel = min(pixel, minPixel)
                 maxPixel = max(pixel, maxPixel)
             }
@@ -453,11 +528,18 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("The min depth value is ",minPixel)
         print("The max depth value is ",maxPixel)
         
+        //TODO check this
+        //the minimum distance should never be less than zero
+//        if(minPixel <= 0){
+//            minPixel = 0
+//        }
+        
         let range = maxPixel - minPixel
         print("The range is ",range)
         
-        minPixel = Float.greatestFiniteMagnitude
-        maxPixel = -Float.greatestFiniteMagnitude
+        //we retry min and max for testing
+        //minPixel = Float.greatestFiniteMagnitude
+        //maxPixel = -Float.greatestFiniteMagnitude
         
         for y in 0 ..< height {
             
@@ -465,15 +547,29 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             let distortedData = UnsafeMutableBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
             
             for x in 0 ..< width {
-                let pixel =  distortedData[x]
-                distortedData[x] = (pixel - minPixel) / range
-                minPixel = min(distortedData[x], minPixel)
-                maxPixel = max(distortedData[x], maxPixel)
+                var pixel =  distortedData[x]
+//                if(pixel <= 0){
+//                    pixel = 0
+//                }
+                distortedData[x] = ((pixel - minPixel) / range) //* 255
+                //minPixel = min(distortedData[x], minPixel)
+                //maxPixel = max(distortedData[x], maxPixel)
+                //print(distortedData[x])
             }
+            
         }
         
-        print("The new min is ", minPixel)
-        print("The new max is ", maxPixel)
+        print("finished printing")
+        //let colorSpace = CGColorSpaceCreateDeviceGray()
+
+        let cmage = CIImage(cvPixelBuffer: originalDepthDataMap)
+        let context = CIContext(options: nil)
+        let cgImage = context.createCGImage(cmage, from: cmage.extent)!
+        print("about to create UIimage to be saved")
+        let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
+        UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+        //print("The new min is ", minPixel)
+        //print("The new max is ", maxPixel)
         
         CVPixelBufferUnlockBaseAddress(PB, CVPixelBufferLockFlags(rawValue: 0))
     }
@@ -580,6 +676,11 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 }, completionHandler: { success, error in
                     if success{
                         print("saved image to library")
+                        
+                        //this flag needs to be set for the first successful shot
+                        if(!self.firstShotTaken){
+                            self.firstShotTaken = true
+                        }
                         
                         //getting information about pixel format type in cg file
                         let temp = photo.cgImageRepresentation()
