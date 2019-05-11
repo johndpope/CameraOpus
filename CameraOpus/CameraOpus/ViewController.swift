@@ -25,6 +25,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var motionManager: CMMotionManager?
     var accelFlag = 0
     var gyroFlag = 0
+    var devMotionFlag = 0
     var firstShotTaken = false
     
     
@@ -56,6 +57,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     func outputAccelData(acceleration: CMAcceleration){
+        print("from accel")
         print("teh accel is ", acceleration.x)
         print("teh accel is ", acceleration.y)
         print("teh accel is ", acceleration.z)
@@ -63,6 +65,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
 
+    func outputDevMotionData(data: CMDeviceMotion){
+        print("from devmotion")
+        print("teh accel is ", data.userAcceleration.x)
+        print("teh accel is ", data.userAcceleration.y)
+        print("teh accel is ", data.userAcceleration.z)
+        print(" ")
+        
+    }
     
     /// - Tag: CapturePhoto
     override func viewDidLoad() {
@@ -107,16 +117,37 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                         print("we have access to the accel")
                         accelFlag = 1
                     }
+                    if(motionManager!.isDeviceMotionAvailable){
+                        devMotionFlag = 1
+                    }
                     
                     // we start running the accel right away but not the gyro
-                    if(accelFlag == 1){
+                    if((accelFlag == 1)&&(devMotionFlag == 1)){
                         motionManager?.accelerometerUpdateInterval = 10.0
                         motionManager!.startAccelerometerUpdates(
                             to: OperationQueue.current!,
                             withHandler: {(accelData: CMAccelerometerData?, errorOC: Error?) in
                                 self.outputAccelData(acceleration: accelData!.acceleration)
                         })
-                        print("running accelerometer")
+                        motionManager?.deviceMotionUpdateInterval = 10.0
+                        motionManager!.startDeviceMotionUpdates(
+                            using: .xMagneticNorthZVertical,
+                            to: OperationQueue.current!,
+                            withHandler: {(data, error) in
+                                
+                                if let validData = data {
+                                    // Get the attitude relative to the magnetic north reference frame.
+                                    let xa = validData.userAcceleration.x
+                                    let ya = validData.userAcceleration.y
+                                    let za = validData.userAcceleration.z
+                                    
+                                    // Use the motion data in your app.
+                                    self.outputDevMotionData(data: validData)
+                                }
+                                
+                        })
+                        print("running accelerometer and device motion")
+                        print("**")
                         
                         
                         
@@ -148,6 +179,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     func outputGyroData(gyroMeasure: CMRotationRate){
+        gyroMeasure
         print("teh xaxis is ", gyroMeasure.x)
         print("teh yaxis is ", gyroMeasure.y)
         print("teh zaxis is ", gyroMeasure.z)
@@ -193,10 +225,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                  Ideally we should have some function that is called when the app is closed or stops being used
                  How we decide to stop
                  */
-                if(accelFlag == 1){
-                    motionManager!.stopAccelerometerUpdates()
-                    print("stopping accelerometer")
-                }
+//                if(accelFlag == 1){
+//                    motionManager!.stopAccelerometerUpdates()
+//                    print("stopping accelerometer")
+//                }
                 
                 if(gyroFlag == 1){
                     //motionManager!.stopGyroUpdates()
@@ -621,6 +653,22 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //return 4.2
     }
     
+    /*
+     * stackoverflow.com/questions/3707726/how-do-i-measure-the-distance-traveled-by-an-iphone-using-the-accelerometer
+     *
+     * stackoverflow.com/questions/6647314/how-can-i-find-distance-traveled-with-a-gyroscope-and-accelerometer
+     */
+    func getDistanceFromLastPhoto(){
+        
+    }
+    
+    /*
+     stackoverflow.com/questions/44857179/get-distance-to-surface-with-arkit
+     */
+    func distanceToBoundingBox(){
+        
+    }
+    
 
 //    private func getPoints(avDepthData: AVDepthData,  image: UIImage)->Array<Any>{
 //        let depthData = avDepthData. converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
@@ -681,6 +729,11 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         if(!self.firstShotTaken){
                             self.firstShotTaken = true
                         }
+                        
+                        //time stamp
+                        let totalSeconds = CMTimeGetSeconds(photo.timestamp)
+                        print("photo was taken at ", totalSeconds)
+                        print("which in a human readable is ", totalSeconds)
                         
                         //getting information about pixel format type in cg file
                         let temp = photo.cgImageRepresentation()
