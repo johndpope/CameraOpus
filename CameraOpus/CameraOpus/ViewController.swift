@@ -74,6 +74,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
+    func createBoundingBox (){
+        
+    }
+    
     /// - Tag: CapturePhoto
     override func viewDidLoad() {
         super.viewDidLoad()

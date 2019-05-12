@@ -15,6 +15,8 @@
 		BA242735227664F900218C3E /* CameraOpusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA242734227664F900218C3E /* CameraOpusTests.swift */; };
 		BA242740227664F900218C3E /* CameraOpusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24273F227664F900218C3E /* CameraOpusUITests.swift */; };
 		BA261452227FA76200A59901 /* PixelExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA261451227FA76200A59901 /* PixelExtractor.swift */; };
+		BA2614672288CDDD00A59901 /* 3D UI and Visualizations  in Resources */ = {isa = PBXBuildFile; fileRef = BA2614652288CDDD00A59901 /* 3D UI and Visualizations  */; };
+		BA2614682288CDDD00A59901 /* Utility Extensions in Resources */ = {isa = PBXBuildFile; fileRef = BA2614662288CDDD00A59901 /* Utility Extensions */; };
 		BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9702277CC9100A671B2 /* PreviewView.swift */; };
 		BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */; };
 		BAADC97522791A0600A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC97422791A0500A671B2 /* PreviewView.swift */; };
@@ -52,6 +54,8 @@
 		BA24273F227664F900218C3E /* CameraOpusUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraOpusUITests.swift; sourceTree = "<group>"; };
 		BA242741227664F900218C3E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BA261451227FA76200A59901 /* PixelExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelExtractor.swift; sourceTree = "<group>"; };
+		BA2614652288CDDD00A59901 /* 3D UI and Visualizations  */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "3D UI and Visualizations "; sourceTree = "<group>"; };
+		BA2614662288CDDD00A59901 /* Utility Extensions */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Utility Extensions"; sourceTree = "<group>"; };
 		BAADC9702277CC9100A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCaptureDelegate.swift; sourceTree = "<group>"; };
 		BAADC97422791A0500A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
@@ -111,6 +115,8 @@
 				BA242726227664F900218C3E /* Assets.xcassets */,
 				BA242728227664F900218C3E /* LaunchScreen.storyboard */,
 				BA261451227FA76200A59901 /* PixelExtractor.swift */,
+				BA2614652288CDDD00A59901 /* 3D UI and Visualizations  */,
+				BA2614662288CDDD00A59901 /* Utility Extensions */,
 				BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */,
 				BAADC9702277CC9100A671B2 /* PreviewView.swift */,
 				BAADC97422791A0500A671B2 /* PreviewView.swift */,
@@ -243,6 +249,8 @@
 			files = (
 				BA24272A227664F900218C3E /* LaunchScreen.storyboard in Resources */,
 				BA242727227664F900218C3E /* Assets.xcassets in Resources */,
+				BA2614682288CDDD00A59901 /* Utility Extensions in Resources */,
+				BA2614672288CDDD00A59901 /* 3D UI and Visualizations  in Resources */,
 				BA242722227664F600218C3E /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
