@@ -669,6 +669,84 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
+    func upload(image: UIImage) {
+        
+        //let session = URLSession.shared
+        //let url = URL(string: "https://learnappmaking.com/ex/users.json")!
+        
+        //let imageData:Data = UIImagePNGRepresentation(image_data)!
+        //let imageStr = imageData.base64EncodedString()
+        
+        //var urlRequest = URLRequest(url: URL(string: "https://catbox.moe/user/api.php")!)
+        //urlRequest.httpMethod = "POST"
+        
+        // Set Content-Type Header to multipart/form-data, this is equivalent to submitting form data with file upload in a web browser
+        // And the boundary is also set here
+        
+        let filename = "avatar.png"
+        
+        let boundary = UUID().uuidString
+        
+        let fieldName = "reqtype"
+        let fieldValue = "fileupload"
+        
+        let fieldName2 = "userhash"
+        let fieldValue2 = "caa3dce4fcb36cfdf9258ad9c"
+        
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config)
+        
+        
+        // Set the URLRequest to POST and to the specified URL
+        var urlRequest = URLRequest(url: URL(string: "https://catbox.moe/user/api.php")!)
+        urlRequest.httpMethod = "POST"
+        
+        // Set Content-Type Header to multipart/form-data, this is equivalent to submitting form data with file upload in a web browser
+        // And the boundary is also set here
+        
+        urlRequest.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        
+        var data = Data()
+        
+        // Add the reqtype field and its value to the raw http request data
+        data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"\(fieldName)\"\r\n\r\n".data(using: .utf8)!)
+        data.append("\(fieldValue)".data(using: .utf8)!)
+        
+        // Add the userhash field and its value to the raw http reqyest data
+        data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"\(fieldName2)\"\r\n\r\n".data(using: .utf8)!)
+        data.append("\(fieldValue2)".data(using: .utf8)!)
+        
+        // Add the image data to the raw http request data
+        data.append("\r\n--\(boundary)\r\n".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"fileToUpload\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
+        data.append("Content-Type: image/png\r\n\r\n".data(using: .utf8)!)
+        data.append(image.pngData()!)
+        
+        // End the raw http request data, note that there is 2 extra dash ("-") at the end, this is to indicate the end of the data
+        // According to the HTTP 1.1 specification https://tools.ietf.org/html/rfc7230
+        data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+        
+        // Send a POST request to the URL, with the data we created earlier
+        session.uploadTask(with: urlRequest, from: data, completionHandler: { responseData, response, error in
+            
+            if(error != nil){
+                print("\(error!.localizedDescription)")
+            }
+            
+            guard let responseData = responseData else {
+                print("no response data")
+                return
+            }
+            
+            if let responseString = String(data: responseData, encoding: .utf8) {
+                print("uploaded to: \(responseString)")
+            }
+        }).resume()
+        
+    }
+    
 
 //    private func getPoints(avDepthData: AVDepthData,  image: UIImage)->Array<Any>{
 //        let depthData = avDepthData. converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
