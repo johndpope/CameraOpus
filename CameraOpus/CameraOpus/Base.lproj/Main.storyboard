@@ -51,14 +51,8 @@
                                     <action selector="capturePhoto:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Aqy-T3-uht"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="dep-Pv-bmN" userLabel="Preview" customClass="PreviewView" customModule="AVCam" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="87" width="375" height="204"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <gestureRecognizers/>
-                            </view>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="t4d-l7-BAY">
-                                <rect key="frame" x="67" y="309" width="240" height="128"/>
+                                <rect key="frame" x="36" y="86" width="303" height="351"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
                         </subviews>
@@ -67,7 +61,6 @@
                     </view>
                     <connections>
                         <outlet property="photoPreviewImageView" destination="t4d-l7-BAY" id="iEs-Jy-MCS"/>
-                        <outlet property="previewView" destination="dep-Pv-bmN" id="VPr-ai-2SM"/>
                         <outlet property="textInput" destination="cDr-p1-CKB" id="6VV-Gx-QNV"/>
                         <outlet property="textLabel" destination="Bxa-6c-qYa" id="hjO-Iu-qUO"/>
                     </connections>

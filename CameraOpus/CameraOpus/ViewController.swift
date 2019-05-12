@@ -34,7 +34,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     @IBOutlet weak var textInput: UITextField!
     
-    @IBOutlet weak var previewView: PreviewView!
+    //@IBOutlet weak var previewView: PreviewView!
     
     @IBOutlet weak var photoPreviewImageView: UIImageView!
     
@@ -248,7 +248,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        videoPreviewLayer!.frame = previewView.bounds
+        videoPreviewLayer!.frame = photoPreviewImageView.bounds
     }
         
         // Do any additional setup after loading the view.
