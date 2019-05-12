@@ -30,9 +30,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     
     //MARK: Properties
-    @IBOutlet weak var textLabel: UILabel!
+    //@IBOutlet weak var textLabel: UILabel!
     
-    @IBOutlet weak var textInput: UITextField!
+    //@IBOutlet weak var textInput: UITextField!
     
     //@IBOutlet weak var previewView: PreviewView!
     
@@ -81,7 +81,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     /// - Tag: CapturePhoto
     override func viewDidLoad() {
         super.viewDidLoad()
-        textInput.delegate = self
+        //textInput.delegate = self
         do{
             /*
              this preset line is needed for depth for some reason
@@ -264,14 +264,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         return true
     }
     
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        textLabel.text = textField.text
-    }
-    
-    //MARK: Actions
-    @IBAction func setDefaultLabelText(_ sender: UIButton) {
-        textLabel.text = "Default text"
-    }
+//    func textFieldDidEndEditing(_ textField: UITextField) {
+//        textLabel.text = textField.text
+//    }
+//
+//    //MARK: Actions
+//    @IBAction func setDefaultLabelText(_ sender: UIButton) {
+//        textLabel.text = "Default text"
+//    }
     /*
      To create a rectilinear image we must begin with an empty destination buffer and iterate through it
      row by row, calling the sample implementation below for each point in the output image, passing the
