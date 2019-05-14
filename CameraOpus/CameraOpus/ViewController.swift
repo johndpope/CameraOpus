@@ -169,6 +169,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     pressGestureDepth.minimumPressDuration = 0.00
                     //pressGestureDepth.cancelsTouchesInView = false
                     print("about to add gesture recog")
+                    photoPreviewImageView.isUserInteractionEnabled = true
                     photoPreviewImageView.addGestureRecognizer(pressGestureDepth)
                     print("added gesture recog")
                     
