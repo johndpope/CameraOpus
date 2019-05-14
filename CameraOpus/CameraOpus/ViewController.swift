@@ -10,9 +10,10 @@ import UIKit
 import AVFoundation
 import Photos
 import CoreMotion
+import ARKit
 
 
-class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate {
+class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate, ARSCNViewDelegate, ARSessionDelegate {
     
     var session = AVCaptureSession()
     var photoOutput: AVCapturePhotoOutput?
@@ -28,6 +29,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var devMotionFlag = 0
     var firstShotTaken = false
     
+    
+    var scene: SCNScene?
+    var arflag = 0
+    var acflag = 1
+    
+    @IBOutlet weak var ARscene: ARSCNView!
     
     //MARK: Properties
     //@IBOutlet weak var textLabel: UILabel!
@@ -109,20 +116,21 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     
                     /*
                         Set up accelerometer and gyroscope
+                        TOGGLE unccoment the floags
                      */
                     
                     motionManager = CMMotionManager()
                     
                     if (motionManager!.isGyroAvailable){
                         print("we have access to the gyro")
-                        gyroFlag = 1
+                        //gyroFlag = 1
                     }
                     if(motionManager!.isAccelerometerAvailable){
                         print("we have access to the accel")
-                        accelFlag = 1
+                        //accelFlag = 1
                     }
                     if(motionManager!.isDeviceMotionAvailable){
-                        devMotionFlag = 1
+                        //devMotionFlag = 1
                     }
                     
                     // we start running the accel right away but not the gyro
@@ -157,22 +165,45 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                         
                     }
                     
-                    //photoOutput!.isDepthDataDeliveryEnabled = true
-                    //Now we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
-                    videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
-                    videoPreviewLayer!.videoGravity =    AVLayerVideoGravity.resizeAspect
-                    videoPreviewLayer!.connection?.videoOrientation =   AVCaptureVideoOrientation.portrait
-                    photoPreviewImageView.layer.addSublayer(videoPreviewLayer!)
-                    print("seems like we have added a subLayer")
                     /*
-                     *
-                     Configuring the depthdata here
-                     *
-                     */
-                    
-                    //session.commitConfiguration()
-                    session.startRunning()
-                    print("session is running?")
+                    set up arscene
+                     but then we only see this
+                     TOGGLE comment the arflag = 1 line
+                    */
+                    arflag = 1
+                    if(arflag == 1){
+                        scene = SCNScene()
+                        ARscene.scene = scene!
+                        let configuration = ARWorldTrackingConfiguration()
+                        ARscene.session.run(configuration)
+                        
+                        accelFlag = 0
+                        gyroFlag = 0
+                        devMotionFlag = 0
+                        
+                        print("about to add bounding box")
+                        addBox()
+                        
+                        
+                    }//else{
+                        
+                        //photoOutput!.isDepthDataDeliveryEnabled = true
+                        //Now we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
+                        videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
+                        videoPreviewLayer!.videoGravity =    AVLayerVideoGravity.resizeAspect
+                        videoPreviewLayer!.connection?.videoOrientation =   AVCaptureVideoOrientation.portrait
+                        photoPreviewImageView.layer.addSublayer(videoPreviewLayer!)
+                        print("seems like we have added a subLayer")
+                        /*
+                         *
+                         Configuring the depthdata here
+                         *
+                         */
+                        
+                        //session.commitConfiguration()
+                        session.startRunning()
+                        print("session is running?")
+                   // }
                 }
             }
         }
@@ -196,47 +227,66 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             do{
                 print("in capturePhoto")
                 
-                if(gyroFlag == 1){
-                    motionManager?.gyroUpdateInterval = 10.0
-                    motionManager!.startGyroUpdates(
-                        to: OperationQueue.current!,
-                        withHandler: {(gyroData: CMGyroData?, errorOC: Error?) in
-                            self.outputGyroData(gyroMeasure: gyroData!.rotationRate)
-                    })
-                    print("running gyro")
-                }
-                
-                let videoPreviewLayerOrientation = try videoPreviewLayer?.connection?.videoOrientation
-                if let photoOutputConnection = photoOutput!.connection(with: .video) {
-                    photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
-                }
-                var photoSettings = AVCapturePhotoSettings()
-                //photoSettings.isDepthDataDeliveryEnabled = true
-                photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
-                //JUST ADDED
-                photoSettings.isDepthDataDeliveryEnabled =
-                    photoOutput!.isDepthDataDeliverySupported
-
-                print("about to set up delegate")
-
-                print("delegate should have been created")
-                photoOutput!.capturePhoto(with: photoSettings, delegate: self)
-                
-                print("capturePhoto should have been called")
-                
                 /*
-                 We will need to stop the accelerometer at some point in the future
-                 Ideally we should have some function that is called when the app is closed or stops being used
-                 How we decide to stop
-                 */
-//                if(accelFlag == 1){
-//                    motionManager!.stopAccelerometerUpdates()
-//                    print("stopping accelerometer")
-//                }
-                
-                if(gyroFlag == 1){
-                    //motionManager!.stopGyroUpdates()
-                    print("stopping gyro")
+                 *
+                 *
+                 *
+                */
+                if(arflag == 0){
+                    if(gyroFlag == 1){
+                        motionManager?.gyroUpdateInterval = 10.0
+                        motionManager!.startGyroUpdates(
+                            to: OperationQueue.current!,
+                            withHandler: {(gyroData: CMGyroData?, errorOC: Error?) in
+                                self.outputGyroData(gyroMeasure: gyroData!.rotationRate)
+                        })
+                        print("running gyro")
+                    }
+                    
+                    let videoPreviewLayerOrientation = try videoPreviewLayer?.connection?.videoOrientation
+                    if let photoOutputConnection = photoOutput!.connection(with: .video) {
+                        photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
+                    }
+                    var photoSettings = AVCapturePhotoSettings()
+                    //photoSettings.isDepthDataDeliveryEnabled = true
+                    photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+                    //JUST ADDED
+                    photoSettings.isDepthDataDeliveryEnabled =
+                        photoOutput!.isDepthDataDeliverySupported
+                    
+                    print("about to set up delegate")
+                    
+                    print("delegate should have been created")
+                    photoOutput!.capturePhoto(with: photoSettings, delegate: self)
+                    
+                    print("capturePhoto should have been called")
+                    
+                    /*
+                     We will need to stop the accelerometer at some point in the future
+                     Ideally we should have some function that is called when the app is closed or stops being used
+                     How we decide to stop
+                     */
+                    //                if(accelFlag == 1){
+                    //                    motionManager!.stopAccelerometerUpdates()
+                    //                    print("stopping accelerometer")
+                    //                }
+                    
+                    if(gyroFlag == 1){
+                        //motionManager!.stopGyroUpdates()
+                        print("stopping gyro")
+                    }
+                }
+                //when we are using the arkit view instead of avcapture view
+                else{
+                    print("should be saving image")
+                    let frame = ARscene.session.currentFrame
+                    
+                    let width = CVPixelBufferGetWidth(frame!.capturedImage)
+                    let height = CVPixelBufferGetHeight(frame!.capturedImage)
+                    print("the width of image is ", width)
+                    print("the height of image is ", height)
+                    
+                    saveImage(cmage: CIImage(cvPixelBuffer: frame!.capturedImage))
                 }
                 
             }
@@ -619,6 +669,24 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("the width is %@", height)
     }
     
+    func addBox(){
+        
+        let boxNode = SCNNode(geometry: SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0))
+        
+        //2. Set The Colour Of All Sides To Cyan
+        boxNode.geometry?.firstMaterial?.diffuse.contents = UIColor.cyan
+        
+        //3. Enusre That Both Sides Are Rendered
+        boxNode.geometry?.firstMaterial?.isDoubleSided = true
+        
+        //4. Place Our BoxNode & Add It To The Hierachy
+        boxNode.position = SCNVector3(0, 0, -1.5)
+        //self.augmentedRealityView?.scene.rootNode.addChildNode(boxNode)
+        
+        ARscene.scene.rootNode.addChildNode(boxNode)
+        
+    }
+    
     /*
  At the moment we are looking at values in the original depth map, this will need to change when we look at values in the new one
      */
@@ -704,6 +772,38 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 //
 //        return points
 //    }
+    
+    func saveImage(cmage: CIImage){
+        
+        //let cmage = CIImage(cvPixelBuffer: originalDepthDataMap)
+        let context = CIContext(options: nil)
+        let cgImage = context.createCGImage(cmage, from: cmage.extent)!
+        print("about to create UIimage to be saved")
+        
+        
+        let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
+        UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+        
+        
+        /*
+         One way of saving an image
+         */
+ 
+//        PHPhotoLibrary.shared().performChanges({
+//            // Add the captured photo's file data as the main resource for the Photos asset.
+//        let creationRequest = PHAssetCreationRequest.forAsset()
+//        creationRequest.addResource(with: .photo, data: photo.fileDataRepresentation()!, options: nil)
+//        }, completionHandler: { success, error in
+//            if success{
+//                print("saved image to library")
+//
+//            }else{
+//
+//            }
+//
+//        }
+        
+    }
 
 }
 
