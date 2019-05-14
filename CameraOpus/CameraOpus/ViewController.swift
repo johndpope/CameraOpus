@@ -165,6 +165,13 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                      Configuring the depthdata here
                      *
                      */
+                    let pressGestureDepth = UILongPressGestureRecognizer(target: self, action: #selector(getDepthTouch) )
+                    pressGestureDepth.minimumPressDuration = 0.00
+                    //pressGestureDepth.cancelsTouchesInView = false
+                    print("about to add gesture recog")
+                    photoPreviewImageView.addGestureRecognizer(pressGestureDepth)
+                    print("added gesture recog")
+                    
                     
                     //session.commitConfiguration()
                     session.startRunning()
@@ -667,6 +674,35 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      */
     func distanceToBoundingBox(){
         
+    }
+    
+    
+    //WORKING ON
+    @objc func getDepthTouch(gesture: UILongPressGestureRecognizer){
+        print("****")
+        print("in depth touch")
+        print("****")
+        
+        if gesture.state == .began {
+            print("**()**")
+            print("**()**")
+            print("**()**")
+        } else if  gesture.state == .ended {
+            print("&&&&&")
+            print("&&&&&")
+            print("&&&&&")
+        }
+        
+    }
+    
+    
+   
+    /*
+     Based on the GSD of the phone we tell user to move camera
+     www.agisoft.com/forum/index.php?topic=9132.0
+     */
+    func guidedPhotoLength(){
+         //GSD = (DISTANCE x SENSORwidth) / (IMAGEwidth x FOCALLENGTH)
     }
     
 
