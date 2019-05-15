@@ -12,11 +12,38 @@ import Photos
 import CoreMotion
 
 
-class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate {
+/*
+ General Info learnt
+ 
+ depthdatamap width is 768
+ depthdatamap height is 576
+ 
+ avcapturphotooutput width is 4032
+ avcapturphotooutput height is 3024
+ 
+ */
+
+/*
+ log of todo
+ - believe we have to create a synchronized data and video display, because UI will show depth segmented images
+ - ie in the ideal case: will need continuous access to video buffer which we will modify before showing the user
+ - modification will be based on depthdata
+ */
+
+
+class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate, AVCaptureDataOutputSynchronizerDelegate {
+    
+    var count = 1
     
     var session = AVCaptureSession()
     var photoOutput: AVCapturePhotoOutput?
     var videoPreviewLayer: AVCaptureVideoPreviewLayer?
+    
+    
+    var videoDataOutput = AVCaptureVideoDataOutput()
+    var videoFlag = 0
+    private let depthDataOutput = AVCaptureDepthDataOutput()
+    private var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     
     var error: NSError?
     
@@ -27,6 +54,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var gyroFlag = 0
     var devMotionFlag = 0
     var firstShotTaken = false
+    var currentTouch: CGPoint?
+    var updateDepthLabel = false
     
     
     //MARK: Properties
@@ -39,6 +68,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     @IBOutlet weak var photoPreviewImageView: UIImageView!
     
     //var outputSynchronizer: AVCaptureDataOutputSynchronizer?
+    
+    private let dataOutputQueue = DispatchQueue(label: "video data queue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .workItem)
     
     // stackoverflow.com/questions/37869963/how-to-use-avcapturephotooutput
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
@@ -91,16 +122,24 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 print("was able to add deviceinput")
                 //Now that we set input device lets set output files
                 photoOutput = AVCapturePhotoOutput()
-                if session.canAddOutput(photoOutput!) {
+                if session.canAddOutput(videoDataOutput){
+                    videoFlag = 1
+                    print("***")
+                    print("we can add video")
+                }
+                if (session.canAddOutput(photoOutput!) && (videoFlag == 1)) {
                     session.addOutput(photoOutput!)
-                    print("was able to set deviceoutput")
+                    print("was able to set photooutput")
                     if photoOutput!.isDepthDataDeliverySupported {
                         print("we can add depth")
+                        session.addOutput(depthDataOutput)
                         photoOutput!.isDepthDataDeliveryEnabled = true
                     }
                     else{
                         print("for some reason we can't add depth")
                     }
+                    session.addOutput(videoDataOutput)
+                    print("was able to set videooutput")
                     
                     
                     /*
@@ -156,8 +195,18 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     //photoOutput!.isDepthDataDeliveryEnabled = true
                     //Now we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
                     videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
-                    videoPreviewLayer!.videoGravity =    AVLayerVideoGravity.resizeAspect
-                    videoPreviewLayer!.connection?.videoOrientation =   AVCaptureVideoOrientation.portrait
+                    videoPreviewLayer!.videoGravity = AVLayerVideoGravity.resizeAspect
+                    videoPreviewLayer!.connection?.videoOrientation = AVCaptureVideoOrientation.portrait
+                    
+                    
+                    outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
+                    
+                    
+                    //NOW
+                    outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
+                    
+                    //photoPreviewImageView.contentMode = .scaleAspectFit
+                    
                     photoPreviewImageView.layer.addSublayer(videoPreviewLayer!)
                     print("seems like we have added a subLayer")
                     /*
@@ -426,9 +475,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let data = context!.data
         print("about to bind memory to buffer")
         let dataBuf = data!.bindMemory(to: UInt8.self, capacity: pixelsWide * pixelsHigh * 4)
-        
-        //let dataType = UnsafePointer<UInt8>(data)
-        
+
         //destination buffer
         let newBitmapData = malloc(bitmapByteCount)
         //let newBitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
@@ -436,11 +483,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let otherContext = CGContext(data: newBitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
                                      bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
         let otherRect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
-        
-        /*
-         TODO
-         We should double check that drawing the image into the output buffer does not mean we are getting the same image twice
-         */
         
         otherContext?.draw(cgImage, in: otherRect)
         
@@ -515,12 +557,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("depthmap height is ", height)
         CVPixelBufferLockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
         
-        /*
-         TODO
-         Why are we creating a new pixel buffer instead of a new depthmap here?
-         TODO
-         */
-        
         var maybePixelBuffer: CVPixelBuffer?
         let status = CVPixelBufferCreate(nil, width, height, avDepthData.depthDataType, nil, &maybePixelBuffer)
         
@@ -539,14 +575,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             print("we have an error in export depth map")
             return
         }
-
-        //let tcmage = CIImage(cvPixelBuffer: PB)
-        //let tcontext = CIContext(options: nil)
-        //let tcgImage = tcontext.createCGImage(tcmage, from: tcmage.extent)!
-        //print("about to create  test UIimage to be saved")
-        //let toutputImage = UIImage(cgImage: tcgImage, scale: 1, orientation: .right)
-        //UIImageWriteToSavedPhotosAlbum(toutputImage, nil, nil, nil)
-        
         
         var minPixel: Float = 1.0
         var maxPixel: Float = 0.0
@@ -677,25 +705,54 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
+    func setDepthLabel(){
+        
+        //let depthPixelBuffer = depthDataOutput.depthDataMap
+        //let sampleBuffer = videoDataOutput.sampleBuffer
+        
+        //let vidPixelsWide = CVPixelBufferGetWidth(sampleBuffer)
+        //let vidPixelsWide = CVPixelBufferGetWidth(videoDataOutput)
+        
+        //let Pointer = 4*((Int(vidPixelsWide) * Int(currentTouch.y)) + Int(currentTouch.x))
+        
+    
+    }
+    
+    /*
+     Get depth at point that user touched
+    */
+    func getDepthAtPoint(){
+        
+        //let scale = CGFloat(CVPixelBufferGetWidth(depthFrame)) / CGFloat(CVPixelBufferGetWidth(videoFrame))
+        //let depthPoint = CGPoint(x: CGFloat(CVPixelBufferGetWidth(depthFrame)) - 1.0 - texturePoint.x * scale, y: texturePoint.y * scale)
+        
+    }
+    
     
     //WORKING ON
     @objc func getDepthTouch(gesture: UILongPressGestureRecognizer){
-        print("****")
         print("in depth touch")
-        print("****")
-        
+        let point: CGPoint?
         if gesture.state == .began {
             print("**()**")
-            print("**()**")
-            print("**()**")
+            point = gesture.location(in: photoPreviewImageView)
+            print("the x coord was", point!.x)
+            print("the y coord was", point!.y)
+            currentTouch = point
         } else if  gesture.state == .ended {
             print("&&&&&")
-            print("&&&&&")
-            print("&&&&&")
+            updateDepthLabel = true
+            
         }
         
     }
     
+    /*
+     maybe we run a depth discontinuity algo on the cv pixel buff
+    */
+    func depthSegmentatino(){
+        
+    }
     
    
     /*
@@ -737,6 +794,44 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 //
 //        return points
 //    }
+    
+    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer, didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
+        count = count + 1
+        if((count % 100) == 0){
+            print("we are receiving info from synchronized data")
+        }
+        //print("****")
+        //print("lets see")
+        //print("****")
+        
+        let syncedDepthData: AVCaptureSynchronizedDepthData =
+            (synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData)!
+        
+        let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
+            (synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData)!
+        
+        if syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped {
+            return
+        }
+        
+        let depthData = syncedDepthData.depthData
+        let depthPixelBuffer = depthData.depthDataMap
+        let sampleBuffer = syncedVideoData.sampleBuffer
+        guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
+            let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
+                return
+        }
+        /*
+         */
+        if(updateDepthLabel){
+            
+        }
+        
+        
+        
+    }
+    
+    
 
 }
 
