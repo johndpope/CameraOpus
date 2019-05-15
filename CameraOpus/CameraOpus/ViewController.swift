@@ -21,13 +21,34 @@ import CoreMotion
  avcapturphotooutput width is 4032
  avcapturphotooutput height is 3024
  
+ arkitcapture is about 2megapixels
+ 
+ avvideoframe width is  1504
+ avvideoframe height is  1128
+ 
  */
 
 /*
- log of todo
+ log of todo now
  - believe we have to create a synchronized data and video display, because UI will show depth segmented images
  - ie in the ideal case: will need continuous access to video buffer which we will modify before showing the user
  - modification will be based on depthdata
+ */
+
+/*
+ log of nice to haves
+ - timstamps of image taking
+ -
+ 
+ */
+
+/*
+ CURRENT STACK
+ 
+ - trying to debug why the new image is not being saved
+ - the print stateents indicate "image should have saved" but we see nothing
+ - then we also see an error in (synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData)! of dataOutputSynchronizer
+ 
  */
 
 
@@ -86,22 +107,23 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     func fileOutput(_ output: AVCaptureFileOutput, didStartRecordingTo fileURL: URL, from connections: [AVCaptureConnection]) {
         print("in file output 2")
     }
-    
+    //TOGGLE
     func outputAccelData(acceleration: CMAcceleration){
-        print("from accel")
-        print("teh accel is ", acceleration.x)
-        print("teh accel is ", acceleration.y)
-        print("teh accel is ", acceleration.z)
-        print(" ")
+//        print("from accel")
+//
+//        print("teh accel is ", acceleration.x)
+//        print("teh accel is ", acceleration.y)
+//        print("teh accel is ", acceleration.z)
+//        print(" ")
         
     }
 
     func outputDevMotionData(data: CMDeviceMotion){
-        print("from devmotion")
-        print("teh accel is ", data.userAcceleration.x)
-        print("teh accel is ", data.userAcceleration.y)
-        print("teh accel is ", data.userAcceleration.z)
-        print(" ")
+//        print("from devmotion")
+//        print("teh accel is ", data.userAcceleration.x)
+//        print("teh accel is ", data.userAcceleration.y)
+//        print("teh accel is ", data.userAcceleration.z)
+//        print(" ")
         
     }
     
@@ -215,7 +237,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                      *
                      */
                     let pressGestureDepth = UILongPressGestureRecognizer(target: self, action: #selector(getDepthTouch) )
-                    pressGestureDepth.minimumPressDuration = 0.00
+                    pressGestureDepth.minimumPressDuration = 1.00
                     //pressGestureDepth.cancelsTouchesInView = false
                     print("about to add gesture recog")
                     photoPreviewImageView.isUserInteractionEnabled = true
@@ -742,6 +764,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         } else if  gesture.state == .ended {
             print("&&&&&")
             updateDepthLabel = true
+            print("updated depth label to true")
             
         }
         
@@ -796,21 +819,27 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 //    }
     
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer, didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
-        count = count + 1
+        if (count < 1000000){
+            count = count + 1
+        }
+        if(count >= 1000000){
+            count = 2
+        }
+        
         if((count % 100) == 0){
+            print(count)
             print("we are receiving info from synchronized data")
         }
-        //print("****")
-        //print("lets see")
-        //print("****")
         
-        let syncedDepthData: AVCaptureSynchronizedDepthData =
-            (synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData)!
-        
-        let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
-            (synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData)!
+        guard let syncedDepthData: AVCaptureSynchronizedDepthData =
+            (synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData), let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
+            (synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData) else{
+                print("guard let is exiting line 832")
+                return
+        }
         
         if syncedDepthData.depthDataWasDropped || syncedVideoData.sampleBufferWasDropped {
+            print("data was dropped")
             return
         }
         
@@ -819,15 +848,124 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let sampleBuffer = syncedVideoData.sampleBuffer
         guard let videoPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
             let formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer) else {
+                print("error getting buffer")
                 return
         }
         /*
+         NOW
          */
         if(updateDepthLabel){
+            print("we are accessing this")
             
+            let scale = CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) / CGFloat(CVPixelBufferGetWidth(videoPixelBuffer))
+            //why do we have the depthpoint looking like this? what is the "1 -" doing
+            //we will save the images to see if they are indeed the same
+            //let depthPoint = CGPoint(x: CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) - 1.0 - currentTouch!.x * scale, y: currentTouch!.y * scale)
+
+
+            let cmage = CIImage(cvPixelBuffer: videoPixelBuffer)
+            let context = CIContext(options: nil)
+            let cgImage = context.createCGImage(cmage, from: cmage.extent)!
+            let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
+            //save image before manipulation
+            UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+
+            visualizePointInImage(cgImage: cgImage)
+            
+            //let rowData = CVPixelBufferGetBaseAddress(depthPixelBuffer)! + Int(depthPoint.y) * CVPixelBufferGetBytesPerRow(depthFrame)
+            
+            updateDepthLabel = false
         }
         
         
+        
+    }
+    
+    func visualizePointInImage(cgImage: CGImage){
+        
+        print("in visualize image with point")
+        let pixelsWide = cgImage.width
+        let pixelsHigh = cgImage.height
+        print("width is ", pixelsWide)
+        print("height is ", pixelsHigh)
+        
+        let bitmapBytesPerRow = pixelsWide * 4
+        let bitmapByteCount = bitmapBytesPerRow * Int(pixelsHigh)
+        
+        // Use the generic RGB color space.
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        print("device colour space all good")
+        
+        // Allocate memory for image data. This is the destination in memory
+        // where any drawing to the bitmap context will be rendered.
+        let bitmapData = malloc(bitmapByteCount)
+        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        let size = CGSize(width: pixelsWide, height: pixelsHigh)
+        UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+        // create bitmap
+        let context = CGContext(data: bitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
+                                bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
+        
+        print("created first context")
+        
+        // draw the image onto the context
+        let rect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
+        context?.draw(cgImage, in: rect)
+        print("should have written first image to buffer")
+        
+        let data = context!.data
+        print("about to bind memory to buffer")
+        let dataBuf = data!.bindMemory(to: UInt8.self, capacity: pixelsWide * pixelsHigh * 4)
+        
+        //destination buffer
+        let newBitmapData = malloc(bitmapByteCount)
+        //let newBitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        //let newSize = CGSize(width: pixelsWide, height: pixelsHigh)
+        let otherContext = CGContext(data: newBitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
+                                     bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
+        let otherRect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
+        
+        otherContext?.draw(cgImage, in: otherRect)
+        
+        let newData = otherContext!.data
+        let newDataBuf = newData!.bindMemory(to: UInt8.self, capacity: pixelsWide * pixelsHigh * 4)
+        //let pixelBuffer = buffer.bindMemory(to: RGBA32.self, capacity: pixelsWide * pixelsHigh)
+        
+        /*
+         we are going to create a line arround the pixel we touched
+        */
+        for row in 0 ..< Int(pixelsHigh) {
+            for column in 0 ..< Int(pixelsWide) {
+                //var point: CGPoint?
+                let rectifiedPointer = 4*((Int(pixelsWide) * row + column))
+                let distortedPointer = 4*((Int(pixelsWide) * row + column))
+                if(column == Int(currentTouch!.y)){
+                    newDataBuf[rectifiedPointer] = 0
+                    newDataBuf[rectifiedPointer + 1] = 200
+                    newDataBuf[rectifiedPointer + 2] = 0
+                    newDataBuf[rectifiedPointer + 3] = 1
+                }
+                //rgba green?
+                else{
+                    newDataBuf[rectifiedPointer] = dataBuf[distortedPointer]
+                    newDataBuf[rectifiedPointer + 1] = dataBuf[distortedPointer + 1]
+                    newDataBuf[rectifiedPointer + 2] = dataBuf[distortedPointer + 2]
+                    newDataBuf[rectifiedPointer + 3] = dataBuf[distortedPointer + 3]
+                }
+                
+            }
+        }
+        
+        print("about to create visualized image")
+        let outputCGImage = otherContext!.makeImage()!
+        //scale 1 is the same scale as CGimage, 0 orientation is up?
+        print("about to save visualized image")
+        let outputImage = UIImage(cgImage: outputCGImage, scale: 1, orientation: .right)
+        UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+        print("image should have saved")
+        
+        free(data)
+        free(newData)
         
     }
     
@@ -838,14 +976,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 extension ViewController: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         
-        var photoData: Data?
+        //var photoData: Data?
         
         print("in didFinishProcessingPhoto")
         if let error = error {
             print("Error capturing photo: \(error)")
         } else {
             print("we seem to be error free")
-            photoData = photo.fileDataRepresentation()
+            //photoData = photo.fileDataRepresentation()
             
             PHPhotoLibrary.requestAuthorization { status in
                 guard status == .authorized else { return }
