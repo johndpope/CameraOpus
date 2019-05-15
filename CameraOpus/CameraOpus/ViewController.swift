@@ -753,7 +753,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     
-    //WORKING ON
+    //NOW
     @objc func getDepthTouch(gesture: UILongPressGestureRecognizer){
         print("in depth touch")
         let point: CGPoint?
@@ -763,6 +763,17 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             print("the x coord was", point!.x)
             print("the y coord was", point!.y)
             currentTouch = point
+            print("the width of th image is ", photoPreviewImageView.bounds.size.width)
+            print("the height of th image is ", photoPreviewImageView.bounds.size.height)
+            
+            let scaledx =  currentTouch!.x / photoPreviewImageView.bounds.size.width
+            let scaledy =  currentTouch!.y / photoPreviewImageView.bounds.size.height
+            
+            print("scaled x is ", scaledx)
+            print("scaled y is ", scaledy)
+            
+            
+            //CG
         } else if  gesture.state == .ended {
             print("&&&&&")
             updateDepthLabel = true
@@ -952,8 +963,22 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             }
         }
         
-        let offsetTemp = Int(currentTouch!.y) * pixelsWide
-        var offset = 4 * (offsetTemp + Int(currentTouch!.x))
+        let scaledx = Float (currentTouch!.x / photoPreviewImageView.bounds.size.width)
+        let scaledy = Float (currentTouch!.y / photoPreviewImageView.bounds.size.height)
+        
+        print("scaled x is ", scaledx)
+        print("scaled y is ", scaledy)
+        
+        /*
+         The multiplication below is a little tricky because we needed to get the double value then convert to int, otherwise it just becomes 0
+        */
+        let offsetX = scaledx *  (Float (pixelsWide))
+        let offsetY = scaledy *  (Float (pixelsHigh))
+        let offset = 4 * (offsetX + offsetY)
+        print("offsetX is ", offsetX)
+        print("offsetY is ", offsetY)
+        print("offset is ", offset)
+        //print(offset/4)
         
         /*
          this funciton is not safe if you don't leave 5 pixel width from the edge
@@ -973,7 +998,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             newDataBuf[offset + (pixelsWide * i * 4) + 3] = 1
         }
         
-        offset = 4 * (offsetTemp + Int(currentTouch!.x) - 12 )
+        //offset = 4 * (offsetTemp + Int(currentTouch!.y))
         
         for i in -20 ..< 20{
             newDataBuf[offset + (i * 4)] = 0
