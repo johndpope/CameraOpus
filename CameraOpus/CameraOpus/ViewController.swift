@@ -23,8 +23,10 @@ import CoreMotion
  
  arkitcapture is about 2megapixels
  
- avvideoframe width is  1504
- avvideoframe height is  1128
+ avvideoframe width is 1504 (cgImage.width)
+ avvideoframe height is 1128 (cgImage.height)
+ 
+ keep in mind cgpoint y seems to correspond to pixel width
  
  */
 
@@ -819,6 +821,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 //    }
     
     func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer, didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
+        /*
+         the count stuff here is just so we don't print too much.
+         It should print **roughly** every second
+        */
         if (count < 1000000){
             count = count + 1
         }
@@ -877,8 +883,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             updateDepthLabel = false
         }
         
-        
-        
     }
     
     func visualizePointInImage(cgImage: CGImage){
@@ -934,27 +938,50 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         /*
          we are going to create a line arround the pixel we touched
         */
+        
         for row in 0 ..< Int(pixelsHigh) {
             for column in 0 ..< Int(pixelsWide) {
                 //var point: CGPoint?
                 let rectifiedPointer = 4*((Int(pixelsWide) * row + column))
                 let distortedPointer = 4*((Int(pixelsWide) * row + column))
-                if(column == Int(currentTouch!.y)){
-                    newDataBuf[rectifiedPointer] = 0
-                    newDataBuf[rectifiedPointer + 1] = 200
-                    newDataBuf[rectifiedPointer + 2] = 0
-                    newDataBuf[rectifiedPointer + 3] = 1
-                }
                 //rgba green?
-                else{
                     newDataBuf[rectifiedPointer] = dataBuf[distortedPointer]
                     newDataBuf[rectifiedPointer + 1] = dataBuf[distortedPointer + 1]
                     newDataBuf[rectifiedPointer + 2] = dataBuf[distortedPointer + 2]
                     newDataBuf[rectifiedPointer + 3] = dataBuf[distortedPointer + 3]
-                }
-                
             }
         }
+        
+        let offsetTemp = Int(currentTouch!.y) * pixelsWide
+        var offset = 4 * (offsetTemp + Int(currentTouch!.x))
+        
+        /*
+         this funciton is not safe if you don't leave 5 pixel width from the edge
+         because I don't handle for cases where we are not accessing the buffer
+        */
+        
+        /*
+         pixels 3 above and below
+        */
+        //offset = offset + (pixelsWide * 3 * 4)
+        
+        for i in -20 ..< 20 {
+            //offset = offset - pixelsWide
+            newDataBuf[offset + (pixelsWide * i * 4)] = 0
+            newDataBuf[offset + (pixelsWide * i * 4) + 1] = 200
+            newDataBuf[offset + (pixelsWide * i * 4) + 2] = 200
+            newDataBuf[offset + (pixelsWide * i * 4) + 3] = 1
+        }
+        
+        offset = 4 * (offsetTemp + Int(currentTouch!.x) - 12 )
+        
+        for i in -20 ..< 20{
+            newDataBuf[offset + (i * 4)] = 0
+            newDataBuf[offset + (i * 4) + 1] = 200
+            newDataBuf[offset + (i * 4) + 2] = 200
+            newDataBuf[offset + (i * 4) + 3] = 1
+        }
+        
         
         print("about to create visualized image")
         let outputCGImage = otherContext!.makeImage()!
