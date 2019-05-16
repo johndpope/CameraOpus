@@ -15,16 +15,35 @@ import CoreMotion
 /*
  General Info learnt
  
+ **************************
+ 
+ PHOTO:
+ 
+ (back camera)
  depthdatamap width is 768
  depthdatamap height is 576
  
  avcapturphotooutput width is 4032
  avcapturphotooutput height is 3024
  
- arkitcapture is about 2megapixels
+ **************************
+ 
+ **************************
+ 
+ VIDEO:
+ 
+ (back camera)
+ depthdatamap width is  320
+ depthdatamap height is 240
  
  avvideoframe width is 1504 (cgImage.width)
  avvideoframe height is 1128 (cgImage.height)
+ 
+ **************************
+ 
+ AR:
+ 
+ arkitcapture is about 2megapixels
  
  keep in mind cgpoint y seems to correspond to pixel width
  it seems to be the origin of cgimage is top right, not top left
@@ -52,6 +71,10 @@ import CoreMotion
  - trying to debug why the new image is not being saved
  - the print stateents indicate "image should have saved" but we see nothing
  - then we also see an error in (synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData)! of dataOutputSynchronizer
+ 
+ 
+ Resources:
+ - git.kabellmunk.dk/talks/into-the-deep/blob/master/IntoTheDeep/Models/Slides.swift
  
  */
 
@@ -555,7 +578,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
-    func createDepthImageFromMap(avDepthData: AVDepthData) {
+    func createDepthImageFromMap(avDepthData: AVDepthData, orientation: UIImage.Orientation) {
         
         var avDepthData = avDepthData
         
@@ -660,7 +683,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let context = CIContext(options: nil)
         let cgImage = context.createCGImage(cmage, from: cmage.extent)!
         print("about to create UIimage to be saved")
-        let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
+        let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: orientation)
         UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
         //print("The new min is ", minPixel)
         //print("The new max is ", maxPixel)
@@ -889,9 +912,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             //save image before manipulation
             UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
 
-            visualizePointInImage(cgImage: cgImage)
+            visualizePointInImage(cgImage: cgImage )
             
             //let rowData = CVPixelBufferGetBaseAddress(depthPixelBuffer)! + Int(depthPoint.y) * CVPixelBufferGetBytesPerRow(depthFrame)
+            
+            print("the width of depth buffer is ", CVPixelBufferGetWidth(depthPixelBuffer))
+            print("the height of depth buffer is ", CVPixelBufferGetHeight(depthPixelBuffer))
+            
+            createDepthImageFromMap(avDepthData: depthData, orientation: .up)
             
             updateDepthLabel = false
         }
@@ -1123,7 +1151,7 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         
                        // self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: scaledCenter)
                         
-                        self.createDepthImageFromMap(avDepthData: avDepthData!)
+                        self.createDepthImageFromMap(avDepthData: avDepthData!, orientation: .right)
                         
                     }
                     else {
