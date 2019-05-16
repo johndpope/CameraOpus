@@ -936,8 +936,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let newBitmapData = malloc(bitmapByteCount)
         //let newBitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
         //let newSize = CGSize(width: pixelsWide, height: pixelsHigh)
-        let otherContext = CGContext(data: newBitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
-                                     bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
+        let otherContext = CGContext(data: newBitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8, bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
         let otherRect = CGRect(x: 0, y: 0, width: pixelsWide, height: pixelsHigh)
         
         otherContext?.draw(cgImage, in: otherRect)
@@ -972,41 +971,44 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         /*
          The multiplication below is a little tricky because we needed to get the double value then convert to int, otherwise it just becomes 0
         */
-        let offsetX = scaledx *  (Float (pixelsWide))
-        let offsetY = scaledy *  (Float (pixelsHigh))
-        let offset = 4 * (offsetX + offsetY)
+        //the x co-ord in terms of pixels
+        let offsetX = scaledx *  (Float (pixelsHigh))
+        //the y co-ord in terms of pixels
+        let offsetY = scaledy *  (Float (pixelsWide))
+        //we multiply offsetX by pixelsWide because each row in the pixelbuffer is equal to a column in the pixture
+        // this can be verified below
+        let offset = Int(4 * ((offsetX * (Float (pixelsWide))) + offsetY))
         print("offsetX is ", offsetX)
         print("offsetY is ", offsetY)
         print("offset is ", offset)
         //print(offset/4)
         
         /*
-         this funciton is not safe if you don't leave 5 pixel width from the edge
+         this funciton is not safe if you don't leave 50 pixel width from the edge
          because I don't handle for cases where we are not accessing the buffer
         */
         
         /*
-         pixels 3 above and below
+         **** as found from testing
+         this gives us a horizontal line
         */
-        //offset = offset + (pixelsWide * 3 * 4)
         
-        for i in -20 ..< 20 {
+        
+        for i in -50 ..< 50 {
             //offset = offset - pixelsWide
             newDataBuf[offset + (pixelsWide * i * 4)] = 0
-            newDataBuf[offset + (pixelsWide * i * 4) + 1] = 200
-            newDataBuf[offset + (pixelsWide * i * 4) + 2] = 200
+            newDataBuf[offset + (pixelsWide * i * 4) + 1] = 220
+            newDataBuf[offset + (pixelsWide * i * 4) + 2] = 0
             newDataBuf[offset + (pixelsWide * i * 4) + 3] = 1
         }
         
-        //offset = 4 * (offsetTemp + Int(currentTouch!.y))
-        
-        for i in -20 ..< 20{
-            newDataBuf[offset + (i * 4)] = 0
-            newDataBuf[offset + (i * 4) + 1] = 200
-            newDataBuf[offset + (i * 4) + 2] = 200
-            newDataBuf[offset + (i * 4) + 3] = 1
-        }
-        
+//        for i in -50 ..< 50{
+//            newDataBuf[offset + (i * 4)] = 0
+//            newDataBuf[offset + (i * 4) + 1] = 220
+//            newDataBuf[offset + (i * 4) + 2] = 0
+//            newDataBuf[offset + (i * 4) + 3] = 1
+//        }
+//
         
         print("about to create visualized image")
         let outputCGImage = otherContext!.makeImage()!
@@ -1020,8 +1022,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         free(newData)
         
     }
-    
-    
 
 }
 
