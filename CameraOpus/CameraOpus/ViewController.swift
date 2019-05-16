@@ -27,6 +27,8 @@ import CoreMotion
  avvideoframe height is 1128 (cgImage.height)
  
  keep in mind cgpoint y seems to correspond to pixel width
+ it seems to be the origin of cgimage is top right, not top left
+ while the origin of cgpoint is top right
  
  */
 
@@ -962,7 +964,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             }
         }
         
-        let scaledx = Float (currentTouch!.x / photoPreviewImageView.bounds.size.width)
+        let scaledx = 1.0 -  Float ((currentTouch!.x) / photoPreviewImageView.bounds.size.width)
         let scaledy = Float (currentTouch!.y / photoPreviewImageView.bounds.size.height)
         
         print("scaled x is ", scaledx)
@@ -996,19 +998,37 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         for i in -50 ..< 50 {
             //offset = offset - pixelsWide
-            newDataBuf[offset + (pixelsWide * i * 4)] = 0
+            newDataBuf[offset + (pixelsWide * i * 4)] = 220
             newDataBuf[offset + (pixelsWide * i * 4) + 1] = 220
-            newDataBuf[offset + (pixelsWide * i * 4) + 2] = 0
+            newDataBuf[offset + (pixelsWide * i * 4) + 2] = 220
             newDataBuf[offset + (pixelsWide * i * 4) + 3] = 1
         }
         
-//        for i in -50 ..< 50{
-//            newDataBuf[offset + (i * 4)] = 0
-//            newDataBuf[offset + (i * 4) + 1] = 220
-//            newDataBuf[offset + (i * 4) + 2] = 0
-//            newDataBuf[offset + (i * 4) + 3] = 1
+        for i in -50 ..< 50{
+            newDataBuf[offset + (i * 4)] = 0
+            newDataBuf[offset + (i * 4) + 1] = 220
+            newDataBuf[offset + (i * 4) + 2] = 0
+            newDataBuf[offset + (i * 4) + 3] = 1
+        }
+//
+        //shall use this to find the right offset
+        //120,000 is getting us br
+//        let attempt = 80
+//
+//        for i in 0 ..< 100 {
+//            //offset = offset - pixelsWide
+//            newDataBuf[attempt + (pixelsWide * i * 4)] = 220
+//            newDataBuf[attempt + (pixelsWide * i * 4) + 1] = 220
+//            newDataBuf[attempt + (pixelsWide * i * 4) + 2] = 220
+//            newDataBuf[attempt + (pixelsWide * i * 4) + 3] = 1
 //        }
 //
+//        for i in 0 ..< 100{
+//            newDataBuf[attempt + (i * 4)] = 0
+//            newDataBuf[attempt + (i * 4) + 1] = 220
+//            newDataBuf[attempt + (i * 4) + 2] = 0
+//            newDataBuf[attempt + (i * 4) + 3] = 1
+//        }
         
         print("about to create visualized image")
         let outputCGImage = otherContext!.makeImage()!
