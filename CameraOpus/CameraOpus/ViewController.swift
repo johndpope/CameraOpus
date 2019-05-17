@@ -39,6 +39,10 @@ import CoreMotion
  avvideoframe width is 1504 (cgImage.width)
  avvideoframe height is 1128 (cgImage.height)
  
+ (true depth)
+ the depthmap width is  640
+ the depthmap height is  480
+ 
  **************************
  
  AR:
@@ -53,9 +57,11 @@ import CoreMotion
 
 /*
  log of todo now
- - believe we have to create a synchronized data and video display, because UI will show depth segmented images
- - ie in the ideal case: will need continuous access to video buffer which we will modify before showing the user
- - modification will be based on depthdata
+ - give visualizeImage a new parameter for "thickness" - done
+ - take depth image based on gesture - done
+ - create rectified depth image
+ - get depth value in human readable format
+ 
  */
 
 /*
@@ -68,9 +74,9 @@ import CoreMotion
 /*
  CURRENT STACK
  
- - trying to debug why the new image is not being saved
- - the print stateents indicate "image should have saved" but we see nothing
- - then we also see an error in (synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData)! of dataOutputSynchronizer
+ - right now when you touch the video previewLayer, you save 3 photos
+ - the flow is capturePhoto is called with the capture3 flag. One image is automatically saved here, then visualizeImage is called, and one image is saved there, then createDepthMap is called saving another image
+ - The text label isnt updating because of some silly issue
  
  
  Resources:
@@ -104,6 +110,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var firstShotTaken = false
     var currentTouch: CGPoint?
     var updateDepthLabel = false
+    
+    var capturePhotoFlag1 = true
+    var capturePhotoFlag2 = false
+    var capturePhotoFlag3 = false
     
     
     //MARK: Properties
@@ -169,7 +179,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             if session.canAddInput(DeviceInput) {
                 session.addInput(DeviceInput)
                 print("was able to add deviceinput")
-                //Now that we set input device lets set output files
+                // that we set input device lets set output files
                 photoOutput = AVCapturePhotoOutput()
                 if session.canAddOutput(videoDataOutput){
                     videoFlag = 1
@@ -242,19 +252,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     }
                     
                     //photoOutput!.isDepthDataDeliveryEnabled = true
-                    //Now we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
+                    // we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
                     videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
                     videoPreviewLayer!.videoGravity = AVLayerVideoGravity.resizeAspect
                     videoPreviewLayer!.connection?.videoOrientation = AVCaptureVideoOrientation.portrait
                     
                     
-                    outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
+                    //outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
                     
-                    
-                    //NOW
-                    outputSynchronizer?.setDelegate(self, queue: dataOutputQueue)
-                    
-                    //photoPreviewImageView.contentMode = .scaleAspectFit
                     
                     photoPreviewImageView.layer.addSublayer(videoPreviewLayer!)
                     print("seems like we have added a subLayer")
@@ -486,7 +491,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     /*
-     TODO once we know how to create pixel buffers
+     the rectification function as clarified by some sources, the only remaining ambiguity is the value for optical center
+     takes ina cgimage, and saves an image with call to UIImageWriteToSavedPhotosAlbum
      */
     
     func rectifyPixelData(cgImage: CGImage, lookupTable: Data, distortionOpticalCenter opticalCenter: CGPoint) {
@@ -578,7 +584,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
-    func createDepthImageFromMap(avDepthData: AVDepthData, orientation: UIImage.Orientation) {
+    func createDepthImageFromMap(avDepthData: AVDepthData, orientation: UIImage.Orientation, visualBool: Bool = false) {
         
         var avDepthData = avDepthData
         
@@ -684,7 +690,20 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let cgImage = context.createCGImage(cmage, from: cmage.extent)!
         print("about to create UIimage to be saved")
         let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: orientation)
+        
         UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+        if (visualBool){
+            print("in visualBool")
+            visualizePointInImage(cgImage: cgImage, crossHairRadius: 10, thickness: 3)
+            
+            let distortionLookupTable = (avDepthData.cameraCalibrationData?.lensDistortionLookupTable)!
+            let distortionCenter = avDepthData.cameraCalibrationData?.lensDistortionCenter
+            //lets see what the rectifyPixelData function does on depthmap data
+            rectifyPixelData(cgImage: cgImage, lookupTable: distortionLookupTable, distortionOpticalCenter: distortionCenter!)
+            
+        }
+        
+        
         //print("The new min is ", minPixel)
         //print("The new max is ", maxPixel)
         
@@ -778,7 +797,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     
-    //NOW
+    /*
+    NOW
+     */
     @objc func getDepthTouch(gesture: UILongPressGestureRecognizer){
         print("in depth touch")
         let point: CGPoint?
@@ -801,6 +822,24 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             //CG
         } else if  gesture.state == .ended {
             print("&&&&&")
+            capturePhotoFlag3 = true
+            capturePhotoFlag1 = false
+            
+            //set up av capture process
+            
+            var photoSettings = AVCapturePhotoSettings()
+            //photoSettings.isDepthDataDeliveryEnabled = true
+            photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+            //JUST ADDED
+            photoSettings.isDepthDataDeliveryEnabled =
+                photoOutput!.isDepthDataDeliverySupported
+            
+            print("about to set up delegate")
+            
+            print("delegate should have been created")
+            photoOutput!.capturePhoto(with: photoSettings, delegate: self)
+            
+            
             updateDepthLabel = true
             print("updated depth label to true")
             
@@ -811,7 +850,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     /*
      maybe we run a depth discontinuity algo on the cv pixel buff
     */
-    func depthSegmentatino(){
+    func depthSegmentation(){
         
     }
     
@@ -893,40 +932,90 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 print("error getting buffer")
                 return
         }
-        /*
-         NOW
-         */
+        
         if(updateDepthLabel){
-            print("we are accessing this")
             
-            let scale = CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) / CGFloat(CVPixelBufferGetWidth(videoPixelBuffer))
-            //why do we have the depthpoint looking like this? what is the "1 -" doing
-            //we will save the images to see if they are indeed the same
-            //let depthPoint = CGPoint(x: CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) - 1.0 - currentTouch!.x * scale, y: currentTouch!.y * scale)
-
-
-            let cmage = CIImage(cvPixelBuffer: videoPixelBuffer)
-            let context = CIContext(options: nil)
-            let cgImage = context.createCGImage(cmage, from: cmage.extent)!
-            let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
-            //save image before manipulation
-            UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
-
-            visualizePointInImage(cgImage: cgImage )
-            
-            //let rowData = CVPixelBufferGetBaseAddress(depthPixelBuffer)! + Int(depthPoint.y) * CVPixelBufferGetBytesPerRow(depthFrame)
-            
-            print("the width of depth buffer is ", CVPixelBufferGetWidth(depthPixelBuffer))
-            print("the height of depth buffer is ", CVPixelBufferGetHeight(depthPixelBuffer))
-            
-            createDepthImageFromMap(avDepthData: depthData, orientation: .up)
-            
-            updateDepthLabel = false
+            //TOGGLE
+//            print("we are accessing this")
+//
+//            let scale = CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) / CGFloat(CVPixelBufferGetWidth(videoPixelBuffer))
+//            //why do we have the depthpoint looking like this? what is the "1 -" doing
+//            //we will save the images to see if they are indeed the same
+//            //let depthPoint = CGPoint(x: CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) - 1.0 - currentTouch!.x * scale, y: currentTouch!.y * scale)
+//
+//
+//            let cmage = CIImage(cvPixelBuffer: videoPixelBuffer)
+//            let context = CIContext(options: nil)
+//            let cgImage = context.createCGImage(cmage, from: cmage.extent)!
+//            let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
+//            //save image before manipulation
+//            UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+//
+//            visualizePointInImage(cgImage: cgImage )
+//
+//            //let rowData = CVPixelBufferGetBaseAddress(depthPixelBuffer)! + Int(depthPoint.y) * CVPixelBufferGetBytesPerRow(depthFrame)
+//
+//            print("the width of depth buffer is ", CVPixelBufferGetWidth(depthPixelBuffer))
+//            print("the height of depth buffer is ", CVPixelBufferGetHeight(depthPixelBuffer))
+//
+//            createDepthImageFromMap(avDepthData: depthData, orientation: .up)
+//
+           updateDepthLabel = false
         }
         
     }
     
-    func visualizePointInImage(cgImage: CGImage){
+    /*
+     NOW
+     */
+    
+    /*
+     take the cg point, and image and get pixel coords from image
+    */
+    func translatePointToPixel(){
+        
+        
+    }
+    func getDepthPoint(depthdata: AVDepthData , cgImage: CGImage){
+        
+        let depthPixelBuffer = depthdata.depthDataMap
+        let pixelsWide = cgImage.width
+        let pixelsHeight = cgImage.height
+        
+        print("we are accessing this")
+        
+        //let scale = CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) / (Float (pixelsWide))
+        
+        //why do we have the depthpoint looking like this? what is the "1 -" doing
+        //we will save the images to see if they are indeed the same
+        //let depthPoint = CGPoint(x: CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) - 1.0 - currentTouch!.x * scale, y: currentTouch!.y * scale)
+        
+        
+        
+        let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
+        
+        //TOGGLE
+        //save image before manipulation
+        //UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+        
+        visualizePointInImage(cgImage: cgImage, crossHairRadius: 200, thickness: 10 )
+        
+        //get depth value
+        //let val = translatePointToPixel()
+        let val = 4.2
+        //some thread error
+        textLabel.text = String(val)
+        
+        print("the width of depth buffer is ", CVPixelBufferGetWidth(depthPixelBuffer))
+        print("the height of depth buffer is ", CVPixelBufferGetHeight(depthPixelBuffer))
+        
+        createDepthImageFromMap(avDepthData: depthdata, orientation: .right, visualBool: true)
+        
+        updateDepthLabel = false
+        
+    }
+    
+    func visualizePointInImage(cgImage: CGImage, crossHairRadius: Int, thickness: Int){
         
         print("in visualize image with point")
         let pixelsWide = cgImage.width
@@ -1018,26 +1107,37 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
          because I don't handle for cases where we are not accessing the buffer
         */
         
-        /*
-         **** as found from testing
-         this gives us a horizontal line
-        */
         
-        
-        for i in -50 ..< 50 {
-            //offset = offset - pixelsWide
-            newDataBuf[offset + (pixelsWide * i * 4)] = 220
-            newDataBuf[offset + (pixelsWide * i * 4) + 1] = 220
-            newDataBuf[offset + (pixelsWide * i * 4) + 2] = 220
-            newDataBuf[offset + (pixelsWide * i * 4) + 3] = 1
+        for j in -(thickness) ..< thickness{
+            var newoffset = offset + (j * (pixelsWide - 1) * 4)
+            /*
+             **** as found from testing
+             this gives us a horizontal line
+             */
+            
+            
+            for i in -(crossHairRadius) ..< crossHairRadius {
+                //offset = offset - pixelsWide
+                newDataBuf[newoffset + (pixelsWide * i * 4)] = 0
+                newDataBuf[newoffset + (pixelsWide * i * 4) + 1] = 220
+                newDataBuf[newoffset + (pixelsWide * i * 4) + 2] = 220
+                newDataBuf[newoffset + (pixelsWide * i * 4) + 3] = 1
+            }
+            
+            /*
+             this gives a vertical line
+             */
+            
+            for k in -(crossHairRadius) ..< crossHairRadius{
+                newDataBuf[newoffset + (k * 4)] = 0
+                newDataBuf[newoffset + (k * 4) + 1] = 220
+                newDataBuf[newoffset + (k * 4) + 2] = 220
+                newDataBuf[newoffset + (k * 4) + 3] = 1
+            }
+            
         }
         
-        for i in -50 ..< 50{
-            newDataBuf[offset + (i * 4)] = 0
-            newDataBuf[offset + (i * 4) + 1] = 220
-            newDataBuf[offset + (i * 4) + 2] = 0
-            newDataBuf[offset + (i * 4) + 3] = 1
-        }
+
 //
         //shall use this to find the right offset
         //120,000 is getting us br
@@ -1064,7 +1164,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("about to save visualized image")
         let outputImage = UIImage(cgImage: outputCGImage, scale: 1, orientation: .right)
         UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
-        print("image should have saved")
+        print("image should have saved and exiting visualize function")
         
         free(data)
         free(newData)
@@ -1100,58 +1200,75 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                             self.firstShotTaken = true
                         }
                         
-                        //time stamp
-                        let totalSeconds = CMTimeGetSeconds(photo.timestamp)
-                        print("photo was taken at ", totalSeconds)
-                        print("which in a human readable is ", totalSeconds)
-                        
-                        //getting information about pixel format type in cg file
+                        //we want these variables to have greater scope so they are out of the capturePhotoFlag1 statement
+                        let avDepthData = photo.depthData
                         let temp = photo.cgImageRepresentation()
                         let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
                         
-                        let pixelsWide = cgim.width
-                        let pixelsHigh = cgim.height
-                        print("cg width is ", pixelsWide)
-                        print("cg height is ", pixelsHigh)
-                    
-                        // developer.apple.com/videos/play/wwdc2017/508/
-                        // image pixels significantly more than depth pixels
-                        // 4032 x 3024 vs 768 x 576
-                        
-                        print("cg rep")
-                        self.testRect(image: cgim)
-                        print("finsihed testrect")
-                        
-                        /*
-                         * Testing depth functions
-                         *
-                         */
-                        
-                        let avDepthData = photo.depthData
+                        //time stamp
+                        if(self.capturePhotoFlag1){
+                            let totalSeconds = CMTimeGetSeconds(photo.timestamp)
+                            print("photo was taken at ", totalSeconds)
+                            print("which in a human readable is ", totalSeconds)
+                            
+                            //getting information about pixel format type in cg file
+                            
+                            
+                            let pixelsWide = cgim.width
+                            let pixelsHigh = cgim.height
+                            print("cg width is ", pixelsWide)
+                            print("cg height is ", pixelsHigh)
+                            
+                            // developer.apple.com/videos/play/wwdc2017/508/
+                            // image pixels significantly more than depth pixels
+                            // 4032 x 3024 vs 768 x 576
+                            
+                            print("cg rep")
+                            self.testRect(image: cgim)
+                            print("finsihed testrect")
+                            
+                            /*
+                             * Testing depth functions
+                             *
+                             */
+                            
+                            
+                            let cgTestPointOne = CGPoint(x: 3,y: 5)
+                            self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
+                            print("finished messing with depth")
+                            //let cgTestPointTwo = CGPoint(x: 14,y: 60)
+                            //self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
+                            
+                            /*
+                             we test the general image pixel rectification in here
+                             */
+                            
+                            let distortionLookupTable = avDepthData?.cameraCalibrationData?.lensDistortionLookupTable
+                            let distortionCenter = avDepthData?.cameraCalibrationData?.lensDistortionCenter
+                            print("we found distortionLookupTable and distortionCenter and about to enter rectifyPixel")
+                            
+                            //self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: distortionCenter!)
+                            
+                            //let scaledCenter = CGPoint(x: (distortionCenter!.x / CGFloat(pixelsHigh)) * CGFloat(pixelsWide), y: (distortionCenter!.y / CGFloat(pixelsWide)) * CGFloat(pixelsHigh))
+                            
+                            // print("2nd call to rectifyPixel")
+                            
+                            // self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: scaledCenter)
+                            
+                            self.createDepthImageFromMap(avDepthData: avDepthData!, orientation: .right)
+                        }
                        
-                        let cgTestPointOne = CGPoint(x: 3,y: 5)
-                        self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
-                        print("finished messing with depth")
-                        //let cgTestPointTwo = CGPoint(x: 14,y: 60)
-                        //self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
                         
+                        //this flag signifies we want to send the depth data to further processing
                         /*
-                            we test the general image pixel rectification in here
+                        NOW
                         */
-                        
-                        let distortionLookupTable = avDepthData?.cameraCalibrationData?.lensDistortionLookupTable
-                        let distortionCenter = avDepthData?.cameraCalibrationData?.lensDistortionCenter
-                        print("we found distortionLookupTable and distortionCenter and about to enter rectifyPixel")
-                        
-                        //self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: distortionCenter!)
-                        
-                        //let scaledCenter = CGPoint(x: (distortionCenter!.x / CGFloat(pixelsHigh)) * CGFloat(pixelsWide), y: (distortionCenter!.y / CGFloat(pixelsWide)) * CGFloat(pixelsHigh))
-                        
-                       // print("2nd call to rectifyPixel")
-                        
-                       // self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: scaledCenter)
-                        
-                        self.createDepthImageFromMap(avDepthData: avDepthData!, orientation: .right)
+                        if(self.capturePhotoFlag3){
+                            
+                            print("sending depth info to getDepthPoint")
+                            self.getDepthPoint(depthdata: avDepthData!, cgImage: cgim)
+                            self.capturePhotoFlag1 = true
+                        }
                         
                     }
                     else {
