@@ -57,10 +57,9 @@ import CoreMotion
 
 /*
  log of todo now
- - give visualizeImage a new parameter for "thickness" - done
- - take depth image based on gesture - done
  - create rectified depth image
  - get depth value in human readable format
+ - rewrite pixel rectification with cvpixel buffers, and check against the cgimage implementation (this is needed because the co-ordinate system of cgimage seems to be different to cg point)
  
  */
 
@@ -73,6 +72,16 @@ import CoreMotion
 
 /*
  CURRENT STACK
+ 
+ - completing depth rectification function
+ - what is difference between disparityFloat32 and Float32, is there a differece?
+ - the get depth point will have the same logic as the depth rectifiication function, but will only 'rectify' a points worth of data
+ 
+ - How do we determine the optimal distance from which to take photo?
+ - We will need to guess size of image
+    - to do that we will use some depth segmentation algo
+ - Is there some mathemtics we can do based on the object prelim size guess?
+ 
  
  - right now when you touch the video previewLayer, you save 3 photos
  - the flow is capturePhoto is called with the capture3 flag. One image is automatically saved here, then visualizeImage is called, and one image is saved there, then createDepthMap is called saving another image
@@ -388,6 +397,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      ie we know that the lensDistortionLookupTable is correct,
      */
     
+    /*
+     further testing is required to find the bounds of this function. Can the output be negative, if so why?
+     we should also consider approaches beyond linear interpolation
+     */
+    
     func lensDistortionPoint(point: CGPoint, lookupTable: Data, distortionOpticalCenter opticalCenter: CGPoint, imageSize: CGSize) -> CGPoint {
         // The lookup table holds the relative radial magnification for n linearly spaced radii.
         // The first position corresponds to radius = 0
@@ -432,44 +446,130 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         return CGPoint(x: opticalCenter.x + CGFloat(new_v_point_x), y: opticalCenter.y + CGFloat(new_v_point_y))
     }
     
+    private func getDepthValueAtPoint(avDepthDataT: AVDepthData, TouchPoint: CGPoint) -> Float32? {
+        guard
+            let distortionLookupTable = avDepthDataT.cameraCalibrationData?.lensDistortionLookupTable,
+            let distortionCenter = avDepthDataT.cameraCalibrationData?.lensDistortionCenter else {
+                return nil
+        }
+        
+        print("the camera's ref dimensions are ", avDepthDataT.cameraCalibrationData?.intrinsicMatrixReferenceDimensions)
+        
+        var avDepthData = avDepthDataT
+        
+        if avDepthDataT.depthDataType != kCVPixelFormatType_DisparityFloat32 {
+            avDepthData = avDepthData.converting(toDepthDataType: kCVPixelFormatType_DisparityFloat32)
+        }
+        
+        print("distortion center was ", distortionCenter)
+        
+        let originalDepthDataMap = avDepthData.depthDataMap
+        
+        let width = CVPixelBufferGetWidth(originalDepthDataMap)
+        print("depth map buffer ", width)
+        let height = CVPixelBufferGetHeight(originalDepthDataMap)
+        print("depth map buffer ", height)
+        
+        var scaledCenter = distortionCenter
+        
+        scaledCenter.x = (distortionCenter.x / (avDepthDataT.cameraCalibrationData?.intrinsicMatrixReferenceDimensions.height)!) * CGFloat(height)
+        
+        scaledCenter.y = (distortionCenter.y / (avDepthDataT.cameraCalibrationData?.intrinsicMatrixReferenceDimensions.width)!) * CGFloat(width)
+        
+        print("distortion center becomes ", scaledCenter)
+        
+        
+        // We have found that the distortion center corresponds to the 12mp photo
+        // this funtion scale invariant.
+        //let scaledCenter = CGPoint(x: (distortionCenter.x / CGFloat(image.size.height)) * CGFloat(width), y: (distortionCenter.y / CGFloat(image.size.width)) * CGFloat(height))
+        CVPixelBufferLockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
+        
+        guard let address = CVPixelBufferGetBaseAddress(originalDepthDataMap) else {
+            return nil
+        }
+        
+        let distortedPoint = lensDistortionPoint(point: TouchPoint, lookupTable: distortionLookupTable, distortionOpticalCenter: scaledCenter, imageSize: CGSize(width: width, height: height) )
+        //this gets us to the right row
+        let distortedRow = address + Int(distortedPoint.y) * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
+        // is the "count: width" correct?, i'll comment out the og
+        let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
+        //let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: kCVPixelFormatType_DisparityFloat32.self), count: width)
+        
+        //print(distortedData)
+        //getting out of bounds here so i break up into statements
+        let disparity = distortedData[Int(distortedPoint.x)]
+        let meters = 1/disparity
+        print("distance is ", meters)
+        return meters
+        
+    }
+    
     /*
      For each point (x,y co-ord) (not pixel value, just co-ord ie no RGB) in the rectified image, find each correspondging x,y co-ord in the non rectified image.
      Take the depth value at the x,y co-ord and put into the right co-ord in the rectified image
      */
     
-    private func rectifyDepthData(avDepthData: AVDepthData, image: UIImage) -> CVPixelBuffer? {
+    /*
+     It seems like the lens distortion center is scaled to the full 12mp image resolution. thus we need to scale it
+    */
+    
+    private func rectifyDepthData(avDepthDataT: AVDepthData){//}, image: UIImage) {//-> CVPixelBuffer? {
         guard
-            let distortionLookupTable = avDepthData.cameraCalibrationData?.lensDistortionLookupTable,
-            let distortionCenter = avDepthData.cameraCalibrationData?.lensDistortionCenter else {
-                return nil
+            let distortionLookupTable = avDepthDataT.cameraCalibrationData?.lensDistortionLookupTable,
+            let distortionCenter = avDepthDataT.cameraCalibrationData?.lensDistortionCenter else {
+                return //nil
         }
         
+        print("the camera's ref dimensions are ", avDepthDataT.cameraCalibrationData?.intrinsicMatrixReferenceDimensions)
+        
+        var avDepthData = avDepthDataT
+        
+        if avDepthDataT.depthDataType != kCVPixelFormatType_DisparityFloat32 {
+            avDepthData = avDepthData.converting(toDepthDataType: kCVPixelFormatType_DisparityFloat32)
+        }
+        
+        print("distortion center was ", distortionCenter)
+        
         let originalDepthDataMap = avDepthData.depthDataMap
+        
+        
         let width = CVPixelBufferGetWidth(originalDepthDataMap)
+        print("depth map buffer ", width)
         let height = CVPixelBufferGetHeight(originalDepthDataMap)
-        // Assumption is that the original depth map is not the same size as the rectified depth map, makes
+        print("depth map buffer ", height)
+        
+        var scaledCenter = distortionCenter
+        
+        scaledCenter.x = (distortionCenter.x / (avDepthDataT.cameraCalibrationData?.intrinsicMatrixReferenceDimensions.height)!) * CGFloat(height)
+        
+        scaledCenter.y = (distortionCenter.y / (avDepthDataT.cameraCalibrationData?.intrinsicMatrixReferenceDimensions.width)!) * CGFloat(width)
+        
+        print("distortion center becomes ", scaledCenter)
+        
+        
+        // We have found that the distortion center corresponds to the 12mp photo
         // this funtion scale invariant.
-        let scaledCenter = CGPoint(x: (distortionCenter.x / CGFloat(image.size.height)) * CGFloat(width), y: (distortionCenter.y / CGFloat(image.size.width)) * CGFloat(height))
+        //let scaledCenter = CGPoint(x: (distortionCenter.x / CGFloat(image.size.height)) * CGFloat(width), y: (distortionCenter.y / CGFloat(image.size.width)) * CGFloat(height))
         CVPixelBufferLockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
         
         /*
-         TODO
-         Why are we creating a new pixel buffer instead of a new depthmap here?
-         TODO
+         Creating a new pixel buffer
          */
         var maybePixelBuffer: CVPixelBuffer?
         let status = CVPixelBufferCreate(nil, width, height, avDepthData.depthDataType, nil, &maybePixelBuffer)
+        print("checking status of new pixel buffer ", status)
         
-        assert(status == kCVReturnSuccess && maybePixelBuffer != nil);
+        //assert(status == kCVReturnSuccess && maybePixelBuffer != nil);
         
         guard let rectifiedPixelBuffer = maybePixelBuffer else {
-            return nil
+            return //nil
         }
         
         CVPixelBufferLockBaseAddress(rectifiedPixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
         guard let address = CVPixelBufferGetBaseAddress(originalDepthDataMap) else {
-            return nil
+            return //nil
         }
+        print("about to get the depthvalue")
         //This is getting the depth values and putting into the new depthmap
         for y in 0 ..< height{
             let rowData = CVPixelBufferGetBaseAddress(rectifiedPixelBuffer)! + y * CVPixelBufferGetBytesPerRow(rectifiedPixelBuffer)
@@ -478,16 +578,31 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             //
             for x in 0 ..< width{
                 let rectifiedPoint = CGPoint(x: x, y: y)
+                //distorted point is some cgpoint we have do not have control over
                 let distortedPoint = lensDistortionPoint(point: rectifiedPoint, lookupTable: distortionLookupTable, distortionOpticalCenter: scaledCenter, imageSize: CGSize(width: width, height: height) )
-                
+                //this gets us to the right row
                 let distortedRow = address + Int(distortedPoint.y) * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
+                // is the "count: width" correct?, i'll comment out the og
                 let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
-                data[x] = distortedData[Int(distortedPoint.x)]
+                //let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: kCVPixelFormatType_DisparityFloat32.self), count: width)
+                
+                //print(distortedData)
+                //getting out of bounds here so i break up into statements
+                let val = distortedData[Int(distortedPoint.x)]
+                data[x] = val
             }
         }
         CVPixelBufferUnlockBaseAddress(rectifiedPixelBuffer, CVPixelBufferLockFlags(rawValue: 0))
         CVPixelBufferUnlockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
-        return rectifiedPixelBuffer
+        print("created rectified image")
+        let cmage = CIImage(cvPixelBuffer: rectifiedPixelBuffer)
+        let context = CIContext(options: nil)
+        let cgImage = context.createCGImage(cmage, from: cmage.extent)!
+        print("about to create UIimage from rectifyDepthData to be saved")
+        let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
+        
+        UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+        //return rectifiedPixelBuffer
     }
     
     /*
@@ -495,7 +610,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      takes ina cgimage, and saves an image with call to UIImageWriteToSavedPhotosAlbum
      */
     
-    func rectifyPixelData(cgImage: CGImage, lookupTable: Data, distortionOpticalCenter opticalCenter: CGPoint) {
+    func rectifyPixelData(cgImage: CGImage, lookupTable: Data, distortionOpticalCenter opticalCenter: CGPoint, channels: Int = 4, bitsPerComp: Int = 8) {
         
         // Get image width, height
         let pixelsWide = cgImage.width
@@ -503,7 +618,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("width is ", pixelsWide)
         print("height is ", pixelsHigh)
         
-        let bitmapBytesPerRow = pixelsWide * 4
+        let bitmapBytesPerRow = pixelsWide * channels
         let bitmapByteCount = bitmapBytesPerRow * Int(pixelsHigh)
         
         // Use the generic RGB color space.
@@ -517,7 +632,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let size = CGSize(width: pixelsWide, height: pixelsHigh)
         UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
         // create bitmap
-        let context = CGContext(data: bitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: 8,
+        let context = CGContext(data: bitmapData, width: pixelsWide, height: pixelsHigh, bitsPerComponent: bitsPerComp,
                                 bytesPerRow: bitmapBytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo.rawValue)
         
         print("created first context")
@@ -694,12 +809,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
         if (visualBool){
             print("in visualBool")
-            visualizePointInImage(cgImage: cgImage, crossHairRadius: 10, thickness: 3)
+            //visualizePointInImage(cgImage: cgImage, crossHairRadius: 10, thickness: 3)
             
             let distortionLookupTable = (avDepthData.cameraCalibrationData?.lensDistortionLookupTable)!
             let distortionCenter = avDepthData.cameraCalibrationData?.lensDistortionCenter
             //lets see what the rectifyPixelData function does on depthmap data
-            rectifyPixelData(cgImage: cgImage, lookupTable: distortionLookupTable, distortionOpticalCenter: distortionCenter!)
+            //rectifyPixelData(cgImage: cgImage, lookupTable: distortionLookupTable, distortionOpticalCenter: distortionCenter!)
+            print("about to call rectifyDepthData function")
+            rectifyDepthData(avDepthDataT: avDepthData)//, image: UIImage)
+            //rectifyDepthData
             
         }
         
@@ -858,6 +976,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     /*
      Based on the GSD of the phone we tell user to move camera
      www.agisoft.com/forum/index.php?topic=9132.0
+     
+     We will also need to have preliminary guess of the size of the object
+     
+     We will also need some heuristics on the what is the best distance for the camera
      */
     func guidedPhotoLength(){
          //GSD = (DISTANCE x SENSORwidth) / (IMAGEwidth x FOCALLENGTH)
@@ -1009,6 +1131,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("the width of depth buffer is ", CVPixelBufferGetWidth(depthPixelBuffer))
         print("the height of depth buffer is ", CVPixelBufferGetHeight(depthPixelBuffer))
         
+        //TOGGLE
         createDepthImageFromMap(avDepthData: depthdata, orientation: .right, visualBool: true)
         
         updateDepthLabel = false
@@ -1080,8 +1203,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     newDataBuf[rectifiedPointer + 3] = dataBuf[distortedPointer + 3]
             }
         }
-        
-        let scaledx = 1.0 -  Float ((currentTouch!.x) / photoPreviewImageView.bounds.size.width)
+        /*
+         * the terms width and height are used for the opposite dimensions when referring to the the previewImage, and the actual photo
+         * so here we are scaling the cgpoint by the absolute values the cgpoint could have taken
+         * thus it is x/width and y/height
+        */
+        let scaledx = 1.0 - Float ((currentTouch!.x) / photoPreviewImageView.bounds.size.width)
         let scaledy = Float (currentTouch!.y / photoPreviewImageView.bounds.size.height)
         
         print("scaled x is ", scaledx)
@@ -1108,55 +1235,61 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         */
         
         
-        for j in -(thickness) ..< thickness{
-            var newoffset = offset + (j * (pixelsWide - 1) * 4)
-            /*
-             **** as found from testing
-             this gives us a horizontal line
-             */
-            
-            
-            for i in -(crossHairRadius) ..< crossHairRadius {
-                //offset = offset - pixelsWide
-                newDataBuf[newoffset + (pixelsWide * i * 4)] = 0
-                newDataBuf[newoffset + (pixelsWide * i * 4) + 1] = 220
-                newDataBuf[newoffset + (pixelsWide * i * 4) + 2] = 220
-                newDataBuf[newoffset + (pixelsWide * i * 4) + 3] = 1
-            }
-            
-            /*
-             this gives a vertical line
-             */
-            
-            for k in -(crossHairRadius) ..< crossHairRadius{
-                newDataBuf[newoffset + (k * 4)] = 0
-                newDataBuf[newoffset + (k * 4) + 1] = 220
-                newDataBuf[newoffset + (k * 4) + 2] = 220
-                newDataBuf[newoffset + (k * 4) + 3] = 1
-            }
-            
-        }
+//        for j in -(thickness) ..< thickness{
+//            var newoffset = offset + (j * (pixelsWide - 1) * 4)
+//            /*
+//             **** as found from testing
+//             this gives us a horizontal line
+//             */
+//
+//
+//            for i in -(crossHairRadius) ..< crossHairRadius {
+//                //offset = offset - pixelsWide
+//                newDataBuf[newoffset + (pixelsWide * i * 4)] = 0
+//                newDataBuf[newoffset + (pixelsWide * i * 4) + 1] = 220
+//                newDataBuf[newoffset + (pixelsWide * i * 4) + 2] = 220
+//                newDataBuf[newoffset + (pixelsWide * i * 4) + 3] = 1
+//            }
+//
+//            /*
+//             this gives a vertical line
+//             */
+//
+//            for k in -(crossHairRadius) ..< crossHairRadius{
+//                newDataBuf[newoffset + (k * 4)] = 0
+//                newDataBuf[newoffset + (k * 4) + 1] = 220
+//                newDataBuf[newoffset + (k * 4) + 2] = 220
+//                newDataBuf[newoffset + (k * 4) + 3] = 1
+//            }
+//
+//        }
         
-
 //
         //shall use this to find the right offset
         //120,000 is getting us br
-//        let attempt = 80
-//
-//        for i in 0 ..< 100 {
-//            //offset = offset - pixelsWide
-//            newDataBuf[attempt + (pixelsWide * i * 4)] = 220
-//            newDataBuf[attempt + (pixelsWide * i * 4) + 1] = 220
-//            newDataBuf[attempt + (pixelsWide * i * 4) + 2] = 220
-//            newDataBuf[attempt + (pixelsWide * i * 4) + 3] = 1
-//        }
-//
-//        for i in 0 ..< 100{
-//            newDataBuf[attempt + (i * 4)] = 0
-//            newDataBuf[attempt + (i * 4) + 1] = 220
-//            newDataBuf[attempt + (i * 4) + 2] = 0
-//            newDataBuf[attempt + (i * 4) + 3] = 1
-//        }
+        let attempt = 400
+        
+        for j in 0 ..< 5{//thickness{
+        var newattempt = attempt + (j * (pixelsWide - 1) * 4)
+                    /*
+                     **** as found from testing
+                     this gives us a horizontal line
+                     */
+            for i in 0 ..< 20 {
+                //offset = offset - pixelsWide
+                newDataBuf[newattempt + (pixelsWide * i * 4)] = 220
+                newDataBuf[newattempt + (pixelsWide * i * 4) + 1] = 220
+                newDataBuf[newattempt + (pixelsWide * i * 4) + 2] = 220
+                newDataBuf[newattempt + (pixelsWide * i * 4) + 3] = 1
+            }
+
+            for i in 0 ..< 20{
+                newDataBuf[newattempt + (i * 4)] = 0
+                newDataBuf[newattempt + (i * 4) + 1] = 220
+                newDataBuf[newattempt + (i * 4) + 2] = 0
+                newDataBuf[newattempt + (i * 4) + 3] = 1
+            }
+        }
         
         print("about to create visualized image")
         let outputCGImage = otherContext!.makeImage()!
