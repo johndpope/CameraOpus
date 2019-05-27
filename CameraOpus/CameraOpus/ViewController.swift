@@ -56,10 +56,19 @@ import CoreMotion
  */
 
 /*
+ 
+ strategy
+ - ask user to tap center of object
+ - get object measurement guess
+ - - we use clustering to guess pixels corresponding to object
+ - - we create a virtual bounding box.
+ - - - width comes from taking
+ 
  log of todo now
  - create rectified depth image
  - get depth value in human readable format
  - rewrite pixel rectification with cvpixel buffers, and check against the cgimage implementation (this is needed because the co-ordinate system of cgimage seems to be different to cg point)
+ - consider rewriting visualizePoint function with cvpixel buffers instead (so we can avoid co-ordinate system troubles)
  
  */
 
@@ -73,9 +82,9 @@ import CoreMotion
 /*
  CURRENT STACK
  
- - completing depth rectification function
- - what is difference between disparityFloat32 and Float32, is there a differece?
- - the get depth point will have the same logic as the depth rectifiication function, but will only 'rectify' a points worth of data
+ - completing depth rectification function - done
+ - the get depth point will have the same logic as the depth rectifiication function, but will only 'rectify' a points worth of data - done?
+ - working on depth segmentiontation algo next
  
  - How do we determine the optimal distance from which to take photo?
  - We will need to guess size of image
@@ -470,6 +479,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let height = CVPixelBufferGetHeight(originalDepthDataMap)
         print("depth map buffer ", height)
         
+        
+        // We have found that the distortion center corresponds to the 12mp photo (not depth dimensions)
+        // we make scale invariant.
+        //let scaledCenter = CGPoint(x: (distortionCenter.x / CGFloat(image.size.height)) * CGFloat(width), y: (distortionCenter.y / CGFloat(image.size.width)) * CGFloat(height))
         var scaledCenter = distortionCenter
         
         scaledCenter.x = (distortionCenter.x / (avDepthDataT.cameraCalibrationData?.intrinsicMatrixReferenceDimensions.height)!) * CGFloat(height)
@@ -478,10 +491,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         print("distortion center becomes ", scaledCenter)
         
-        
-        // We have found that the distortion center corresponds to the 12mp photo
-        // this funtion scale invariant.
-        //let scaledCenter = CGPoint(x: (distortionCenter.x / CGFloat(image.size.height)) * CGFloat(width), y: (distortionCenter.y / CGFloat(image.size.width)) * CGFloat(height))
         CVPixelBufferLockBaseAddress(originalDepthDataMap, CVPixelBufferLockFlags(rawValue: 0))
         
         guard let address = CVPixelBufferGetBaseAddress(originalDepthDataMap) else {
@@ -493,15 +502,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let distortedRow = address + Int(distortedPoint.y) * CVPixelBufferGetBytesPerRow(originalDepthDataMap)
         // is the "count: width" correct?, i'll comment out the og
         let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: Float32.self), count: width)
-        //let distortedData = UnsafeBufferPointer(start: distortedRow.assumingMemoryBound(to: kCVPixelFormatType_DisparityFloat32.self), count: width)
-        
-        //print(distortedData)
-        //getting out of bounds here so i break up into statements
+    
         let disparity = distortedData[Int(distortedPoint.x)]
         let meters = 1/disparity
         print("distance is ", meters)
         return meters
-        
     }
     
     /*
@@ -980,11 +985,22 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      We will also need to have preliminary guess of the size of the object
      
      We will also need some heuristics on the what is the best distance for the camera
+     
+     GSD units are mm/pixel
+     
+     * GSD = (DISTANCE x SENSORwidth) / (IMAGEwidth x FOCALLENGTH)
+     * lets say we take picture .5 meters away
+     * 500mm x 4.25mm/ 4000pixels x 4.25 mm
+     
+     * so long as camera is ~< 3 meters from object we can theoretically get <1mm resolution
+     
      */
     func guidedPhotoLength(){
-         //GSD = (DISTANCE x SENSORwidth) / (IMAGEwidth x FOCALLENGTH)
+        
     }
     
+    //focal length = 4.25mm or (26 mm for 35mm equivalent)
+    //www.google.com/search?q=iphone+xs+sensor+width&oq=iphone+xs+sensor+width&aqs=chrome..69i57j33l5.8231j0j7&sourceid=chrome&ie=UTF-8
 
 //    private func getPoints(avDepthData: AVDepthData,  image: UIImage)->Array<Any>{
 //        let depthData = avDepthData. converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
