@@ -49,9 +49,9 @@
                                 <gestureRecognizers/>
                             </imageView>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8UB-lD-g5x">
-                                <rect key="frame" x="94" y="566" width="53" height="43"/>
+                                <rect key="frame" x="96" y="563" width="182" height="43"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="capture"/>
+                                <state key="normal" title="Touch Object When Ready"/>
                                 <connections>
                                     <action selector="capturePhoto:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Aqy-T3-uht"/>
                                 </connections>

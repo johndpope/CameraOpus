@@ -58,11 +58,9 @@ import CoreMotion
 /*
  
  strategy
- - ask user to tap center of object
- - get object measurement guess
- - - we use clustering to guess pixels corresponding to object
- - - we create a virtual bounding box.
- - - - width comes from taking
+ - create a frame in the image about 2/3 of the photo layer, inbetween which we ask user to position object
+ - ask user to tap center of object (this gives us the distance) and allows us to calculate a radius for how much translation and how many images we want
+ - As user moves around we show a progress bar
  
  log of todo now
  - create rectified depth image
@@ -100,6 +98,9 @@ import CoreMotion
  Resources:
  - git.kabellmunk.dk/talks/into-the-deep/blob/master/IntoTheDeep/Models/Slides.swift
  
+ 
+ - github.com/ejeinc/MetalScope
+ 
  */
 
 
@@ -110,6 +111,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var session = AVCaptureSession()
     var photoOutput: AVCapturePhotoOutput?
     var videoPreviewLayer: AVCaptureVideoPreviewLayer?
+    //var layer: CALayer?
+    var layer: UIView?
     
     
     var videoDataOutput = AVCaptureVideoDataOutput()
@@ -132,6 +135,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var capturePhotoFlag1 = true
     var capturePhotoFlag2 = false
     var capturePhotoFlag3 = false
+    
+    //flag to add the focus box
+    var focusFlag = true
+    
+    //this is the rotation animation
+    var tempView: UIImageView?
+    
+    //this is the panorama arrow
+    var arrowView: UIImageView?
     
     
     //MARK: Properties
@@ -281,6 +293,23 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     
                     photoPreviewImageView.layer.addSublayer(videoPreviewLayer!)
                     print("seems like we have added a subLayer")
+                    
+                    if(focusFlag){
+                        print("in focus")
+                        //layer = CALayer()
+                        layer = UIView()
+                        //layer?.addSubview(<#T##view: UIView##UIView#>)
+                        var im = UIImage(named: "focus")//?.cgImage
+                        //print("image height is ", im?.height)
+                        //print("image width is ", im?.width)
+                        
+                        let imageView = UIImageView(image: im!)
+                        imageView.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
+                        photoPreviewImageView.addSubview(imageView)
+                        
+                        //layer!.contents = UIImage(named: "focus")//?.cgImage
+                        //sphotoPreviewImageView.layer.addSublayer(layer!)
+                    }
                     /*
                      *
                      Configuring the depthdata here
@@ -945,6 +974,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             //CG
         } else if  gesture.state == .ended {
             print("&&&&&")
+            /*
+             Once the gesture has ended we set the capturePhotoFlag3 variable, and this allows the image capture process to take place after the use touches the photo preview view
+            */
             capturePhotoFlag3 = true
             capturePhotoFlag1 = false
             
@@ -1153,6 +1185,46 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         updateDepthLabel = false
         
     }
+    
+    func addRotationAnimation(){
+        
+        //?.cgImage
+        //print("image height is ", im?.height)
+        //print("image width is ", im?.width)
+        tempView = UIImageView(image: UIImage(named: "move")!)
+        tempView!.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
+        //tempView.addTag
+        
+        photoPreviewImageView.addSubview(tempView!)
+        
+        textLabel.text = "walk around the object keeping it in the frame"
+        
+        var timer = Timer.scheduledTimer(timeInterval: TimeInterval(3.0), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
+        
+        //TODO
+        // we will
+        /*
+         stackoverflow.com/questions/36524066/how-to-move-sprite-just-left-or-right-using-coremotion
+         
+        arrowView = UIImageView(image: UIImage(named: "arrow")!)
+        arrowView!.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
+        */
+        
+        
+    }
+    
+    func timeExpired() {
+        print("time to remove the animation")
+        
+        if tempView != nil { // Dismiss the view from here
+            tempView!.removeFromSuperview()
+        }
+        //photoPreviewImageView.removeSubview(tempView)
+        // yoursubview.removeFromSuperview()
+    }
+    
+    
+
     
     func visualizePointInImage(cgImage: CGImage, crossHairRadius: Int, thickness: Int){
         
@@ -1417,6 +1489,8 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                             print("sending depth info to getDepthPoint")
                             self.getDepthPoint(depthdata: avDepthData!, cgImage: cgim)
                             self.capturePhotoFlag1 = true
+                            
+                            self.addRotationAnimation()
                         }
                         
                     }
