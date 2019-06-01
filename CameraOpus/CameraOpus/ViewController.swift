@@ -61,6 +61,7 @@ import CoreMotion
  - create a frame in the image about 2/3 of the photo layer, inbetween which we ask user to position object
  - ask user to tap center of object (this gives us the distance) and allows us to calculate a radius for how much translation and how many images we want
  - As user moves around we show a progress bar
+ - get depth reading from tap in image
  
  log of todo now
  - create rectified depth image
@@ -1161,7 +1162,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //let depthPoint = CGPoint(x: CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) - 1.0 - currentTouch!.x * scale, y: currentTouch!.y * scale)
         
         
-        
         let outputImage = UIImage(cgImage: cgImage, scale: 1, orientation: .right)
         
         //TOGGLE
@@ -1174,7 +1174,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //let val = translatePointToPixel()
         let val = 4.2
         //some thread error
-        textLabel.text = String(val)
+        
+        //****NOW
+        
+        DispatchQueue.main.async {
+            self.textLabel.text = String(val)
+            
+            self.updateDepthLabel = false
+            
+        }
         
         print("the width of depth buffer is ", CVPixelBufferGetWidth(depthPixelBuffer))
         print("the height of depth buffer is ", CVPixelBufferGetHeight(depthPixelBuffer))
@@ -1182,24 +1190,32 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //TOGGLE
         createDepthImageFromMap(avDepthData: depthdata, orientation: .right, visualBool: true)
         
-        updateDepthLabel = false
+        
         
     }
     
     func addRotationAnimation(){
-        
+        print("*&*&")
+        print("in add rotation")
         //?.cgImage
         //print("image height is ", im?.height)
         //print("image width is ", im?.width)
-        tempView = UIImageView(image: UIImage(named: "move")!)
-        tempView!.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
-        //tempView.addTag
         
-        photoPreviewImageView.addSubview(tempView!)
+        DispatchQueue.main.async {
+            // view manipulation here so it happens with main thread.
+            
+            self.tempView = UIImageView(image: UIImage(named: "move")!)
+            self.tempView!.frame = CGRect(x: 180, y: 50, width: 60, height: 20)
+            //tempView.addTag
+            
+            self.photoPreviewImageView.addSubview(self.tempView!)
+            
+            self.textLabel.text = "walk around the object keeping it in the frame"
+            
+            var timer = Timer.scheduledTimer(timeInterval: TimeInterval(3.0), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
+        }
         
-        textLabel.text = "walk around the object keeping it in the frame"
         
-        var timer = Timer.scheduledTimer(timeInterval: TimeInterval(3.0), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
         
         //TODO
         // we will
@@ -1212,8 +1228,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         
     }
-    
-    func timeExpired() {
+    /*
+     * Important that we have @obj c because this function comes from a selector
+    */
+    @objc func timeExpired() {
         print("time to remove the animation")
         
         if tempView != nil { // Dismiss the view from here
