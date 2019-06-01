@@ -1205,14 +1205,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             // view manipulation here so it happens with main thread.
             
             self.tempView = UIImageView(image: UIImage(named: "move")!)
-            self.tempView!.frame = CGRect(x: 180, y: 50, width: 60, height: 20)
+            self.tempView!.frame = CGRect(x: 160, y: 45, width: 90, height: 30)
             //tempView.addTag
             
             self.photoPreviewImageView.addSubview(self.tempView!)
             
-            self.textLabel.text = "walk around the object keeping it in the frame"
+            self.textLabel.text = "While keeping the object in frame slowly walk around. Please maintain the same distance"
             
-            var timer = Timer.scheduledTimer(timeInterval: TimeInterval(3.0), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
+            var timer = Timer.scheduledTimer(timeInterval: TimeInterval(2.0), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
         }
         
         
@@ -1237,6 +1237,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         if tempView != nil { // Dismiss the view from here
             tempView!.removeFromSuperview()
         }
+        
+        DispatchQueue.main.async {
+            //self.tempView!.frame = CGRect(x: 0, y: 430, width: 300, height: 60)
+            //self.tempView!.backgroundColor = UIColor(white: 0.70, alpha:1)
+            self.tempView = UIImageView(image: UIImage(named: "arrow")!)
+            self.tempView!.frame = CGRect(x: 0, y: 430, width: 90, height: 45)
+            self.tempView?.alpha = 0.5
+            self.photoPreviewImageView.addSubview(self.tempView!)
+        }
+        
         //photoPreviewImageView.removeSubview(tempView)
         // yoursubview.removeFromSuperview()
     }
