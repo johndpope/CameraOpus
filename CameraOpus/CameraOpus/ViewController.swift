@@ -11,6 +11,11 @@ import AVFoundation
 import Photos
 import CoreMotion
 
+/*
+ We may not need this framework, but trying it out for the arrow motion
+ */
+import SpriteKit
+
 
 /*
  General Info learnt
@@ -140,8 +145,13 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     //flag to add the focus box
     var focusFlag = true
     
+    /*
+     Animation variables
+    */
+    
     //this is the rotation animation
     var tempView: UIImageView?
+    var arrow = SKSpriteNode()
     
     //this is the panorama arrow
     var arrowView: UIImageView?
@@ -1215,8 +1225,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             var timer = Timer.scheduledTimer(timeInterval: TimeInterval(2.0), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
         }
         
-        
-        
         //TODO
         // we will
         /*
@@ -1225,7 +1233,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         arrowView = UIImageView(image: UIImage(named: "arrow")!)
         arrowView!.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
         */
-        
         
     }
     /*
@@ -1238,12 +1245,45 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             tempView!.removeFromSuperview()
         }
         
+        /*
+         let Image = //do your setup here to make a UIImage
+         let Texture = SKTexture(image: Image)
+         let Sprite = SKSpriteNode(texture:Texture)
+        */
+        
         DispatchQueue.main.async {
-            //self.tempView!.frame = CGRect(x: 0, y: 430, width: 300, height: 60)
-            //self.tempView!.backgroundColor = UIColor(white: 0.70, alpha:1)
+            
+//            self.arrow = SKSpriteNode(imageNamed: "arrow")
+//            self.arrow.size = CGSize(width: 90, height: 45) // Better to call this before positioning
+//            self.arrow.position = CGPoint(x: 0, y: 45) // Give pos before physics body
+//            self.arrow.physicsBody = SKPhysicsBody(circleOfRadius: 90) // You have to divide by 2 when using circleOfRadius to get proper size in relation to the sprite
+//            self.arrow.physicsBody?.allowsRotation = false
+//            self.arrow.physicsBody?.affectedByGravity = false // Stop falling
+//            self.arrow.zPosition = 2
+//            self.photoPreviewImageView.addChild(arrow)
+            
+            let min = CGFloat(-30)
+            let max = CGFloat(30)
+            
             self.tempView = UIImageView(image: UIImage(named: "arrow")!)
             self.tempView!.frame = CGRect(x: 0, y: 430, width: 90, height: 45)
             self.tempView?.alpha = 0.5
+            
+            let xMotion = UIInterpolatingMotionEffect(keyPath: "layer.transform.translation.x", type: .tiltAlongHorizontalAxis)
+            xMotion.minimumRelativeValue = min
+            xMotion.maximumRelativeValue = max
+            
+            let yMotion = UIInterpolatingMotionEffect(keyPath: "layer.transform.translation.y", type: .tiltAlongVerticalAxis)
+            yMotion.minimumRelativeValue = min
+            yMotion.maximumRelativeValue = max
+            
+            let motionEffectGroup = UIMotionEffectGroup()
+            motionEffectGroup.motionEffects = [xMotion,yMotion]
+            
+            self.tempView!.addMotionEffect(motionEffectGroup)
+        
+            //This stuff works
+            
             self.photoPreviewImageView.addSubview(self.tempView!)
         }
         
