@@ -58,6 +58,25 @@ import SpriteKit
  it seems to be the origin of cgimage is top right, not top left
  while the origin of cgpoint is top right
  
+ ACCEL
+ 
+ when the phone is still im seeing residual numbers
+ 
+ # 1 (lying on sofa)
+ from accel
+ teh x accel is  -0.109619140625
+ teh y accel is  -0.2089385986328125
+ teh z accel is  -0.9712066650390625
+ 
+ # 2 (lying on table face up)
+ 
+ from accel
+ teh x accel is  0.00457763671875
+ teh y accel is  -0.0081787109375
+ teh z accel is  -0.997161865234375
+ 
+ on this iphone xs it seems like we could round to nearest 0.1?
+ 
  */
 
 /*
@@ -167,11 +186,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     //this is the panorama arrow
     var arrowView: UIImageView?
-    let motionInterval = 1.0
+    let motionInterval = 0.3
     
     
     //temp variables
     var accelcount = 0
+    var devCount = 0
     
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
@@ -202,23 +222,36 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         print("in file output 2")
     }
     //TOGGLE
+    
+    /*
+     accelerometer handler function
+    */
     func outputAccelData(acceleration: CMAcceleration){
         print("from accel")
-        while (accelcount < 5){
-            print("teh accel is ", acceleration.x)
-            print("teh accel is ", acceleration.y)
-            print("teh accel is ", acceleration.z)
+        if (accelcount < 5){
+            print("teh x accel is ", acceleration.x)
+            print("teh y accel is ", acceleration.y)
+            print("teh z accel is ", acceleration.z)
             print(" ")
             accelcount = accelcount + 1
         }
     }
 
+
     func outputDevMotionData(data: CMDeviceMotion){
-//        print("from devmotion")
-//        print("teh accel is ", data.userAcceleration.x)
-//        print("teh accel is ", data.userAcceleration.y)
-//        print("teh accel is ", data.userAcceleration.z)
-//        print(" ")
+        print("from output dev motion")
+        let gravity = data.gravity
+        let xa = data.userAcceleration.x
+        let ya = data.userAcceleration.y
+        let za = data.userAcceleration.z
+        
+        if (devCount < 5){
+            print("teh x accel is ", xa)
+            print("teh y accel is ", ya)
+            print("teh z accel is ", za)
+            print(" ")
+            devCount = devCount + 1
+        }
         
     }
     
@@ -277,10 +310,13 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                         devMotionFlag = 1
                     }
                     
+                    //TOGGLE
+                    
+                    accelFlag = 0
                     // we start running the accel right away but not the gyro
                     if((accelFlag == 1)){
                         
-                         motionManager?.accelerometerUpdateInterval = 1.0
+                         motionManager?.accelerometerUpdateInterval = 0.3
 
                         motionManager!.startAccelerometerUpdates(
                             to: OperationQueue.current!,
@@ -294,6 +330,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     
                     if(devMotionFlag == 1){
                         print("dev flag is on")
+                        
+                        motionManager?.deviceMotionUpdateInterval = motionInterval
+                        motionManager!.startDeviceMotionUpdates(
+                            to: OperationQueue.current!,
+                            withHandler: {(data, error) in
+                                self.outputDevMotionData(data: data!)
+                        
+                        //UUUU
+                        })
                     }
                     
                     //photoOutput!.isDepthDataDeliveryEnabled = true
@@ -441,6 +486,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     @IBAction func setDefaultLabelText(_ sender: UIButton) {
         textLabel.text = "Default text"
         accelcount = 0
+        devCount = 0
     }
     /*
      To create a rectilinear image we must begin with an empty destination buffer and iterate through it
