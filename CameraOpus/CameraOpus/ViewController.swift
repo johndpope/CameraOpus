@@ -11,10 +11,7 @@ import AVFoundation
 import Photos
 import CoreMotion
 
-/*
- We may not need this framework, but trying it out for the arrow motion
- */
-import SpriteKit
+import CoreLocation
 
 
 /*
@@ -87,6 +84,11 @@ import SpriteKit
  - As user moves around we show a progress bar
  - get depth reading from tap in image
  
+ ideas
+ - we could start an ar scene with arkit and save information about the enviroment
+ - then once a user touches the object we turn off the ar scene and go back to avcapture
+ - then once the image taking process has started, we systematically switch to arkit to check how much distance has been traversed
+ 
  log of todo now
  - write function that makes log of acelerometer data
  - having some issue with OperationQueue.main.addOperation not getting in there
@@ -141,7 +143,7 @@ import SpriteKit
  */
 
 
-class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate, AVCaptureDataOutputSynchronizerDelegate {
+class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate, AVCaptureDataOutputSynchronizerDelegate, CLLocationManagerDelegate {
     
     var count = 1
     
@@ -182,16 +184,20 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     //this is the rotation animation
     var tempView: UIImageView?
-    var arrow = SKSpriteNode()
+    //var arrow = SKSpriteNode()
     
     //this is the panorama arrow
     var arrowView: UIImageView?
     let motionInterval = 0.3
     
+    //location and magentometer
+    let locationManager = CLLocationManager()
+
     
     //temp variables
     var accelcount = 0
     var devCount = 0
+    var compassCount = 0
     
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
@@ -254,6 +260,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         }
         
     }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateHeading heading: CLHeading) {
+        if(compassCount < 5){
+            print("the compass")
+            print (heading.magneticHeading)
+            compassCount = compassCount + 1
+        }
+        
+    }
+
     
     /// - Tag: CapturePhoto
     override func viewDidLoad() {
@@ -339,6 +355,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                         
                         //UUUU
                         })
+                    }
+                    
+                    /*
+                     setting up location stuff
+                     the internal compass
+                     */
+                    if (CLLocationManager.headingAvailable()) {
+                        locationManager.headingFilter = 1
+                        locationManager.startUpdatingHeading()
+                        locationManager.delegate = self
                     }
                     
                     //photoOutput!.isDepthDataDeliveryEnabled = true
@@ -487,6 +513,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         textLabel.text = "Default text"
         accelcount = 0
         devCount = 0
+        compassCount = 0
     }
     /*
      To create a rectilinear image we must begin with an empty destination buffer and iterate through it
