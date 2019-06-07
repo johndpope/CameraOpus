@@ -88,6 +88,7 @@ import CoreLocation
  - we could start an ar scene with arkit and save information about the enviroment
  - then once a user touches the object we turn off the ar scene and go back to avcapture
  - then once the image taking process has started, we systematically switch to arkit to check how much distance has been traversed
+ - we should consider obfuscating code using this scheme en.wikipedia.org/wiki/Amit_Sahai
  
  log of todo now
  - write function that makes log of acelerometer data
@@ -119,6 +120,10 @@ import CoreLocation
 /*
  CURRENT STACK
  
+ - creating arrow movement method based on fraction of direction moved
+ - creating intial direction reading by taking average of last 10 readings
+ - 
+ 
  - completing depth rectification function - done
  - the get depth point will have the same logic as the depth rectifiication function, but will only 'rectify' a points worth of data - done?
  - working on depth segmentiontation algo next
@@ -127,6 +132,7 @@ import CoreLocation
  - We will need to guess size of image
     - to do that we will use some depth segmentation algo
  - Is there some mathemtics we can do based on the object prelim size guess?
+    - yes based on gsd we can determine max and min distances needed for specific resolution
  
  
  - right now when you touch the video previewLayer, you save 3 photos
@@ -192,6 +198,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     //location and magentometer
     let locationManager = CLLocationManager()
+    var compassOn = false
+    var getInitialDirection = false
+    var initialDirection : Double
 
     
     //temp variables
@@ -261,12 +270,37 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
+    /*
+     We will need to get the value of the heading continuosly and send to the arrow
+    */
+    
     func locationManager(_ manager: CLLocationManager, didUpdateHeading heading: CLHeading) {
         if(compassCount < 5){
             print("the compass")
             print (heading.magneticHeading)
             compassCount = compassCount + 1
         }
+        //we pass the magnetic values back to the animation
+        //IIII
+        
+        if(getInitialDirection){
+            //we take a lazy average of the last 10 readings to increase accuracy
+            initialDirection = heading.magneticHeading
+            if(initDirCount < 10){
+                initialDirection = initialDirection + heading.magneticHeading
+                initDirCount = initDirCount + 1
+            }
+        }
+        
+        if(compassOn){
+            moveArrow(angle: heading.magneticHeading)
+        }
+        
+    }
+    
+    func moveArrow(angle: CLLocationDirection){
+        
+        tempView!.transform.translatedBy(x: CGFloat(), y: CGFloat())
         
     }
 
@@ -1364,6 +1398,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 
             }
             
+            self.compassOn = true
+            self.getInitialDirection = true
+            
+            // call function that polls direction data for arrow animation
+            /*
+             * we will need to eventually move more functionality away into helper functions like this one below.
+             * time expired is getting too bloated and is mutating beyond its initial intentions
+            */
+            self.pollDirection()
+            
             /*
              dev motion option
             */
@@ -1372,37 +1416,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
             var devMotionCheck = 0
             
-            if(self.devMotionFlag == 1)&&(devEffectFlag){
-                print("trying out dev motion based ui move")
-                self.motionManager?.deviceMotionUpdateInterval = self.motionInterval
-                self.motionManager!.startDeviceMotionUpdates(to: OperationQueue.current!, withHandler: {(data, error) in
-                    guard let data = data else { return }
-                    let gravity = data.gravity
-                    let rotation = atan2(gravity.x, gravity.y) - .pi
-                    
-                    let xa = data.userAcceleration.x
-                    let ya = data.userAcceleration.y
-                    let za = data.userAcceleration.z
-                    
-                    print("before the operationqueue ")
-                    //be careful with counter it will increment very quickly
-                    OperationQueue.main.addOperation {
-                        
-                        //this should lead to only one print statement
-                        while(devMotionCheck < 1){
-                            print("we seem to be accessing devmotion data")
-                            print("xa is ", xa)
-                            print("ya is ", ya)
-                            print("za is ", za)
-                            devMotionCheck = 1
-                        }
-                        
-                        xspeed = self.calcSpeed(accel: xa, prevSpeed: xspeed)
-                        yspeed = self.calcSpeed(accel: ya, prevSpeed: yspeed)
-                        self.tempView!.transform.translatedBy(x: CGFloat(xspeed), y: CGFloat(yspeed))// = CGAffineTransform(rotationAngle: CGFloat(rotation))
-                    }
-                })
-            }
+//            if(self.devMotionFlag == 1)&&(devEffectFlag){
+//                print("trying out dev motion based ui move")
+//
+//            }
             
             //bezier implementation of a sine wave
             
@@ -1438,6 +1455,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         //photoPreviewImageView.removeSubview(tempView)
         // yoursubview.removeFromSuperview()
+    }
+    
+    func pollDirection(){
+        
     }
     
     
