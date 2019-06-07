@@ -69,10 +69,22 @@ import SpriteKit
  - get depth reading from tap in image
  
  log of todo now
- - create rectified depth image
+ - write function that makes log of acelerometer data
+ - having some issue with OperationQueue.main.addOperation not getting in there
  - get depth value in human readable format
  - rewrite pixel rectification with cvpixel buffers, and check against the cgimage implementation (this is needed because the co-ordinate system of cgimage seems to be different to cg point)
  - consider rewriting visualizePoint function with cvpixel buffers instead (so we can avoid co-ordinate system troubles)
+ 
+ */
+
+/*
+ Flags
+ 
+ - right now devMotionFlag is on and devEffectFlag is off (both cannot be on at the same time becuase they both attempt to turn on the accelerometer)
+ - additionally motionInterval must have some reasonable value
+ 
+ **NB**
+ - we use setDefaultLabelText as a user input way of resetting flags for testing purposes
  
  */
 
@@ -155,7 +167,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     //this is the panorama arrow
     var arrowView: UIImageView?
+    let motionInterval = 1.0
     
+    
+    //temp variables
+    var accelcount = 0
     
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
@@ -187,13 +203,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     //TOGGLE
     func outputAccelData(acceleration: CMAcceleration){
-//        print("from accel")
-//
-//        print("teh accel is ", acceleration.x)
-//        print("teh accel is ", acceleration.y)
-//        print("teh accel is ", acceleration.z)
-//        print(" ")
-        
+        print("from accel")
+        while (accelcount < 5){
+            print("teh accel is ", acceleration.x)
+            print("teh accel is ", acceleration.y)
+            print("teh accel is ", acceleration.z)
+            print(" ")
+            accelcount = accelcount + 1
+        }
     }
 
     func outputDevMotionData(data: CMDeviceMotion){
@@ -261,35 +278,22 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     }
                     
                     // we start running the accel right away but not the gyro
-                    if((accelFlag == 1)&&(devMotionFlag == 1)){
-                        motionManager?.accelerometerUpdateInterval = 10.0
+                    if((accelFlag == 1)){
+                        
+                         motionManager?.accelerometerUpdateInterval = 1.0
+
                         motionManager!.startAccelerometerUpdates(
                             to: OperationQueue.current!,
                             withHandler: {(accelData: CMAccelerometerData?, errorOC: Error?) in
                                 self.outputAccelData(acceleration: accelData!.acceleration)
                         })
-                        motionManager?.deviceMotionUpdateInterval = 10.0
-                        motionManager!.startDeviceMotionUpdates(
-                            using: .xMagneticNorthZVertical,
-                            to: OperationQueue.current!,
-                            withHandler: {(data, error) in
-                                
-                                if let validData = data {
-                                    // Get the attitude relative to the magnetic north reference frame.
-                                    let xa = validData.userAcceleration.x
-                                    let ya = validData.userAcceleration.y
-                                    let za = validData.userAcceleration.z
-                                    
-                                    // Use the motion data in your app.
-                                    self.outputDevMotionData(data: validData)
-                                }
-                                
-                        })
-                        print("running accelerometer and device motion")
+                        print("running accelerometer")
                         print("**")
                         
-                        
-                        
+                    }
+                    
+                    if(devMotionFlag == 1){
+                        print("dev flag is on")
                     }
                     
                     //photoOutput!.isDepthDataDeliveryEnabled = true
@@ -348,7 +352,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     func outputGyroData(gyroMeasure: CMRotationRate){
-        gyroMeasure
+        //gyroMeasure
         print("teh xaxis is ", gyroMeasure.x)
         print("teh yaxis is ", gyroMeasure.y)
         print("teh zaxis is ", gyroMeasure.z)
@@ -436,6 +440,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     //MARK: Actions
     @IBAction func setDefaultLabelText(_ sender: UIButton) {
         textLabel.text = "Default text"
+        accelcount = 0
     }
     /*
      To create a rectilinear image we must begin with an empty destination buffer and iterate through it
@@ -1204,6 +1209,19 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
+    /*
+     * This may be a very rough speed
+     * How do we handle when the motion stops?
+     * then acceleration is zero and we should return zero
+    */
+    
+    func calcSpeed(accel: Double , prevSpeed: Double ) -> Double{
+        //case we are still seeing
+        var currSpeed = prevSpeed + (accel * Double (motionInterval))
+        return 4.0
+        
+    }
+    
     func addRotationAnimation(){
         print("*&*&")
         print("in add rotation")
@@ -1241,46 +1259,104 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     @objc func timeExpired() {
         print("time to remove the animation")
         
+        var uiEffectFlag = false
+        var devEffectFlag = false
+        
         if tempView != nil { // Dismiss the view from here
             tempView!.removeFromSuperview()
         }
         
-        /*
-         let Image = //do your setup here to make a UIImage
-         let Texture = SKTexture(image: Image)
-         let Sprite = SKSpriteNode(texture:Texture)
-        */
-        
         DispatchQueue.main.async {
-            
-//            self.arrow = SKSpriteNode(imageNamed: "arrow")
-//            self.arrow.size = CGSize(width: 90, height: 45) // Better to call this before positioning
-//            self.arrow.position = CGPoint(x: 0, y: 45) // Give pos before physics body
-//            self.arrow.physicsBody = SKPhysicsBody(circleOfRadius: 90) // You have to divide by 2 when using circleOfRadius to get proper size in relation to the sprite
-//            self.arrow.physicsBody?.allowsRotation = false
-//            self.arrow.physicsBody?.affectedByGravity = false // Stop falling
-//            self.arrow.zPosition = 2
-//            self.photoPreviewImageView.addChild(arrow)
-            
-            let min = CGFloat(-30)
-            let max = CGFloat(30)
             
             self.tempView = UIImageView(image: UIImage(named: "arrow")!)
             self.tempView!.frame = CGRect(x: 0, y: 430, width: 90, height: 45)
             self.tempView?.alpha = 0.5
             
-            let xMotion = UIInterpolatingMotionEffect(keyPath: "layer.transform.translation.x", type: .tiltAlongHorizontalAxis)
-            xMotion.minimumRelativeValue = min
-            xMotion.maximumRelativeValue = max
+            if(uiEffectFlag){
+                let min = CGFloat(-100)
+                let max = CGFloat(100)
+                
+                let xMotion = UIInterpolatingMotionEffect(keyPath: "layer.transform.translation.x", type: .tiltAlongHorizontalAxis)
+                xMotion.minimumRelativeValue = min
+                xMotion.maximumRelativeValue = max
+                
+                let yMotion = UIInterpolatingMotionEffect(keyPath: "layer.transform.translation.y", type: .tiltAlongVerticalAxis)
+                yMotion.minimumRelativeValue = min
+                yMotion.maximumRelativeValue = max
+                
+                let motionEffectGroup = UIMotionEffectGroup()
+                motionEffectGroup.motionEffects = [xMotion,yMotion]
+                
+                self.tempView!.addMotionEffect(motionEffectGroup)
+                
+            }
             
-            let yMotion = UIInterpolatingMotionEffect(keyPath: "layer.transform.translation.y", type: .tiltAlongVerticalAxis)
-            yMotion.minimumRelativeValue = min
-            yMotion.maximumRelativeValue = max
+            /*
+             dev motion option
+            */
+            var xspeed = 0.0
+            var yspeed = 0.0
             
-            let motionEffectGroup = UIMotionEffectGroup()
-            motionEffectGroup.motionEffects = [xMotion,yMotion]
+            var devMotionCheck = 0
             
-            self.tempView!.addMotionEffect(motionEffectGroup)
+            if(self.devMotionFlag == 1)&&(devEffectFlag){
+                print("trying out dev motion based ui move")
+                self.motionManager?.deviceMotionUpdateInterval = self.motionInterval
+                self.motionManager!.startDeviceMotionUpdates(to: OperationQueue.current!, withHandler: {(data, error) in
+                    guard let data = data else { return }
+                    let gravity = data.gravity
+                    let rotation = atan2(gravity.x, gravity.y) - .pi
+                    
+                    let xa = data.userAcceleration.x
+                    let ya = data.userAcceleration.y
+                    let za = data.userAcceleration.z
+                    
+                    print("before the operationqueue ")
+                    //be careful with counter it will increment very quickly
+                    OperationQueue.main.addOperation {
+                        
+                        //this should lead to only one print statement
+                        while(devMotionCheck < 1){
+                            print("we seem to be accessing devmotion data")
+                            print("xa is ", xa)
+                            print("ya is ", ya)
+                            print("za is ", za)
+                            devMotionCheck = 1
+                        }
+                        
+                        xspeed = self.calcSpeed(accel: xa, prevSpeed: xspeed)
+                        yspeed = self.calcSpeed(accel: ya, prevSpeed: yspeed)
+                        self.tempView!.transform.translatedBy(x: CGFloat(xspeed), y: CGFloat(yspeed))// = CGAffineTransform(rotationAngle: CGFloat(rotation))
+                    }
+                })
+            }
+            
+            //bezier implementation of a sine wave
+            
+//            let width = 300.0
+//            let height = 90.0
+//
+//            //let amplitude = 90
+//
+//            let origin = CGPoint(x: width * (1) / 2, y: height * 0.50)
+//
+//            let path = UIBezierPath()
+//            path.move(to: origin)
+//
+//            for angle in stride(from: 5.0, through: 360.0, by: 5.0) {
+//                let x = origin.x + CGFloat(angle/360.0) * CGFloat(width)
+//                let y = origin.y - CGFloat(sin(angle/180.0 * Double.pi)) * CGFloat(height) //* amplitude
+//                path.addLine(to: CGPoint(x: x, y: y))
+//            }
+//
+//            self.tempView!.draw(<#T##rect: CGRect##CGRect#>)
+//
+//            UIColor.black.setStroke()
+//            path.stroke()
+//
+            
+        
+            
         
             //This stuff works
             
@@ -1459,6 +1535,31 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         free(newData)
         
     }
+    
+    /*
+     workspace code
+    */
+    
+    /*
+     motion manager alternate implementation
+    */
+    /*
+        self.motionManager!.startDeviceMotionUpdates(
+        using: .xMagneticNorthZVertical,
+        to: OperationQueue.current!,
+        withHandler: {(data, error) in
+        if let validData = data {
+        // Get the attitude relative to the magnetic north reference frame.
+        let xa = validData.userAcceleration.x
+        let ya = validData.userAcceleration.y
+        let za = validData.userAcceleration.z
+        // Use the motion data in your app.
+        self.outputDevMotionData(data: validData)
+        }
+        })
+    */
+    
+    
 
 }
 
@@ -1571,3 +1672,6 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
     }
         
 }
+
+
+
