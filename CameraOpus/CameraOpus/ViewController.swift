@@ -12,6 +12,7 @@ import Photos
 import CoreMotion
 
 import CoreLocation
+import GLKit
 
 
 /*
@@ -122,7 +123,7 @@ import CoreLocation
  
  - creating arrow movement method based on fraction of direction moved
  - creating intial direction reading by taking average of last 10 readings
- - 
+ - we will need to look into the timing of cllocation updates too
  
  - completing depth rectification function - done
  - the get depth point will have the same logic as the depth rectifiication function, but will only 'rectify' a points worth of data - done?
@@ -200,13 +201,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     let locationManager = CLLocationManager()
     var compassOn = false
     var getInitialDirection = false
-    var initialDirection : Double
-
+    var initialDirection : Double?
     
+    var window : [Double] = []
+    var windowFull = false
+
     //temp variables
     var accelcount = 0
     var devCount = 0
     var compassCount = 0
+    var initDirCount = 0
     
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
@@ -254,13 +258,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 
 
     func outputDevMotionData(data: CMDeviceMotion){
-        print("from output dev motion")
+        
         let gravity = data.gravity
         let xa = data.userAcceleration.x
         let ya = data.userAcceleration.y
         let za = data.userAcceleration.z
         
         if (devCount < 5){
+            print("from output dev motion")
             print("teh x accel is ", xa)
             print("teh y accel is ", ya)
             print("teh z accel is ", za)
@@ -285,23 +290,69 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         if(getInitialDirection){
             //we take a lazy average of the last 10 readings to increase accuracy
-            initialDirection = heading.magneticHeading
+            if(initDirCount == 0){
+                initialDirection = 0
+            }
+            /*
+             for debugging purposes we have the '== 10' case
+            */
+            if(initDirCount == 10){
+                print("the initial direction has been set its ", initialDirection)
+            }
             if(initDirCount < 10){
-                initialDirection = initialDirection + heading.magneticHeading
+                print("calculating initial direction")
+                print("reading is ",heading.magneticHeading)
+                initialDirection = initialDirection! + ((0.1) * heading.magneticHeading)
                 initDirCount = initDirCount + 1
             }
+            else{
+                getInitialDirection = false
+            }
         }
-        
+        /*
+         * once the intial direction has been set we can start moving the arrow relative to that direction
+         */
         if(compassOn){
-            moveArrow(angle: heading.magneticHeading)
+            // we will want to take the rolling average of the last x values to make the movement smooth
+            if(windowFull){
+                var newDir = 0.0
+                for val in window {
+                    newDir = newDir + (0.2 * val)
+                }
+                print(" current diretion is")
+                moveArrow(angle: newDir)
+                //update the array to get the new value
+                window.removeFirst()
+                window.append(heading.magneticHeading)
+            }
+            else{
+                // we specify the size of the window here -
+                if (window.count < 5){
+                    window.append(heading.magneticHeading)
+                }
+                else{
+                    windowFull = true
+                }
+            }
         }
         
     }
     
     func moveArrow(angle: CLLocationDirection){
+        // calculate the diference in angle as we move ()
+        let initAngle = GLKMathDegreesToRadians(Float(initialDirection!))
+        let newAngle = GLKMathDegreesToRadians(Float(angle))
         
-        tempView!.transform.translatedBy(x: CGFloat(), y: CGFloat())
+        //fraction of a circle
+        let frac = (newAngle - initAngle) / 2.0
         
+        print("we should move by ", frac)
+        
+        //this should transform the view
+        tempView!.transform = tempView!.transform.translatedBy(x: CGFloat(frac * -1 ), y: CGFloat(0))
+
+        //tempView!.frame = CGRectMake(xPosition, yPosition, height, width)
+
     }
 
     
