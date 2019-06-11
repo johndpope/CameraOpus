@@ -20,6 +20,8 @@ import GLKit
  
  **************************
  
+ **************************
+ 
  PHOTO:
  
  (back camera)
@@ -48,6 +50,8 @@ import GLKit
  
  **************************
  
+ **************************
+ 
  AR:
  
  arkitcapture is about 2megapixels
@@ -56,7 +60,11 @@ import GLKit
  it seems to be the origin of cgimage is top right, not top left
  while the origin of cgpoint is top right
  
- ACCEL
+ **************************
+ 
+ **************************
+ 
+ ACCEL:
  
  when the phone is still im seeing residual numbers
  
@@ -75,6 +83,14 @@ import GLKit
  
  on this iphone xs it seems like we could round to nearest 0.1?
  
+ **************************
+ 
+ **************************
+ 
+ STORYBOARD
+ 
+ photoPreviewImageView: h: 500 x w: 375
+ 
  */
 
 /*
@@ -83,25 +99,52 @@ import GLKit
  - create a frame in the image about 2/3 of the photo layer, inbetween which we ask user to position object
  - ask user to tap center of object (this gives us the distance) and allows us to calculate a radius for how much translation and how many images we want
  - As user moves around we show a progress bar
- - get depth reading from tap in image
- 
- ideas
- - we could start an ar scene with arkit and save information about the enviroment
- - then once a user touches the object we turn off the ar scene and go back to avcapture
- - then once the image taking process has started, we systematically switch to arkit to check how much distance has been traversed
+ - We provide feedback on how many more images are needed, and speed user should be moving vs is currently
+
  - we should consider obfuscating code using this scheme en.wikipedia.org/wiki/Amit_Sahai
- 
- log of todo now
- - write function that makes log of acelerometer data
- - having some issue with OperationQueue.main.addOperation not getting in there
- - get depth value in human readable format
- - rewrite pixel rectification with cvpixel buffers, and check against the cgimage implementation (this is needed because the co-ordinate system of cgimage seems to be different to cg point)
- - consider rewriting visualizePoint function with cvpixel buffers instead (so we can avoid co-ordinate system troubles)
  
  */
 
 /*
- Flags
+ CURRENT STACK
+ 
+ To Do
+ 
+ - creating intial direction reading by taking average of last 10 readings - done
+ - creating arrow movement method based on fraction of direction moved
+    - test that this works corredtly on real world data
+    - most likely the fraction routine is not correct
+ - add arrow back ground
+    - self.xxx = UIImageView(image: UIImage(named: "arrowbackground")!)
+    - self.xxx!.frame = CGRect(x: 0, y: 415, width: 375, height: 75)
+ - bug when person presses twice, we get two arrows that should not happen
+ 
+ - we will need to look into the timing of cllocation updates too
+ - arrow should move up and down too based on movement too
+ - rewrite pixel rectification with cvpixel
+ buffers, and check against the cgimage implementation (this is needed because the co-ordinate system of cgimage seems to be different to cg point)
+ - consider rewriting visualizePoint function with cvpixel buffers instead (so we can avoid co-ordinate system troubles)
+ - get depth value in human readable format
+ 
+ 
+Nice to Haves
+ - consider also writing function that calculates if the change in depth is smooth over time (ie what is being viewed t_1 vs t_2) The reasoning behind this is that we might expect that if a user keeps the camera aimed at the right place and moves around, it would be smooth, but if the user simply points the camera at something else, we will see discontinuities
+    - this function would take in all depth values in a scene (probably those inside the frame)
+    - it is to be determined whether the simple average would work ie whether f : r^~300000 --> 1 makes sense
+    - maybe we compare average and variance? or maybe a few other moments of the data set vis a vis generalized method of moments?
+ - timstamps of image taking
+ - accelerometer approximations of current speed
+ - optimisation of app load time
+ 
+ ** really unneccesary but would be cool **
+ - we should consider obfuscating code using this scheme en.wikipedia.org/wiki/Amit_Sahai
+ 
+ Keep in mind
+ - the get depth point will have the same logic as the depth rectifiication function, but will only 'rectify' a points worth of data - done?
+ - right now when you touch the video previewLayer, you save 3 photos
+ - the flow is capturePhoto is called with the capture3 flag. One image is automatically saved here, then visualizeImage is called, and one image is saved there, then createDepthMap is called saving another image
+ 
+    Flags
  
  - right now devMotionFlag is on and devEffectFlag is off (both cannot be on at the same time becuase they both attempt to turn on the accelerometer)
  - additionally motionInterval must have some reasonable value
@@ -109,36 +152,26 @@ import GLKit
  **NB**
  - we use setDefaultLabelText as a user input way of resetting flags for testing purposes
  
- */
-
-/*
- log of nice to haves
- - timstamps of image taking
- -
  
- */
-
-/*
- CURRENT STACK
- 
- - creating arrow movement method based on fraction of direction moved
- - creating intial direction reading by taking average of last 10 readings
- - we will need to look into the timing of cllocation updates too
- 
+ Done
  - completing depth rectification function - done
- - the get depth point will have the same logic as the depth rectifiication function, but will only 'rectify' a points worth of data - done?
  - working on depth segmentiontation algo next
+ - write function that makes log of acelerometer data - done
+ - having some issue with OperationQueue.main.addOperation not getting in there - done
  
+ ** this is solved by gsd ** --> gsd lets us determine max / min distance needed for specific resolution
  - How do we determine the optimal distance from which to take photo?
  - We will need to guess size of image
     - to do that we will use some depth segmentation algo
+    - no we don't
  - Is there some mathemtics we can do based on the object prelim size guess?
-    - yes based on gsd we can determine max and min distances needed for specific resolution
  
  
- - right now when you touch the video previewLayer, you save 3 photos
- - the flow is capturePhoto is called with the capture3 flag. One image is automatically saved here, then visualizeImage is called, and one image is saved there, then createDepthMap is called saving another image
- - The text label isnt updating because of some silly issue
+ Backburner ideas
+ - we could start an ar scene with arkit and save information about the enviroment
+ - then once a user touches the object we turn off the ar scene and go back to avcapture
+ - then once the image taking process has started, we systematically switch to arkit to check how much distance has been traversed
+ 
  
  
  Resources:
@@ -202,6 +235,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var compassOn = false
     var getInitialDirection = false
     var initialDirection : Double?
+    var hasInitialDirectionSet = false
     
     var window : [Double] = []
     var windowFull = false
@@ -211,6 +245,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var devCount = 0
     var compassCount = 0
     var initDirCount = 0
+    var moveArrowCount = 0
     
     //MARK: Properties
     @IBOutlet weak var textLabel: UILabel!
@@ -228,7 +263,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     // stackoverflow.com/questions/37869963/how-to-use-avcapturephotooutput
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
         
-        print("in file Output")
+        print("in file Output2")
         let imageData = outputFileURL.dataRepresentation
         print(imageData)
         
@@ -289,20 +324,21 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //IIII
         
         if(getInitialDirection){
-            //we take a lazy average of the last 10 readings to increase accuracy
+            //we take a lazy average of the last 5 readings to increase accuracy
             if(initDirCount == 0){
                 initialDirection = 0
             }
             /*
-             for debugging purposes we have the '== 10' case
+             for debugging purposes we have the '== 5' case
             */
-            if(initDirCount == 10){
+            if(initDirCount == 5){
                 print("the initial direction has been set its ", initialDirection)
+                hasInitialDirectionSet = true
             }
-            if(initDirCount < 10){
+            if(initDirCount < 5){
                 print("calculating initial direction")
                 print("reading is ",heading.magneticHeading)
-                initialDirection = initialDirection! + ((0.1) * heading.magneticHeading)
+                initialDirection = initialDirection! + ((0.2) * heading.magneticHeading)
                 initDirCount = initDirCount + 1
             }
             else{
@@ -319,12 +355,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 for val in window {
                     newDir = newDir + (0.2 * val)
                 }
-                print(" current diretion is")
+                //print(" current direction is")
                 moveArrow(angle: newDir)
                 //update the array to get the new value
                 window.removeFirst()
                 window.append(heading.magneticHeading)
             }
+                /* 2 cases:
+                    i) window is either not full
+                    ii) has just become full and the bool is not yet set
+                 */
             else{
                 // we specify the size of the window here -
                 if (window.count < 5){
@@ -338,21 +378,71 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
+    /*
+     consider also writing function that calculates if the change in depth is smooth over time (ie what is being viewed t_1 vs t_2) The reasoning behind this is that we might expect that if a user keeps the camera aimed at the right place and moves around, it would be smooth, but if the user simply points the camera at something else, we will see discontinuities
+    */
+    
     func moveArrow(angle: CLLocationDirection){
-        // calculate the diference in angle as we move ()
-        let initAngle = GLKMathDegreesToRadians(Float(initialDirection!))
-        let newAngle = GLKMathDegreesToRadians(Float(angle))
+        // if the initial direction has not been set we cannot calculate change and so we should not progress
+        if(!hasInitialDirectionSet){
+            return
+        }
+        //inital direction has been set we can proceed
+        //let initAngle = GLKMathDegreesToRadians(Float(initialDirection!))
+        //let newAngle = GLKMathDegreesToRadians(Float(angle))
         
-        //fraction of a circle
-        let frac = (newAngle - initAngle) / 2.0
+        //fraction of a circle in radians (check this is correct)
+        var frac : Double?
+        if (angle > initialDirection!) {
+            if (360-angle+initialDirection!) < (angle-initialDirection!) {
+                frac = -1 * min((angle-initialDirection!) / 360.0, (360-angle+initialDirection!) / 360.0)
+            } else {
+                frac = min((angle-initialDirection!) / 360.0, (360-angle+initialDirection!) / 360.0)
+            }
+            frac = min((angle-initialDirection!) / 360.0, (360-angle+initialDirection!) / 360.0)
+        }
+        else {
+            if (360-initialDirection!+angle) < (initialDirection!-angle) {
+                frac = -1 * min((initialDirection!-angle) / 360.0, (360-initialDirection!+angle) / 360.0)
+            } else {
+                frac = min((initialDirection!-angle) / 360.0, (360-initialDirection!+angle) / 360.0)
+            }
+        }
+//        if((initialDirection! - angle) > 0){
+//            frac = ((360 - initialDirection!) + angle) / 360.0
+//        }
+//        else{
+//            frac = (angle - initialDirection!) / 360.0
+//        }
         
-        print("we should move by ", frac)
+        /*
+         These next 2 statements are simply there for visualisation and debugging purposesd, remove at a later moment in time
+        */
+        if(moveArrowCount % 25 == 0){
+            print("the initial angle is ",initialDirection!)
+            print("the new angle is ", angle)
+            print("we should move by ", frac)
+        }
+        if(moveArrowCount == 200){
+            moveArrowCount = 0
+        }
+        /*
+         this is the temp variable which is part of debugging
+        */
+        moveArrowCount = moveArrowCount + 1
         
-        //this should transform the view
-        tempView!.transform = tempView!.transform.translatedBy(x: CGFloat(frac * -1 ), y: CGFloat(0))
-
+        /*
+         speed estimate is r theta (check this)
+        */
+        //var speed
+        
+        /*
+         this should transform the view
+         we need to determine what I should be multiplying the frac with
+         285 = 375 - 90 (width of arrow), ie scaling by the width of the screen
+        */
+        tempView!.transform = tempView!.transform.translatedBy(x: CGFloat(frac! * 285.0 ), y: CGFloat(0))
         //tempView!.frame = CGRectMake(xPosition, yPosition, height, width)
-
     }
 
     
@@ -599,6 +689,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         accelcount = 0
         devCount = 0
         compassCount = 0
+        moveArrowCount = 0
     }
     /*
      To create a rectilinear image we must begin with an empty destination buffer and iterate through it
@@ -1401,15 +1492,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             var timer = Timer.scheduledTimer(timeInterval: TimeInterval(2.0), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
         }
         
-        //TODO
-        // we will
-        /*
-         stackoverflow.com/questions/36524066/how-to-move-sprite-just-left-or-right-using-coremotion
-         
-        arrowView = UIImageView(image: UIImage(named: "arrow")!)
-        arrowView!.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
-        */
-        
     }
     /*
      * Important that we have @obj c because this function comes from a selector
@@ -1432,7 +1514,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
             if(uiEffectFlag){
                 let min = CGFloat(-100)
-                let max = CGFloat(100)
+                let max = CGFloat()
                 
                 let xMotion = UIInterpolatingMotionEffect(keyPath: "layer.transform.translation.x", type: .tiltAlongHorizontalAxis)
                 xMotion.minimumRelativeValue = min
@@ -1496,9 +1578,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 //            path.stroke()
 //
             
-        
-            
-        
             //This stuff works
             
             self.photoPreviewImageView.addSubview(self.tempView!)
@@ -1511,9 +1590,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     func pollDirection(){
         
     }
-    
-    
-
     
     func visualizePointInImage(cgImage: CGImage, crossHairRadius: Int, thickness: Int){
         
@@ -1685,26 +1761,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      workspace code
     */
     
-    /*
-     motion manager alternate implementation
-    */
-    /*
-        self.motionManager!.startDeviceMotionUpdates(
-        using: .xMagneticNorthZVertical,
-        to: OperationQueue.current!,
-        withHandler: {(data, error) in
-        if let validData = data {
-        // Get the attitude relative to the magnetic north reference frame.
-        let xa = validData.userAcceleration.x
-        let ya = validData.userAcceleration.y
-        let za = validData.userAcceleration.z
-        // Use the motion data in your app.
-        self.outputDevMotionData(data: validData)
-        }
-        })
-    */
-    
-    
 
 }
 
@@ -1817,6 +1873,3 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
     }
         
 }
-
-
-
