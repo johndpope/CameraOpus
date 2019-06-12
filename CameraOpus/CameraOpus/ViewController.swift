@@ -120,6 +120,11 @@ FLOW
  
  To Do
  
+ - take images automatically as user moves
+ - update imagemap to be int bool
+ - round degrees in hashmap lookups
+ - allow imagemap lookup to return if the value is within x degrees of true value
+ 
  - creating intial direction reading by taking average of last 10 readings - done
  - creating arrow movement method based on fraction of direction moved
     - test that this works corredtly on real world data
@@ -249,6 +254,19 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     var window : [Double] = []
     var windowFull = false
+    
+    //image tracker
+    // this will keep track of the number of the images we want
+    // each Double corresponds to the angle at which we want an image
+    // the bool will track if an image was taken at at the angle
+    //eg [30: false, 60: false]
+    var imageMap = [Int : Bool]()
+    // this variable sets the frequency with which to take images
+    // for now it will be in the addRotationAnimation function but this should be dynamically set based on image conditions
+    // we can create that method later
+    var imageInterval: Int?
+    var imagesTaken = 0
+
 
     //temp variables
     var accelcount = 0
@@ -385,6 +403,48 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         return newValue
     }
     
+    /*
+     checks if value is in interval and if so has not yet triggered a photo
+    */
+    
+    func checkInterval(radius: Int, candidate: Double) -> (found: Bool ,imNumber: Int){
+        let candid = Int(floor(candidate))
+        var counter = candid - radius
+        while (counter < candid + radius){
+            //needs to be if let, not if (because we are searching not nil, not true)
+            if let val = imageMap[counter] {
+                print("checking interval ", counter)
+                //the value is false ie we haven't taken a picture here yet
+                if(!val){
+                    return (found: true, imNumber: counter)
+                }
+            }
+            counter = counter + 1
+        }
+        return (found: false, imNumber: -1)
+    }
+    
+    /*
+     this function assumes we are moving clockwise
+     checks the dif between the initial direction and the current angle
+    */
+    func takeGuidedImage(angle: Double){
+        var dif = getShortestDistance(start: initialDirection!, end: angle)
+        // gets the clockwise number for anticlockwise values (since getShortestDistance is direction invariant)
+        if (dif < 0){
+            dif = 360 + dif
+        }
+        //we allow 2 degrees of radius (we may have to increase this)
+        let (found, imNumber) = checkInterval (radius: 2, candidate: dif)
+        if(found){
+            imageMap[imNumber] = true
+            // pop up saying hold still
+            // take photo
+            imagesTaken = imagesTaken + 1
+        }
+        
+    }
+    
     
     /*
      We will need to get the value of the heading continuosly and send to the arrow
@@ -446,6 +506,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     counter = counter + 1
                 }
                 //print(" current direction is")
+                //this function determines whether we should take an image
+                takeGuidedImage(angle: newDir!)
+                
                 moveArrow(angle: newDir!)
                 //update the array to get the new value
                 window.removeFirst()
@@ -810,6 +873,24 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         devCount = 0
         compassCount = 0
         moveArrowCount = 0
+        
+        var testAlert = true
+        //testing alers
+        if(testAlert){
+            let alert = UIAlertController(title: "Alert", message: "Message", preferredStyle: .alert)
+            self.present(alert, animated: true, completion: nil)
+            
+            // change to desired number of seconds (in this case 5 seconds)
+            let when = DispatchTime.now() + 3
+            DispatchQueue.main.asyncAfter(deadline: when){
+                // your code with delay
+                alert.dismiss(animated: true, completion: nil)
+            }
+        }
+        
+        
+
+        
     }
     /*
      To create a rectilinear image we must begin with an empty destination buffer and iterate through it
@@ -1598,6 +1679,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //print("image height is ", im?.height)
         //print("image width is ", im?.width)
         
+        //set the number of images we want to take
+        imageInterval = 30
+        var i = 0
+        while(i <= 360){
+            imageMap[i] = false
+            i = i + imageInterval!
+        }
+        
         DispatchQueue.main.async {
             // view manipulation here so it happens with main thread.
             
@@ -1674,11 +1763,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             var yspeed = 0.0
             
             var devMotionCheck = 0
-            
-//            if(self.devMotionFlag == 1)&&(devEffectFlag){
-//                print("trying out dev motion based ui move")
-//
-//            }
             
             //bezier implementation of a sine wave
             
