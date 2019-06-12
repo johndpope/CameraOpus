@@ -266,6 +266,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     // we can create that method later
     var imageInterval: Int?
     var imagesTaken = 0
+    // a flag set in guided to stop photoOutput from doing too much
+    var guidedFlag = false
 
 
     //temp variables
@@ -413,9 +415,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         while (counter < candid + radius){
             //needs to be if let, not if (because we are searching not nil, not true)
             if let val = imageMap[counter] {
-                print("checking interval ", counter)
+                
                 //the value is false ie we haven't taken a picture here yet
                 if(!val){
+                    print("found interval @ ", counter)
                     return (found: true, imNumber: counter)
                 }
             }
@@ -435,12 +438,44 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             dif = 360 + dif
         }
         //we allow 2 degrees of radius (we may have to increase this)
+        print("calling checkInterval with ", dif)
         let (found, imNumber) = checkInterval (radius: 2, candidate: dif)
         if(found){
             imageMap[imNumber] = true
+            
+            //getting photo object ready
+            var photoSettings = AVCapturePhotoSettings()
+            photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+            photoSettings.isDepthDataDeliveryEnabled =
+                photoOutput!.isDepthDataDeliverySupported
+            
             // pop up saying hold still
+            holdStill(time: 1.0)
+            print("delegate should have been created")
+            guidedFlag = true
+
+            photoOutput!.capturePhoto(with: photoSettings, delegate: self)
+            
             // take photo
             imagesTaken = imagesTaken + 1
+        }
+        
+    }
+    
+    func holdStill(time: Double){
+        
+        let alert = UIAlertController(title: "Alert", message: "Message", preferredStyle: .alert)
+        self.present(alert, animated: true, completion: nil)
+        
+        // change to desired number of seconds (in this case 5 seconds)
+        let when = DispatchTime.now() + time
+        DispatchQueue.main.asyncAfter(deadline: when){
+            // your code with delay
+            
+            //I have this print statement to figure out if this code is blocking or not ie is the image capture happening simulataneously or sequentially
+            //we want simulataneously
+            print("about to dismiss alert")
+            alert.dismiss(animated: true, completion: nil)
         }
         
     }
@@ -881,7 +916,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             self.present(alert, animated: true, completion: nil)
             
             // change to desired number of seconds (in this case 5 seconds)
-            let when = DispatchTime.now() + 3
+            let when = DispatchTime.now() + 1
             DispatchQueue.main.asyncAfter(deadline: when){
                 // your code with delay
                 alert.dismiss(animated: true, completion: nil)
@@ -1999,6 +2034,12 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         //this flag needs to be set for the first successful shot
                         if(!self.firstShotTaken){
                             self.firstShotTaken = true
+                        }
+                        
+                        if(self.guidedFlag){
+                            print("should have just saved guided image ")
+                            self.guidedFlag = false
+                            return
                         }
                         
                         //we want these variables to have greater scope so they are out of the capturePhotoFlag1 statement
