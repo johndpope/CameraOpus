@@ -94,6 +94,16 @@ import GLKit
  */
 
 /*
+
+FLOW
+ 
+    - when a user touches the video layer
+        - the flow is capturePhoto is called, an avphotocapture session is created and captures the image and sends it to the photoOutput function with the capture3 flag on. One image is automatically saved here, then visualizeImage is called, and one image is saved there, then createDepthMap is called saving another image
+        - we also start add the arrow to the view in the photoOutput method (in the capture3 flag if statement)
+        - this is triggered by the addRotationAnimation method which calls the timer method
+*/
+ 
+/*
  
  strategy
  - create a frame in the image about 2/3 of the photo layer, inbetween which we ask user to position object
@@ -142,7 +152,7 @@ Nice to Haves
  Keep in mind
  - the get depth point will have the same logic as the depth rectifiication function, but will only 'rectify' a points worth of data - done?
  - right now when you touch the video previewLayer, you save 3 photos
- - the flow is capturePhoto is called with the capture3 flag. One image is automatically saved here, then visualizeImage is called, and one image is saved there, then createDepthMap is called saving another image
+ 
  
     Flags
  
@@ -171,7 +181,6 @@ Nice to Haves
  - we could start an ar scene with arkit and save information about the enviroment
  - then once a user touches the object we turn off the ar scene and go back to avcapture
  - then once the image taking process has started, we systematically switch to arkit to check how much distance has been traversed
- 
  
  
  Resources:
@@ -235,6 +244,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var compassOn = false
     var getInitialDirection = false
     var initialDirection : Double?
+    var currentDirection: Double?
     var hasInitialDirectionSet = false
     
     var window : [Double] = []
@@ -311,10 +321,76 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     /*
-     We will need to get the value of the heading continuosly and send to the arrow
-    */
+     * returns difference between start and end angle and
+     */
+    func getShortestDistance(start: Double ,end: Double) -> Double {
+        
+        var dif : Double?
+        if (end > start) {
+            /*
+             eg
+             
+             start = 10
+             end = 350
+             
+             start = 340
+             end = 350
+             */
+            if (360-end+start) < (end-start) {
+                // (360-end+start!) case corresponds to 360 being in between start and end
+                dif = -1 * ((360-end+start) )
+            } else {
+                dif = ((end-start) )
+            }
+        }
+        else {
+            /*
+             eg
+             start = 350
+             end = 10
+             
+             start = 350
+             end = 340
+             */
+            if (360-start+end) < (start-end) {
+                dif = ((360-start+end) )
+            } else {
+                dif = -1 * ((start-end) )
+            }
+        }
+        return dif!
+    }
     
+    /*
+        recursive implementation but should only run count times
+    */
+    func weightedUpdate(start: Double, dif: Double, count: Int) -> Double{
+        
+        print("WU we had start of ", start)
+        print("WU we had dif of ", dif)
+        
+        var newValue = start + dif
+        if(newValue > 360){
+            newValue = newValue.truncatingRemainder(dividingBy: 360)
+        }
+        if(newValue < 0){
+            newValue = newValue + 360
+        }
+        if(count > 0){
+            //we divide so that the dif is smaller for each recursive call, this means when the count is large the dif will less strongly affect the final number
+            let newDif = (getShortestDistance(start: start, end: newValue) / Double (count) )
+            return weightedUpdate(start: newValue, dif: newDif, count: count - 1)
+        }
+        print("WU we calculated the value @", newValue)
+        return newValue
+    }
+    
+    
+    /*
+     We will need to get the value of the heading continuosly and send to the arrow
+     */
     func locationManager(_ manager: CLLocationManager, didUpdateHeading heading: CLHeading) {
+        //for visualization purposes
         if(compassCount < 5){
             print("the compass")
             print (heading.magneticHeading)
@@ -326,7 +402,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         if(getInitialDirection){
             //we take a lazy average of the last 5 readings to increase accuracy
             if(initDirCount == 0){
-                initialDirection = 0
+                initialDirection = heading.magneticHeading
+                initDirCount = initDirCount + 1
             }
             /*
              for debugging purposes we have the '== 5' case
@@ -334,11 +411,20 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             if(initDirCount == 5){
                 print("the initial direction has been set its ", initialDirection)
                 hasInitialDirectionSet = true
+                currentDirection = initialDirection!
             }
-            if(initDirCount < 5){
+            if((initDirCount < 5)&&(initDirCount > 0)){
                 print("calculating initial direction")
-                print("reading is ",heading.magneticHeading)
-                initialDirection = initialDirection! + ((0.2) * heading.magneticHeading)
+                print("reading is ", heading.magneticHeading)
+                
+                //this check is neccessary if the user is close  360 or 0 since slight moves can lead to pathological windows eg
+                // 358 358 358 1 1
+                print("about to call weightedUpdate with args ", initDirCount)
+                var dif = getShortestDistance(start: initialDirection!, end: heading.magneticHeading)
+                //we have this line in the beginning so that it does not revert to the new reading automatically
+                dif = dif / 2
+                initialDirection = weightedUpdate(start: initialDirection!, dif: dif, count: initDirCount)
+
                 initDirCount = initDirCount + 1
             }
             else{
@@ -391,40 +477,69 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //let initAngle = GLKMathDegreesToRadians(Float(initialDirection!))
         //let newAngle = GLKMathDegreesToRadians(Float(angle))
         
-        //fraction of a circle in radians (check this is correct)
-        var frac : Double?
-        if (angle > initialDirection!) {
-            if (360-angle+initialDirection!) < (angle-initialDirection!) {
-                frac = -1 * min((angle-initialDirection!) / 360.0, (360-angle+initialDirection!) / 360.0)
-            } else {
-                frac = min((angle-initialDirection!) / 360.0, (360-angle+initialDirection!) / 360.0)
-            }
-            frac = min((angle-initialDirection!) / 360.0, (360-angle+initialDirection!) / 360.0)
-        }
-        else {
-            if (360-initialDirection!+angle) < (initialDirection!-angle) {
-                frac = -1 * min((initialDirection!-angle) / 360.0, (360-initialDirection!+angle) / 360.0)
-            } else {
-                frac = min((initialDirection!-angle) / 360.0, (360-initialDirection!+angle) / 360.0)
-            }
-        }
-//        if((initialDirection! - angle) > 0){
-//            frac = ((360 - initialDirection!) + angle) / 360.0
-//        }
-//        else{
-//            frac = (angle - initialDirection!) / 360.0
-//        }
+        /*
+         2 cases
+            ending direction is greater than current direction
+            vice versa
+            2 further cases
+                case 1 person moves clockwise
+                case 2 person moves anticlockwise
+        */
         
         /*
-         These next 2 statements are simply there for visualisation and debugging purposesd, remove at a later moment in time
+         * we divide frac by 360 at the end to handle 0
+        */
+        
+        var frac : Double?
+        if (angle > currentDirection!) {
+            /*
+             eg
+             
+             start = 10
+             end = 350
+             
+             start = 340
+             end = 350
+             */
+            if (360-angle+currentDirection!) < (angle-currentDirection!) {
+                // (360-angle+currentDirection!) case corresponds to 360 being in between start and end
+                frac = -1 * ((360-angle+currentDirection!) / 360.0)
+            } else {
+                frac = ((angle-currentDirection!) / 360.0)
+            }
+        }
+        else {
+            /*
+             eg
+             start = 350
+             end = 10
+             
+             start = 350
+             end = 340
+            */
+            if (360-currentDirection!+angle) < (currentDirection!-angle) {
+                frac = ((360-currentDirection!+angle) / 360.0)
+            } else {
+                frac = -1 * ((currentDirection!-angle) / 360.0)
+            }
+        }
+        
+        /*
+         These statements are simply there for visualisation and debugging purposesd, remove at a later moment in time
         */
         if(moveArrowCount % 25 == 0){
-            print("the initial angle is ",initialDirection!)
+            print("the cur angle is ",currentDirection!)
             print("the new angle is ", angle)
             print("we should move by ", frac)
         }
         if(moveArrowCount == 200){
             moveArrowCount = 0
+        }
+        if((angle > 350)&&(angle < 5)){
+            print("sensitivity analysis")
+            print("the cur angle is ",currentDirection!)
+            print("the new angle is ", angle)
+            print("we should move by ", frac)
         }
         /*
          this is the temp variable which is part of debugging
@@ -441,6 +556,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
          we need to determine what I should be multiplying the frac with
          285 = 375 - 90 (width of arrow), ie scaling by the width of the screen
         */
+        currentDirection! = angle
         tempView!.transform = tempView!.transform.translatedBy(x: CGFloat(frac! * 285.0 ), y: CGFloat(0))
         //tempView!.frame = CGRectMake(xPosition, yPosition, height, width)
     }
@@ -1484,6 +1600,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             self.tempView = UIImageView(image: UIImage(named: "move")!)
             self.tempView!.frame = CGRect(x: 160, y: 45, width: 90, height: 30)
             //tempView.addTag
+            
+            let setUpView = UIImageView(image: UIImage(named: "arowbackground"))
+            setUpView.frame = CGRect(x: 0, y: 415, width: 375, height: 75)
+            setUpView.alpha = 0.5
+            self.photoPreviewImageView.addSubview(setUpView)
+            
             
             self.photoPreviewImageView.addSubview(self.tempView!)
             
