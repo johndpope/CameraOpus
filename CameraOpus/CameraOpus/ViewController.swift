@@ -437,12 +437,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         if(compassOn){
             // we will want to take the rolling average of the last x values to make the movement smooth
             if(windowFull){
-                var newDir = 0.0
+                var newDir = window.first
+                var counter = 0
                 for val in window {
-                    newDir = newDir + (0.2 * val)
+                    let dify = getShortestDistance(start: newDir!, end: val)
+                    newDir = weightedUpdate(start: newDir!, dif: dify, count: counter)
+                    //newDir = newDir + (0.2 * val)
+                    counter = counter + 1
                 }
                 //print(" current direction is")
-                moveArrow(angle: newDir)
+                moveArrow(angle: newDir!)
                 //update the array to get the new value
                 window.removeFirst()
                 window.append(heading.magneticHeading)
