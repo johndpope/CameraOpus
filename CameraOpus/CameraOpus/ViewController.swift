@@ -564,7 +564,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             self.window.removeAll()
             
             self.imageMap.removeAll()
-            
         }
         
     }
