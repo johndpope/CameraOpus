@@ -2159,7 +2159,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      Mo look here
     */
     func sendImageToServer(photo: AVCapturePhoto){
-        var r  = URLRequest(url: URL(string: "http://ec2-18-206-164-104.compute-1.amazonaws.com:3000/photos/upload")!)
+        var r  = URLRequest(url: URL(string: "http://18.206.164.104/photos/upload")!)
         r.httpMethod = "POST"
         let boundary = "Boundary-\(UUID().uuidString)"
         r.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
