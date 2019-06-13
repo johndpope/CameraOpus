@@ -2129,12 +2129,50 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
+    func createBody(parameters: [String: String],
+                    boundary: String,
+                    data: Data,
+                    mimeType: String,
+                    filename: String) -> Data {
+        let body = NSMutableData()
+        
+        let boundaryPrefix = "--\(boundary)\r\n"
+        
+        for (key, value) in parameters {
+            body.appendString(boundaryPrefix)
+            body.appendString("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+            body.appendString("\(value)\r\n")
+        }
+        
+        body.appendString(boundaryPrefix)
+        body.appendString("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n")
+        body.appendString("Content-Type: \(mimeType)\r\n\r\n")
+        body.append(data)
+        body.appendString("\r\n")
+        body.appendString("--".appending(boundary.appending("--")))
+        
+        return body as Data
+    }
+    
     
     /*
      Mo look here
     */
-    func sendImageToServer(){
+    func sendImageToServer(photo: AVCapturePhoto){
+        var r  = URLRequest(url: URL(string: "http://ec2-18-206-164-104.compute-1.amazonaws.com:3000/photos/upload")!)
+        r.httpMethod = "POST"
+        let boundary = "Boundary-\(UUID().uuidString)"
+        r.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+    
+        let image = photo.cgImageRepresentation() as! CGImage
+        let uimg = UIImage(cgImage: image)
+        let data = uimg.jpegData(compressionQuality: 1)
         
+        r.httpBody = createBody(parameters: [:],
+                                boundary: boundary,
+                                data: data ?? Data.init(),
+                                mimeType: "image/jpg",
+                                filename: "hello.jpg")
     }
     
     /*
@@ -2169,7 +2207,7 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         if(self.guidedFlag){
                             print("should have just saved guided image ")
                             
-                            self.sendImageToServer()
+                            self.sendImageToServer( photo :photo)
                             
                             self.guidedFlag = false
                             return
@@ -2256,4 +2294,11 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
         }
     }
         
+}
+
+extension NSMutableData {
+    func appendString(_ string: String) {
+        let data = string.data(using: String.Encoding.utf8, allowLossyConversion: false)
+        append(data!)
+    }
 }
