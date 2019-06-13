@@ -2164,8 +2164,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let boundary = "Boundary-\(UUID().uuidString)"
         r.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
     
-        let image = photo.cgImageRepresentation() as! CGImage
-        let uimg = UIImage(cgImage: image)
+        //let image = photo.cgImageRepresentation() as! CGImage
+        let image = photo.cgImageRepresentation()
+        let im = image!.takeUnretainedValue()
+        let uimg = UIImage(cgImage: im)
         let data = uimg.jpegData(compressionQuality: 1)
         
         r.httpBody = createBody(parameters: [:],
