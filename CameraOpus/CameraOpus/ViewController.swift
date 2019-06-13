@@ -175,6 +175,10 @@ FLOW
  
  
 Nice to Haves
+ 
+ - speed up loading (you can apperently do some of this by moving form viewDidLoad to viewWillAppear)
+ stackoverflow.com/questions/21949080/camera-feed-slow-to-load-with-avcapturesession-on-ios-how-can-i-speed-it-up
+ 
  - a method that checks if the user's camera is stable (get rid of the alert when stable and take photo)
  - consider also writing function that calculates if the change in depth is smooth over time (ie what is being viewed t_1 vs t_2) The reasoning behind this is that we might expect that if a user keeps the camera aimed at the right place and moves around, it would be smooth, but if the user simply points the camera at something else, we will see discontinuities
     - this function would take in all depth values in a scene (probably those inside the frame)
