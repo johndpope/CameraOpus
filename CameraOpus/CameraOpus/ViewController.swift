@@ -2175,6 +2175,22 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                                 data: data ?? Data.init(),
                                 mimeType: "image/jpg",
                                 filename: "hello.jpg")
+        
+        let task = URLSession.shared.dataTask(with: r) { data, response, error in
+            guard let data = data,
+                let response = response as? HTTPURLResponse,
+                error == nil else {
+                    return
+            }
+            
+            guard (200 ... 299) ~= response.statusCode else {
+                return
+            }
+            
+            let responseString = String(data: data, encoding: .utf8)
+            print("responseString = \(responseString)")
+        }
+        task.resume()
     }
     
     /*
