@@ -501,7 +501,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 photoOutput!.isDepthDataDeliverySupported
             
             // pop up saying hold still
-            holdStill(time: 1.0)
+            //holdStill(time: 2.0)
             
             /*
              Taking photo and also setting flag which should send the image to the server
@@ -578,7 +578,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let alert = UIAlertController(title: "Alert", message: "capturing photo keep still please :)", preferredStyle: .alert)
         
         DispatchQueue.main.async {
-            self.present(alert, animated: true, completion: nil)
+            self.present(alert, animated: false, completion: nil)
         }
         
         // change to desired number of seconds (in this case 5 seconds)
@@ -589,7 +589,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             //I have this print statement to figure out if this code is blocking or not ie is the image capture happening simulataneously or sequentially
             //we want simulataneously
             print("about to dismiss alert")
-            alert.dismiss(animated: true, completion: nil)
+            alert.dismiss(animated: false, completion: nil)
         }
         
     }
@@ -2163,7 +2163,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      Mo look here
     */
     func sendImageToServer(photo: AVCapturePhoto){
-        var r  = URLRequest(url: URL(string: "http://18.206.164.104/photos/upload")!)
+        var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo")!)
         r.httpMethod = "POST"
         let boundary = "Boundary-\(UUID().uuidString)"
         r.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
@@ -2235,13 +2235,20 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                             return
                         }
                         
-                        //we want these variables to have greater scope so they are out of the capturePhotoFlag1 statement
-                        let avDepthData = photo.depthData
-                        let temp = photo.cgImageRepresentation()
-                        let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
+                        //we want these variables to have greater scope so they are out of the capturePhotoFlag1 statement but we don't want to initialize if we are just using guided images EDIT ended up putting them in each if statemnt for the time being
+                        
+                        //let avDepthData : AVDepthData?
+                        //let cgim : CGImage
+                        
+                        
                         
                         //time stamp
                         if(self.capturePhotoFlag1){
+                            
+                            let avDepthData = photo.depthData
+                            let temp = photo.cgImageRepresentation()
+                            let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
+                            
                             let totalSeconds = CMTimeGetSeconds(photo.timestamp)
                             print("photo was taken at ", totalSeconds)
                             print("which in a human readable is ", totalSeconds)
@@ -2299,6 +2306,10 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                         NOW
                         */
                         if(self.capturePhotoFlag3){
+                            
+                            let avDepthData = photo.depthData
+                            let temp = photo.cgImageRepresentation()
+                            let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
                             
                             print("sending depth info to getDepthPoint")
                             self.getDepthPoint(depthdata: avDepthData!, cgImage: cgim)
