@@ -129,8 +129,8 @@ FLOW
  
  To Do
  
- - stop crash when all photos are taken
- - reduce videolayer lag when taking a photo
+ - stop crash when all photos are taken - done
+ - reduce videolayer lag when taking a photo -
  
  - take images automatically as user moves - done
  - when enough images alert the user get ready to:
@@ -917,8 +917,13 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     print("added gesture recog")
                     
                     
+                    DispatchQueue.global(qos: .userInitiated).async { //[weak self] in
+                        self.session.startRunning()
+                        //Step 13
+                    }
+                    
                     //session.commitConfiguration()
-                    session.startRunning()
+                    //session.startRunning()
                     print("session is running?")
                 }
             }
