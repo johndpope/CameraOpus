@@ -129,16 +129,34 @@ FLOW
  
  To Do
  
- - take images automatically as user moves - doing
+ - take images automatically as user moves - done
  - when enough images alert the user get ready to:
         - refresh the view
         - send images to server
  - create refresh view method - done
  - create send images to server method - done
- - multiple arrows and rotation animations are appearing as images are taken why? - should be fixed
+ - multiple arrows and rotation animations are appearing as images are taken why? - done (should be fixed)
+ 
  
  - get back 3d model files
  - show 3d model
+ 
+ - We can show these files with the scenekit framework (rubygarage.org/blog/create-augmented-reality-app-for-ios-11)
+ "ARKit SceneKit View supports several file formats, namely .dae (digital asset exchange), .abc (alembic), and .scn (SceneKit archive)."
+ To add it to your application, create an Objects folder in Xcode and place the file in it. The file is still in .dae format, so use the Editor Convert tool to transform it into a .scn file. Keep in mind that the initial .dae file mustn’t be replaced.
+  a 3D object model must be a subclass of SCNNode, so we need to create a new class (we’ve called it Drone, though you may call it whatever you like) and load the initial file containing the object (in our case, Drone.scn).
+ 
+ 
+     func loadModel() {
+         guard let virtualObjectScene = SCNScene(named: "Drone.scn") else { return }
+         let wrapperNode = SCNNode()
+         for child in virtualObjectScene.rootNode.childNodes {
+         wrapperNode.addChildNode(child)
+         }
+         addChildNode(wrapperNode)
+     }
+ 
+ 
  
  - add arrow back ground
     - self.xxx = UIImageView(image: UIImage(named: "arrowbackground")!)
@@ -241,7 +259,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var accelFlag = 0
     var gyroFlag = 0
     var devMotionFlag = 0
-    var firstShotTaken = false
     var currentTouch: CGPoint?
     var updateDepthLabel = false
     
@@ -478,9 +495,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
             // pop up saying hold still
             holdStill(time: 1.0)
-            print("delegate should have been created")
+            
+            /*
+             Taking photo and also setting flag which should send the image to the server
+            */
+            print("taking photo from within guided image")
             guidedFlag = true
-
             photoOutput!.capturePhoto(with: photoSettings, delegate: self)
             
             // take photo
@@ -536,7 +556,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     func holdStill(time: Double){
         
-        let alert = UIAlertController(title: "Alert", message: "Message", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Alert", message: "capturing photo keep still please :)", preferredStyle: .alert)
         self.present(alert, animated: true, completion: nil)
         
         // change to desired number of seconds (in this case 5 seconds)
@@ -1821,7 +1841,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
             self.textLabel.text = "While keeping the object in frame slowly walk around. Please maintain the same distance"
             
-            var timer = Timer.scheduledTimer(timeInterval: TimeInterval(2.0), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
+            var timer = Timer.scheduledTimer(timeInterval: TimeInterval(0.5), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
         }
         
     }
@@ -2089,6 +2109,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
+    
+    /*
+     Mo look here
+    */
+    func sendImageToServer(){
+        
+    }
+    
     /*
      workspace code
     */
@@ -2118,13 +2146,11 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                     if success{
                         print("saved image to library")
                         
-                        //this flag needs to be set for the first successful shot
-                        if(!self.firstShotTaken){
-                            self.firstShotTaken = true
-                        }
-                        
                         if(self.guidedFlag){
                             print("should have just saved guided image ")
+                            
+                            self.sendImageToServer()
+                            
                             self.guidedFlag = false
                             return
                         }
