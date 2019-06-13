@@ -129,6 +129,8 @@ FLOW
  
  To Do
  
+ - reduce videolayer lag when taking a photo
+ 
  - take images automatically as user moves - done
  - when enough images alert the user get ready to:
         - refresh the view
@@ -521,10 +523,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      we reset the flags
     */
     func resetView(){
-        if tempView != nil { // Dismiss the view from here
-            tempView!.removeFromSuperview()
+        print("In resetView")
+        
+        if tempView != nil {
+            DispatchQueue.main.async {
+                // Dismiss the view from here
+                self.tempView!.removeFromSuperview()
+            }
         }
         
+       
 //        if setUpView != nil {
 //            setUpView!.removeFromSuperview()
 //        }
@@ -532,32 +540,41 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         /*
          setting flags to original values
         */
-        capturePhotoFlag1 = true
-        capturePhotoFlag2 = false
-        capturePhotoFlag3 = false
         
-        hasAnimationRun = false
-        guidedFlag = false
-        imagesTaken = 0
+        /*
+         * we reset these all in the main event thread for atomicity
+        */
         
-        compassOn = false
-        getInitialDirection = false
-        //initialDirection : Double?
-        //currentDirection: Double?
-        hasInitialDirectionSet = false
-        
-        window.removeAll()
-        windowFull = false
-        
-        imageMap.removeAll()
-        
+        DispatchQueue.main.async {
+            self.capturePhotoFlag1 = true
+            self.capturePhotoFlag2 = false
+            self.capturePhotoFlag3 = false
+            
+            self.hasAnimationRun = false
+            self.guidedFlag = false
+            self.imagesTaken = 0
+            
+            self.compassOn = false
+            self.getInitialDirection = false
+            //initialDirection : Double?
+            //currentDirection: Double?
+            self.hasInitialDirectionSet = false
+            
+            self.windowFull = false
+            self.window.removeAll()
+            
+            self.imageMap.removeAll()
+        }
         
     }
     
     func holdStill(time: Double){
         
         let alert = UIAlertController(title: "Alert", message: "capturing photo keep still please :)", preferredStyle: .alert)
-        self.present(alert, animated: true, completion: nil)
+        
+        DispatchQueue.main.async {
+            self.present(alert, animated: true, completion: nil)
+        }
         
         // change to desired number of seconds (in this case 5 seconds)
         let when = DispatchTime.now() + time
@@ -1854,11 +1871,13 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         var uiEffectFlag = false
         var devEffectFlag = false
         
-        if tempView != nil { // Dismiss the view from here
-            tempView!.removeFromSuperview()
-        }
+
         
         DispatchQueue.main.async {
+            
+            if self.tempView != nil { // Dismiss the view from here
+                self.tempView!.removeFromSuperview()
+            }
             
             let setUpView = UIImageView(image: UIImage(named: "arowbackground"))
             setUpView.frame = CGRect(x: 0, y: 415, width: 375, height: 75)
