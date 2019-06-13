@@ -181,10 +181,9 @@ Nice to Haves
  - speed up loading (you can apperently do some of this by moving form viewDidLoad to viewWillAppear)
  stackoverflow.com/questions/21949080/camera-feed-slow-to-load-with-avcapturesession-on-ios-how-can-i-speed-it-up
  -- Things learnt
- The big time sync was settinng up the compass and motion manager
+ The big time sync is setting up the motion manager
  Moving
     setUpMotionManager()
-    setUpCompass()
     to under viewWillAppear led to almost all of the performance gain
  Moving some things under the dispatch async took a little time off
  
@@ -207,6 +206,8 @@ Nice to Haves
  
  
     Flags
+ 
+ - right not put devMotionFlag = 0
  
  - right now devMotionFlag is on and devEffectFlag is off (both cannot be on at the same time becuase they both attempt to turn on the accelerometer)
  - additionally motionInterval must have some reasonable value
@@ -792,11 +793,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //tempView!.frame = CGRectMake(xPosition, yPosition, height, width)
     }
     
-    //override func viewWillAppear(_ animated: Bool) {
-    func viewWillAppear() {
+    override func viewWillAppear(_ animated: Bool) {
+    //func viewWillAppear() {
         print("in view will appear")
         do{
-            setUpMotionManager()
+            //setUpMotionManager()
             setUpCompass()
 
         }
@@ -836,6 +837,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             print("running accelerometer")
             print("**")
         }
+        
+        devMotionFlag = 0
         
         if(devMotionFlag == 1){
             print("dev flag is on")
@@ -976,9 +979,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 self.photoPreviewImageView.addSubview(imageView)
             }
         }
-        
-        //setUpMotionManager()
-        //setUpCompass()
         
     }
     
