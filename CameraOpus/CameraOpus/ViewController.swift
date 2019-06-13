@@ -101,6 +101,15 @@ FLOW
         - the flow is capturePhoto is called, an avphotocapture session is created and captures the image and sends it to the photoOutput function with the capture3 flag on. One image is automatically saved here, then visualizeImage is called, and one image is saved there, then createDepthMap is called saving another image
         - we also start add the arrow to the view in the photoOutput method (in the capture3 flag if statement)
         - this is triggered by the addRotationAnimation method which calls the timer method
+ 
+ 
+    - After the CL location manager is set up any movement changing angle triggers locationManager automatically
+        - locationManager initially has the flag getInitialDirection on
+            - with this flag we find the initial directino then turn the compass flag on
+        - with the compassOn flag we start all the functionality of moving the arrow and taking pictures automatically in the moveArrow function and takeGuidedImage functions respectively
+            - the takeGuidedImage checks if an image is taken at the right locations, and increments the global imagesTaken counter to keep track (efficiently)
+            - when the imagesTaken is full we alert user and refresh the view and reset flags
+ 
 */
  
 /*
@@ -120,15 +129,17 @@ FLOW
  
  To Do
  
- - take images automatically as user moves
- - update imagemap to be int bool
- - round degrees in hashmap lookups
- - allow imagemap lookup to return if the value is within x degrees of true value
+ - take images automatically as user moves - doing
+ - when enough images alert the user get ready to:
+        - refresh the view
+        - send images to server
+ - create refresh view method - done
+ - create send images to server method - done
+ - multiple arrows and rotation animations are appearing as images are taken why? - should be fixed
  
- - creating intial direction reading by taking average of last 10 readings - done
- - creating arrow movement method based on fraction of direction moved
-    - test that this works corredtly on real world data
-    - most likely the fraction routine is not correct
+ - get back 3d model files
+ - show 3d model
+ 
  - add arrow back ground
     - self.xxx = UIImageView(image: UIImage(named: "arrowbackground")!)
     - self.xxx!.frame = CGRect(x: 0, y: 415, width: 375, height: 75)
@@ -143,6 +154,7 @@ FLOW
  
  
 Nice to Haves
+ - a method that checks if the user's camera is stable (get rid of the alert when stable and take photo)
  - consider also writing function that calculates if the change in depth is smooth over time (ie what is being viewed t_1 vs t_2) The reasoning behind this is that we might expect that if a user keeps the camera aimed at the right place and moves around, it would be smooth, but if the user simply points the camera at something else, we will see discontinuities
     - this function would take in all depth values in a scene (probably those inside the frame)
     - it is to be determined whether the simple average would work ie whether f : r^~300000 --> 1 makes sense
@@ -173,6 +185,14 @@ Nice to Haves
  - working on depth segmentiontation algo next
  - write function that makes log of acelerometer data - done
  - having some issue with OperationQueue.main.addOperation not getting in there - done
+ 
+ - update imagemap to be int bool - done
+ - round degrees in hashmap lookups - done
+ - allow imagemap lookup to return if the value is within x degrees of true value - done
+ 
+ - creating intial direction reading by taking average of last 10 readings - done
+ - creating arrow movement method based on fraction of direction moved - done
+ - test that this works corredtly on real world data - done
  
  ** this is solved by gsd ** --> gsd lets us determine max / min distance needed for specific resolution
  - How do we determine the optimal distance from which to take photo?
@@ -241,6 +261,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     //var arrow = SKSpriteNode()
     
     //this is the panorama arrow
+    var hasAnimationRun = false
     var arrowView: UIImageView?
     let motionInterval = 0.3
     
@@ -266,6 +287,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     // we can create that method later
     var imageInterval: Int?
     var imagesTaken = 0
+    
+    
+    
     // a flag set in guided to stop photoOutput from doing too much
     var guidedFlag = false
 
@@ -443,6 +467,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         if(found){
             imageMap[imNumber] = true
             
+            //flags set for photoOutput function
+            capturePhotoFlag3 = false
+            capturePhotoFlag1 = false
             //getting photo object ready
             var photoSettings = AVCapturePhotoSettings()
             photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
@@ -458,7 +485,52 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
             // take photo
             imagesTaken = imagesTaken + 1
+            if (imagesTaken == (360/imageInterval!)){
+                resetView()
+            }
         }
+        
+    }
+    
+    func sendImages(){
+        
+    }
+    
+    /*
+     We set up the view again without the arrow
+     we reset the flags
+    */
+    func resetView(){
+        if tempView != nil { // Dismiss the view from here
+            tempView!.removeFromSuperview()
+        }
+        
+//        if setUpView != nil {
+//            setUpView!.removeFromSuperview()
+//        }
+        
+        /*
+         setting flags to original values
+        */
+        capturePhotoFlag1 = true
+        capturePhotoFlag2 = false
+        capturePhotoFlag3 = false
+        
+        hasAnimationRun = false
+        guidedFlag = false
+        imagesTaken = 0
+        
+        compassOn = false
+        getInitialDirection = false
+        //initialDirection : Double?
+        //currentDirection: Double?
+        hasInitialDirectionSet = false
+        
+        window.removeAll()
+        windowFull = false
+        
+        imageMap.removeAll()
+        
         
     }
     
@@ -909,7 +981,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         compassCount = 0
         moveArrowCount = 0
         
-        var testAlert = true
+        var testAlert = false
         //testing alers
         if(testAlert){
             let alert = UIAlertController(title: "Alert", message: "Message", preferredStyle: .alert)
@@ -921,6 +993,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 // your code with delay
                 alert.dismiss(animated: true, completion: nil)
             }
+        }
+        
+        var resetTest = true
+        
+        if(resetTest){
+            resetView()
         }
         
         
@@ -1708,8 +1786,18 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     func addRotationAnimation(){
+        
+        /*
+         this makes sure the animation cannot be run more than once per successful scan
+        */
+        if(hasAnimationRun){
+            return
+        }
+        hasAnimationRun = true
+        
         print("*&*&")
         print("in add rotation")
+        
         //?.cgImage
         //print("image height is ", im?.height)
         //print("image width is ", im?.width)
@@ -1728,12 +1816,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             self.tempView = UIImageView(image: UIImage(named: "move")!)
             self.tempView!.frame = CGRect(x: 160, y: 45, width: 90, height: 30)
             //tempView.addTag
-            
-            let setUpView = UIImageView(image: UIImage(named: "arowbackground"))
-            setUpView.frame = CGRect(x: 0, y: 415, width: 375, height: 75)
-            setUpView.alpha = 0.5
-            self.photoPreviewImageView.addSubview(setUpView)
-            
             
             self.photoPreviewImageView.addSubview(self.tempView!)
             
@@ -1757,6 +1839,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         }
         
         DispatchQueue.main.async {
+            
+            let setUpView = UIImageView(image: UIImage(named: "arowbackground"))
+            setUpView.frame = CGRect(x: 0, y: 415, width: 375, height: 75)
+            setUpView.alpha = 0.5
+            self.photoPreviewImageView.addSubview(setUpView)
             
             self.tempView = UIImageView(image: UIImage(named: "arrow")!)
             self.tempView!.frame = CGRect(x: 0, y: 430, width: 90, height: 45)
