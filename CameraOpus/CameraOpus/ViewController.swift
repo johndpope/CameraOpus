@@ -131,6 +131,8 @@ FLOW
  
  - stop crash when all photos are taken - done
  - reduce videolayer lag when taking a photo -
+ - speed up loading
+ - create 2nd view showing the 3d model
  
  - take images automatically as user moves - done
  - when enough images alert the user get ready to:
@@ -178,6 +180,14 @@ Nice to Haves
  
  - speed up loading (you can apperently do some of this by moving form viewDidLoad to viewWillAppear)
  stackoverflow.com/questions/21949080/camera-feed-slow-to-load-with-avcapturesession-on-ios-how-can-i-speed-it-up
+ -- Things learnt
+ The big time sync was settinng up the compass and motion manager
+ Moving
+    setUpMotionManager()
+    setUpCompass()
+    to under viewWillAppear led to almost all of the performance gain
+ Moving some things under the dispatch async took a little time off
+ 
  
  - a method that checks if the user's camera is stable (get rid of the alert when stable and take photo)
  - consider also writing function that calculates if the change in depth is smooth over time (ie what is being viewed t_1 vs t_2) The reasoning behind this is that we might expect that if a user keeps the camera aimed at the right place and moves around, it would be smooth, but if the user simply points the camera at something else, we will see discontinuities
@@ -243,6 +253,11 @@ Nice to Haves
 
 
 class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate, AVCaptureDataOutputSynchronizerDelegate, CLLocationManagerDelegate {
+    
+//    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer, didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
+//
+//    }
+    
     
     var count = 1
     
@@ -776,16 +791,87 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         tempView!.transform = tempView!.transform.translatedBy(x: CGFloat(frac! * 285.0 ), y: CGFloat(0))
         //tempView!.frame = CGRectMake(xPosition, yPosition, height, width)
     }
+    
+    //override func viewWillAppear(_ animated: Bool) {
+    func viewWillAppear() {
+        print("in view will appear")
+        do{
+            setUpMotionManager()
+            setUpCompass()
+
+        }
+        catch{
+            print("there must have been an error in viewWillAppear")
+            return
+        }
+    }
+    
+    func setUpMotionManager(){
+        
+        motionManager = CMMotionManager()
+        
+        if (motionManager!.isGyroAvailable){
+            print("we have access to the gyro")
+            gyroFlag = 1
+        }
+        if(motionManager!.isAccelerometerAvailable){
+            print("we have access to the accel")
+            accelFlag = 1
+        }
+        if(motionManager!.isDeviceMotionAvailable){
+            devMotionFlag = 1
+        }
+        
+        //TOGGLE
+        
+        accelFlag = 0
+        // we start running the accel right away but not the gyro
+        if((accelFlag == 1)){
+            motionManager?.accelerometerUpdateInterval = 0.3
+            motionManager!.startAccelerometerUpdates(
+                to: OperationQueue.current!,
+                withHandler: {(accelData: CMAccelerometerData?, errorOC: Error?) in
+                    self.outputAccelData(acceleration: accelData!.acceleration)
+            })
+            print("running accelerometer")
+            print("**")
+        }
+        
+        if(devMotionFlag == 1){
+            print("dev flag is on")
+            motionManager?.deviceMotionUpdateInterval = motionInterval
+            motionManager!.startDeviceMotionUpdates(
+                to: OperationQueue.current!,
+                withHandler: {(data, error) in
+                    self.outputDevMotionData(data: data!)
+            })
+        }
+        
+    }
+    
+    func setUpCompass(){
+        /*
+         setting up location stuff
+         the internal compass
+         */
+        if (CLLocationManager.headingAvailable()) {
+            locationManager.headingFilter = 1
+            locationManager.startUpdatingHeading()
+            locationManager.delegate = self
+        }
+        
+    }
 
     
-    /// - Tag: CapturePhoto
     override func viewDidLoad() {
         super.viewDidLoad()
         textInput.delegate = self
+        print("in view did load")
         do{
             /*
              this preset line is needed for depth for some reason
              */
+            
             session.sessionPreset = .photo
             //We are trying to set the input device to the session ie the back camera
             guard let backCamera =  try AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back) else { print("Default video device is unavailable."); return }
@@ -813,79 +899,31 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     }
                     session.addOutput(videoDataOutput)
                     print("was able to set videooutput")
-                    
-                    
-                    /*
-                        Set up accelerometer and gyroscope
-                     */
-                    
-                    motionManager = CMMotionManager()
-                    
-                    if (motionManager!.isGyroAvailable){
-                        print("we have access to the gyro")
-                        gyroFlag = 1
-                    }
-                    if(motionManager!.isAccelerometerAvailable){
-                        print("we have access to the accel")
-                        accelFlag = 1
-                    }
-                    if(motionManager!.isDeviceMotionAvailable){
-                        devMotionFlag = 1
-                    }
-                    
-                    //TOGGLE
-                    
-                    accelFlag = 0
-                    // we start running the accel right away but not the gyro
-                    if((accelFlag == 1)){
-                        
-                         motionManager?.accelerometerUpdateInterval = 0.3
-
-                        motionManager!.startAccelerometerUpdates(
-                            to: OperationQueue.current!,
-                            withHandler: {(accelData: CMAccelerometerData?, errorOC: Error?) in
-                                self.outputAccelData(acceleration: accelData!.acceleration)
-                        })
-                        print("running accelerometer")
-                        print("**")
-                        
-                    }
-                    
-                    if(devMotionFlag == 1){
-                        print("dev flag is on")
-                        
-                        motionManager?.deviceMotionUpdateInterval = motionInterval
-                        motionManager!.startDeviceMotionUpdates(
-                            to: OperationQueue.current!,
-                            withHandler: {(data, error) in
-                                self.outputDevMotionData(data: data!)
-                        
-                        //UUUU
-                        })
-                    }
-                    
-                    /*
-                     setting up location stuff
-                     the internal compass
-                     */
-                    if (CLLocationManager.headingAvailable()) {
-                        locationManager.headingFilter = 1
-                        locationManager.startUpdatingHeading()
-                        locationManager.delegate = self
-                    }
-                    
-                    //photoOutput!.isDepthDataDeliveryEnabled = true
-                    // we try to connect the preview layer which will eventually be the element in the IB to what the camera sees
-                    videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
-                    videoPreviewLayer!.videoGravity = AVLayerVideoGravity.resizeAspect
-                    videoPreviewLayer!.connection?.videoOrientation = AVCaptureVideoOrientation.portrait
-                    
-                    
-                    //outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput])
-                    
-                    
-                    photoPreviewImageView.layer.addSublayer(videoPreviewLayer!)
-                    print("seems like we have added a subLayer")
+                }
+                
+                videoPreviewLayer = AVCaptureVideoPreviewLayer(session: session)
+                videoPreviewLayer!.videoGravity = AVLayerVideoGravity.resizeAspect
+                videoPreviewLayer!.connection?.videoOrientation = AVCaptureVideoOrientation.portrait
+                photoPreviewImageView.layer.addSublayer(videoPreviewLayer!)
+                print("seems like we have added a subLayer")
+                
+                let pressGestureDepth = UILongPressGestureRecognizer(target: self, action: #selector(getDepthTouch) )
+                pressGestureDepth.minimumPressDuration = 1.00
+                //pressGestureDepth.cancelsTouchesInView = false
+                print("about to add gesture recog")
+                photoPreviewImageView.isUserInteractionEnabled = true
+                photoPreviewImageView.addGestureRecognizer(pressGestureDepth)
+                
+                //session.commitConfiguration()
+                
+                DispatchQueue.global(qos: .userInitiated).async { //[weak self] in
+                    self.session.startRunning()
+                
+                }
+            
+            let on = false
+            
+            if (on){
                     
                     if(focusFlag){
                         print("in focus")
@@ -898,40 +936,50 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                         
                         let imageView = UIImageView(image: im!)
                         imageView.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
-                        photoPreviewImageView.addSubview(imageView)
+                        DispatchQueue.main.async {
+                            self.photoPreviewImageView.addSubview(imageView)
+                        }
                         
-                        //layer!.contents = UIImage(named: "focus")//?.cgImage
-                        //sphotoPreviewImageView.layer.addSublayer(layer!)
-                    }
-                    /*
-                     *
-                     Configuring the depthdata here
-                     *
-                     */
-                    let pressGestureDepth = UILongPressGestureRecognizer(target: self, action: #selector(getDepthTouch) )
-                    pressGestureDepth.minimumPressDuration = 1.00
-                    //pressGestureDepth.cancelsTouchesInView = false
-                    print("about to add gesture recog")
-                    photoPreviewImageView.isUserInteractionEnabled = true
-                    photoPreviewImageView.addGestureRecognizer(pressGestureDepth)
-                    print("added gesture recog")
-                    
-                    
-                    DispatchQueue.global(qos: .userInitiated).async { //[weak self] in
-                        self.session.startRunning()
-                        //Step 13
                     }
                     
-                    //session.commitConfiguration()
+                    
+//                    DispatchQueue.global(qos: .userInitiated).async { //[weak self] in
+//                        self.session.startRunning()
+//
+//                    }
+                
                     //session.startRunning()
                     print("session is running?")
                 }
             }
         }
         catch{
-            print("there must have been an error in vievDidLoad")
+            print("there must have been an error in viewDidLoad")
             return
         }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        print("in view did appear")
+        super.viewDidAppear(animated)
+        //this line is of immense importance without it the video feed will not show
+        videoPreviewLayer!.frame = photoPreviewImageView.bounds
+        
+        if(focusFlag){
+            print("in focus")
+            layer = UIView()
+            var im = UIImage(named: "focus")//?.cgImage
+            let imageView = UIImageView(image: im!)
+            imageView.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
+            print("about to add focus frame")
+            DispatchQueue.main.async {
+                self.photoPreviewImageView.addSubview(imageView)
+            }
+        }
+        
+        //setUpMotionManager()
+        //setUpCompass()
+        
     }
     
     func outputGyroData(gyroMeasure: CMRotationRate){
@@ -997,15 +1045,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             }
         }
     
-    func viewWillAppear(){
-        //captureSession = AVCaptureSession()
-        //captureSession!.sessionPreset = AVCaptureSession.Preset.photo
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        videoPreviewLayer!.frame = photoPreviewImageView.bounds
-    }
         
         // Do any additional setup after loading the view.
     
