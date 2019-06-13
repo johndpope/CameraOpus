@@ -129,6 +129,7 @@ FLOW
  
  To Do
  
+ - stop crash when all photos are taken
  - reduce videolayer lag when taking a photo
  
  - take images automatically as user moves - done
