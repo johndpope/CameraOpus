@@ -129,9 +129,14 @@ FLOW
  
  To Do
  
+ - speed up photo Output function (during guidedImage) to see if there is difference
+ - - there doesn't seem to be much of a difference, ie the image taking process seems to be causing the pause
+ - - try capturing with another photo Settings obj eg get rid of depth delivery and see what happens
+ 
  - stop crash when all photos are taken - done
  - reduce videolayer lag when taking a photo -
- - speed up loading
+ - speed up loading - done
+    - got to figure out where to instantiate setUpMotionManager()
  - create 2nd view showing the 3d model
  
  - take images automatically as user moves - done
@@ -513,11 +518,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             //getting photo object ready
             var photoSettings = AVCapturePhotoSettings()
             photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
-            photoSettings.isDepthDataDeliveryEnabled =
-                photoOutput!.isDepthDataDeliverySupported
+            //photoSettings.isDepthDataDeliveryEnabled = photoOutput!.isDepthDataDeliverySupported
             
             // pop up saying hold still
-            //holdStill(time: 2.0)
+            holdStill(time: 2.0)
             
             /*
              Taking photo and also setting flag which should send the image to the server
@@ -826,7 +830,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //TOGGLE
         
         accelFlag = 0
-        // we start running the accel right away but not the gyro
         if((accelFlag == 1)){
             motionManager?.accelerometerUpdateInterval = 0.3
             motionManager!.startAccelerometerUpdates(
@@ -996,20 +999,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             do{
                 print("in capturePhoto")
                 
-                if(gyroFlag == 1){
-                    motionManager?.gyroUpdateInterval = 10.0
-                    motionManager!.startGyroUpdates(
-                        to: OperationQueue.current!,
-                        withHandler: {(gyroData: CMGyroData?, errorOC: Error?) in
-                            self.outputGyroData(gyroMeasure: gyroData!.rotationRate)
-                    })
-                    print("running gyro")
-                }
-                
-                let videoPreviewLayerOrientation = try videoPreviewLayer?.connection?.videoOrientation
-                if let photoOutputConnection = photoOutput!.connection(with: .video) {
-                    photoOutputConnection.videoOrientation = videoPreviewLayerOrientation!
-                }
                 var photoSettings = AVCapturePhotoSettings()
                 //photoSettings.isDepthDataDeliveryEnabled = true
                 photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
@@ -1024,16 +1013,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 
                 print("capturePhoto should have been called")
                 
-                /*
-                 We will need to stop the accelerometer at some point in the future
-                 Ideally we should have some function that is called when the app is closed or stops being used
-                 How we decide to stop
-                 */
-//                if(accelFlag == 1){
-//                    motionManager!.stopAccelerometerUpdates()
-//                    print("stopping accelerometer")
-//                }
-                
                 if(gyroFlag == 1){
                     //motionManager!.stopGyroUpdates()
                     print("stopping gyro")
@@ -1045,8 +1024,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             }
         }
     
-        
-        // Do any additional setup after loading the view.
+    // Do any additional setup after loading the view.
     
     //MARK: UITextFieldDelegate
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -2249,6 +2227,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 }
 
 extension ViewController: AVCapturePhotoCaptureDelegate {
+    
+    //The function that is called after the image is taken to handle the photo
+    //REAL DEAL
+    
+    
+    /*
+     * added a speed test if statement to see how long photoOutput takes
+     * this will need to be changed out
+     * Im thinkging of taking one of the captureflag statements and the guidedimage statement out of the php.save image part
+    */
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         
         //var photoData: Data?
@@ -2260,114 +2248,127 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
             print("we seem to be error free")
             //photoData = photo.fileDataRepresentation()
             
-            PHPhotoLibrary.requestAuthorization { status in
-                guard status == .authorized else { return }
-                PHPhotoLibrary.shared().performChanges({
-                    // Add the captured photo's file data as the main resource for the Photos asset.
-                    let creationRequest = PHAssetCreationRequest.forAsset()
-                    creationRequest.addResource(with: .photo, data: photo.fileDataRepresentation()!, options: nil)
-                }, completionHandler: { success, error in
-                    if success{
-                        print("saved image to library")
-                        
-                        if(self.guidedFlag){
-                            print("should have just saved guided image ")
+            var speedTest = false
+            if(speedTest){
+                PHPhotoLibrary.requestAuthorization { status in
+                    guard status == .authorized else { return }
+                    PHPhotoLibrary.shared().performChanges({
+                        // Add the captured photo's file data as the main resource for the Photos asset.
+                        let creationRequest = PHAssetCreationRequest.forAsset()
+                        creationRequest.addResource(with: .photo, data: photo.fileDataRepresentation()!, options: nil)
+                    }, completionHandler: { success, error in
+                        if success{
+                            print("saved image to library")
                             
-                            self.sendImageToServer( photo :photo)
+                            if(self.guidedFlag){
+                                print("should have just saved guided image ")
+                                
+                                self.sendImageToServer( photo :photo)
+                                
+                                self.guidedFlag = false
+                                return
+                            }
                             
-                            self.guidedFlag = false
-                            return
-                        }
-                        
-                        //we want these variables to have greater scope so they are out of the capturePhotoFlag1 statement but we don't want to initialize if we are just using guided images EDIT ended up putting them in each if statemnt for the time being
-                        
-                        //let avDepthData : AVDepthData?
-                        //let cgim : CGImage
-                        
-                        
-                        
-                        //time stamp
-                        if(self.capturePhotoFlag1){
+                            //we want these variables to have greater scope so they are out of the capturePhotoFlag1 statement but we don't want to initialize if we are just using guided images EDIT ended up putting them in each if statemnt for the time being
                             
-                            let avDepthData = photo.depthData
-                            let temp = photo.cgImageRepresentation()
-                            let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
-                            
-                            let totalSeconds = CMTimeGetSeconds(photo.timestamp)
-                            print("photo was taken at ", totalSeconds)
-                            print("which in a human readable is ", totalSeconds)
-                            
-                            //getting information about pixel format type in cg file
+                            //let avDepthData : AVDepthData?
+                            //let cgim : CGImage
                             
                             
-                            let pixelsWide = cgim.width
-                            let pixelsHigh = cgim.height
-                            print("cg width is ", pixelsWide)
-                            print("cg height is ", pixelsHigh)
                             
-                            // developer.apple.com/videos/play/wwdc2017/508/
-                            // image pixels significantly more than depth pixels
-                            // 4032 x 3024 vs 768 x 576
+                            //time stamp
+                            if(self.capturePhotoFlag1){
+                                
+                                let avDepthData = photo.depthData
+                                let temp = photo.cgImageRepresentation()
+                                let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
+                                
+                                let totalSeconds = CMTimeGetSeconds(photo.timestamp)
+                                print("photo was taken at ", totalSeconds)
+                                print("which in a human readable is ", totalSeconds)
+                                
+                                //getting information about pixel format type in cg file
+                                
+                                
+                                let pixelsWide = cgim.width
+                                let pixelsHigh = cgim.height
+                                print("cg width is ", pixelsWide)
+                                print("cg height is ", pixelsHigh)
+                                
+                                // developer.apple.com/videos/play/wwdc2017/508/
+                                // image pixels significantly more than depth pixels
+                                // 4032 x 3024 vs 768 x 576
+                                
+                                print("cg rep")
+                                self.testRect(image: cgim)
+                                print("finsihed testrect")
+                                
+                                /*
+                                 * Testing depth functions
+                                 *
+                                 */
+                                
+                                
+                                let cgTestPointOne = CGPoint(x: 3,y: 5)
+                                self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
+                                print("finished messing with depth")
+                                //let cgTestPointTwo = CGPoint(x: 14,y: 60)
+                                //self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
+                                
+                                /*
+                                 we test the general image pixel rectification in here
+                                 */
+                                
+                                let distortionLookupTable = avDepthData?.cameraCalibrationData?.lensDistortionLookupTable
+                                let distortionCenter = avDepthData?.cameraCalibrationData?.lensDistortionCenter
+                                print("we found distortionLookupTable and distortionCenter and about to enter rectifyPixel")
+                                
+                                //self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: distortionCenter!)
+                                
+                                //let scaledCenter = CGPoint(x: (distortionCenter!.x / CGFloat(pixelsHigh)) * CGFloat(pixelsWide), y: (distortionCenter!.y / CGFloat(pixelsWide)) * CGFloat(pixelsHigh))
+                                
+                                // print("2nd call to rectifyPixel")
+                                
+                                // self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: scaledCenter)
+                                
+                                self.createDepthImageFromMap(avDepthData: avDepthData!, orientation: .right)
+                            }
                             
-                            print("cg rep")
-                            self.testRect(image: cgim)
-                            print("finsihed testrect")
                             
+                            //this flag signifies we want to send the depth data to further processing
                             /*
-                             * Testing depth functions
-                             *
+                             NOW
                              */
+                            if(self.capturePhotoFlag3){
+                                
+                                let avDepthData = photo.depthData
+                                let temp = photo.cgImageRepresentation()
+                                let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
+                                
+                                print("sending depth info to getDepthPoint")
+                                self.getDepthPoint(depthdata: avDepthData!, cgImage: cgim)
+                                self.capturePhotoFlag1 = true
+                                
+                                self.addRotationAnimation()
+                            }
                             
-                            
-                            let cgTestPointOne = CGPoint(x: 3,y: 5)
-                            self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
-                            print("finished messing with depth")
-                            //let cgTestPointTwo = CGPoint(x: 14,y: 60)
-                            //self.getDistance(at: cgTestPointOne, avPhoto: photo.depthData!)
-                            
-                            /*
-                             we test the general image pixel rectification in here
-                             */
-                            
-                            let distortionLookupTable = avDepthData?.cameraCalibrationData?.lensDistortionLookupTable
-                            let distortionCenter = avDepthData?.cameraCalibrationData?.lensDistortionCenter
-                            print("we found distortionLookupTable and distortionCenter and about to enter rectifyPixel")
-                            
-                            //self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: distortionCenter!)
-                            
-                            //let scaledCenter = CGPoint(x: (distortionCenter!.x / CGFloat(pixelsHigh)) * CGFloat(pixelsWide), y: (distortionCenter!.y / CGFloat(pixelsWide)) * CGFloat(pixelsHigh))
-                            
-                            // print("2nd call to rectifyPixel")
-                            
-                            // self.rectifyPixelData(cgImage: cgim, lookupTable: distortionLookupTable!, distortionOpticalCenter: scaledCenter)
-                            
-                            self.createDepthImageFromMap(avDepthData: avDepthData!, orientation: .right)
                         }
-                       
-                        
-                        //this flag signifies we want to send the depth data to further processing
-                        /*
-                        NOW
-                        */
-                        if(self.capturePhotoFlag3){
-                            
-                            let avDepthData = photo.depthData
-                            let temp = photo.cgImageRepresentation()
-                            let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
-                            
-                            print("sending depth info to getDepthPoint")
-                            self.getDepthPoint(depthdata: avDepthData!, cgImage: cgim)
-                            self.capturePhotoFlag1 = true
-                            
-                            self.addRotationAnimation()
+                        else {
+                            print("Opus couldn't save the photo to your photo library")
                         }
-                        
-                    }
-                    else {
-                        print("Opus couldn't save the photo to your photo library")
-                    }
-                })
+                    })
+                }
+                
+                
             }
+            
+            var rotationTest = true
+            if(rotationTest){
+                
+                self.addRotationAnimation()
+            }
+            
+
         }
     }
         
