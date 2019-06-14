@@ -357,6 +357,21 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     @IBOutlet weak var textInput: UITextField!
     
+    //tab buttons
+    @IBOutlet var tabButtons: [UITabBarItem]!
+    
+    //the screens where we can see models
+    var modelLibrary: ThreeDFileViewController!
+    
+    //the root screens associated with each tab item
+    var screens: [UIViewController]!
+    
+    //let  = HomeViewController.storyboardInstance()
+    
+    var selectedTabIndex: Int = 0
+
+
+    
     //@IBOutlet weak var previewView: PreviewView!
     
     @IBOutlet weak var photoPreviewImageView: UIImageView!
@@ -930,38 +945,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 
                 DispatchQueue.global(qos: .userInitiated).async { //[weak self] in
                     self.session.startRunning()
+                    self.modelLibrary = ThreeDFileViewController.storyboardInstance()
                 
-                }
-            
-            let on = false
-            
-            if (on){
-                    
-                    if(focusFlag){
-                        print("in focus")
-                        //layer = CALayer()
-                        layer = UIView()
-                        //layer?.addSubview(<#T##view: UIView##UIView#>)
-                        var im = UIImage(named: "focus")//?.cgImage
-                        //print("image height is ", im?.height)
-                        //print("image width is ", im?.width)
-                        
-                        let imageView = UIImageView(image: im!)
-                        imageView.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
-                        DispatchQueue.main.async {
-                            self.photoPreviewImageView.addSubview(imageView)
-                        }
-                        
-                    }
-                    
-                    
-//                    DispatchQueue.global(qos: .userInitiated).async { //[weak self] in
-//                        self.session.startRunning()
-//
-//                    }
-                
-                    //session.startRunning()
-                    print("session is running?")
                 }
             }
         }

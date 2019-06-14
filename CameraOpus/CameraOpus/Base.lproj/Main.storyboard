@@ -76,6 +76,9 @@
                         <outlet property="photoPreviewImageView" destination="t4d-l7-BAY" id="iEs-Jy-MCS"/>
                         <outlet property="textInput" destination="cDr-p1-CKB" id="6VV-Gx-QNV"/>
                         <outlet property="textLabel" destination="Bxa-6c-qYa" id="hjO-Iu-qUO"/>
+                        <outletCollection property="tabButtons" destination="DdX-Zs-yfi" collectionClass="NSMutableArray" id="aEK-hl-CFT"/>
+                        <outletCollection property="tabButtons" destination="IEQ-2Y-kUf" collectionClass="NSMutableArray" id="Jvo-51-WLz"/>
+                        <outletCollection property="tabButtons" destination="0oi-X0-IlT" collectionClass="NSMutableArray" id="9PD-s1-d5t"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
