@@ -2394,6 +2394,15 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 self.addRotationAnimation()
             }
             
+            if(self.guidedFlag){
+                print("should have just saved guided image ")
+                
+                self.sendImageToServer( photo :photo)
+                
+                self.guidedFlag = false
+                return
+            }
+            
 
         }
     }
