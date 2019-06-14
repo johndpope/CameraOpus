@@ -134,8 +134,10 @@ FLOW
  - - try capturing with another photo Settings obj eg get rid of depth delivery and see what happens
  - - asked question on stack overflow
  
- - add new viewcontroller and new screen
+ - add new viewcontroller and new screens
  - add bottom menu to screen so that we can change between views
+ (tabviewcontroller)
+ - stackoverflow.com/questions/26850411/how-add-tabs-programmatically-in-uitabbarcontroller-with-swift
  
  - stop crash when all photos are taken - done
  - reduce videolayer lag when taking a photo -
@@ -2221,6 +2223,26 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             print("responseString = \(responseString)")
         }
         task.resume()
+    }
+    
+    func goTo3DViewer(){
+        if let dViewController = ThreeDFileViewController.storyboardInstance(){
+            
+            // initialize all your class properties
+            // homeViewController.property1 = …
+            // homeViewController.property2 = …
+            
+            // either push or present the nextViewController,
+            // depending on your navigation structure
+            
+            //option 1 present
+            present(dViewController, animated: true, completion: nil)
+            
+            //option 2 push
+            //navigationController?.pushViewController(nextViewController,
+            //animated: true)
+            
+        }
     }
     
     /*
