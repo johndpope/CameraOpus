@@ -132,6 +132,10 @@ FLOW
  - speed up photo Output function (during guidedImage) to see if there is difference
  - - there doesn't seem to be much of a difference, ie the image taking process seems to be causing the pause
  - - try capturing with another photo Settings obj eg get rid of depth delivery and see what happens
+ - - asked question on stack overflow
+ 
+ - add new viewcontroller and new screen
+ - add bottom menu to screen so that we can change between views
  
  - stop crash when all photos are taken - done
  - reduce videolayer lag when taking a photo -

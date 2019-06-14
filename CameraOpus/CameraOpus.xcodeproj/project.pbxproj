@@ -15,7 +15,8 @@
 		BA242735227664F900218C3E /* CameraOpusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA242734227664F900218C3E /* CameraOpusTests.swift */; };
 		BA242740227664F900218C3E /* CameraOpusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24273F227664F900218C3E /* CameraOpusUITests.swift */; };
 		BA261452227FA76200A59901 /* PixelExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA261451227FA76200A59901 /* PixelExtractor.swift */; };
-		BA9B8F5322B33EA600EEF11D /* FileViewerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5222B33EA600EEF11D /* FileViewerController.swift */; };
+		BA9B8F5322B33EA600EEF11D /* ThreeDFileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5222B33EA600EEF11D /* ThreeDFileViewController.swift */; };
+		BA9B8F5522B3417600EEF11D /* ThreeDFileViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA9B8F5422B3417600EEF11D /* ThreeDFileViewController.storyboard */; };
 		BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9702277CC9100A671B2 /* PreviewView.swift */; };
 		BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */; };
 		BAADC97522791A0600A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC97422791A0500A671B2 /* PreviewView.swift */; };
@@ -53,7 +54,8 @@
 		BA24273F227664F900218C3E /* CameraOpusUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraOpusUITests.swift; sourceTree = "<group>"; };
 		BA242741227664F900218C3E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BA261451227FA76200A59901 /* PixelExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelExtractor.swift; sourceTree = "<group>"; };
-		BA9B8F5222B33EA600EEF11D /* FileViewerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileViewerController.swift; sourceTree = "<group>"; };
+		BA9B8F5222B33EA600EEF11D /* ThreeDFileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDFileViewController.swift; sourceTree = "<group>"; };
+		BA9B8F5422B3417600EEF11D /* ThreeDFileViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ThreeDFileViewController.storyboard; sourceTree = "<group>"; };
 		BAADC9702277CC9100A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCaptureDelegate.swift; sourceTree = "<group>"; };
 		BAADC97422791A0500A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
@@ -114,8 +116,9 @@
 				BA242728227664F900218C3E /* LaunchScreen.storyboard */,
 				BA261451227FA76200A59901 /* PixelExtractor.swift */,
 				BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */,
-				BA9B8F5222B33EA600EEF11D /* FileViewerController.swift */,
+				BA9B8F5222B33EA600EEF11D /* ThreeDFileViewController.swift */,
 				BAADC9702277CC9100A671B2 /* PreviewView.swift */,
+				BA9B8F5422B3417600EEF11D /* ThreeDFileViewController.storyboard */,
 				BAADC97422791A0500A671B2 /* PreviewView.swift */,
 				BA24272B227664F900218C3E /* Info.plist */,
 			);
@@ -245,6 +248,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA24272A227664F900218C3E /* LaunchScreen.storyboard in Resources */,
+				BA9B8F5522B3417600EEF11D /* ThreeDFileViewController.storyboard in Resources */,
 				BA242727227664F900218C3E /* Assets.xcassets in Resources */,
 				BA242722227664F600218C3E /* Main.storyboard in Resources */,
 			);
@@ -276,7 +280,7 @@
 				BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */,
 				BA24271D227664F600218C3E /* AppDelegate.swift in Sources */,
 				BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */,
-				BA9B8F5322B33EA600EEF11D /* FileViewerController.swift in Sources */,
+				BA9B8F5322B33EA600EEF11D /* ThreeDFileViewController.swift in Sources */,
 				BAADC97522791A0600A671B2 /* PreviewView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
