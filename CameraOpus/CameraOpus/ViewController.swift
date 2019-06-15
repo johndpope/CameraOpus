@@ -134,9 +134,10 @@ FLOW
  - - try capturing with another photo Settings obj eg get rid of depth delivery and see what happens - done saw no speed boost
  - - asked question on stack overflow -done
  
- - add job session control
- - write function that tells the server all images have been sent for a particular job
+ - add job session control - mostly done
+ - write function that tells the server all images have been sent for a particular job - done
  
+ - add dots to the arrows line which disappear only when the image is taken
  
  - add new viewcontroller and new screens - done
  - - its important when setting up a new storyboard to connect its storyboard id to the view controller to do that you must click this
@@ -316,6 +317,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     //this is the rotation animation
     var tempView: UIImageView?
+    //var setUpView:
     //var arrow = SKSpriteNode()
     
     //this is the panorama arrow
@@ -589,6 +591,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             if (imagesTaken == (360/imageInterval!)){
                 //send to server that we have taken all the images needed
                 //
+                print("about to tell server all images were sent")
                 processImagesOnServer()
                 resetView()
             }
@@ -1934,12 +1937,17 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
             self.newJob()
             
-            let setUpView = UIImageView(image: UIImage(named: "arowbackground"))
+            let setUpView = UIImageView(image: UIImage(named: "arrowBackground"))
             setUpView.frame = CGRect(x: 0, y: 415, width: 375, height: 75)
             setUpView.alpha = 0.5
-            self.photoPreviewImageView.addSubview(setUpView)
             
-            self.tempView = UIImageView(image: UIImage(named: "arrow")!)
+            
+            let arrowGuideView = UIImageView(image: UIImage(named: "arrowGuide"))
+            arrowGuideView.frame = CGRect(x: 0, y: 430, width: 375, height: 2.5)
+            //arrowGuideView.alpha = 0.5
+            //added to main view down by the bottom of this function
+            
+            self.tempView = UIImageView(image: UIImage(named: "whiteArrow")!)
             self.tempView!.frame = CGRect(x: 0, y: 430, width: 90, height: 45)
             self.tempView?.alpha = 0.5
             
@@ -2005,6 +2013,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
             //This stuff works
             
+            self.photoPreviewImageView.addSubview(setUpView)
+            self.photoPreviewImageView.addSubview(arrowGuideView)
             self.photoPreviewImageView.addSubview(self.tempView!)
         }
         
