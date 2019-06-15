@@ -589,6 +589,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             if (imagesTaken == (360/imageInterval!)){
                 //send to server that we have taken all the images needed
                 //
+                processImagesOnServer()
                 resetView()
             }
         }
