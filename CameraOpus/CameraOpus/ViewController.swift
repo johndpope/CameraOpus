@@ -354,6 +354,13 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     // a flag set in guided to stop photoOutput from doing too much
     var guidedFlag = false
+    
+    //arrow stuff
+    /*
+     * when we refactor we will need to set it to some fraction of screen width in viewDidAppear or somewhere like that
+    */
+    let arrowLength = 90
+    let arrowHeight = 45
 
 
     //temp variables
@@ -841,7 +848,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
          285 = 375 - 90 (width of arrow), ie scaling by the width of the screen
         */
         currentDirection! = angle
-        tempView!.transform = tempView!.transform.translatedBy(x: CGFloat(frac! * 285.0 ), y: CGFloat(0))
+        // 285 is 360 - leghth of arrow
+        tempView!.transform = tempView!.transform.translatedBy(x: CGFloat(frac! * Double(360 - arrowLength) ), y: CGFloat(0))
         //tempView!.frame = CGRectMake(xPosition, yPosition, height, width)
     }
     
@@ -1878,6 +1886,37 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
     }
     
+    func addImageWayPoints(){
+        //we start at 1 because we dont want a blue dot right at the beginning of the arrow
+        var counter = 1
+        
+        let wayPointsView = UIImageView(image: UIImage(named: "picturePosition"))
+        //width is screen width
+        
+        /* when we refactor we will have something like
+         
+         let increment = (photoPreviewImageView.bounds.width - arrowLength)/numWayPoints
+         
+        */
+        
+        let numWayPoints = (360/imageInterval!)
+        let increment = 285/numWayPoints
+        
+        
+        
+        //DispatchQueue.main.async {
+            while (counter < numWayPoints){
+                let wayPointsView = UIImageView(image: UIImage(named: "picturePosition"))
+                //let pos =
+                // we start at 90 because it is the length of the arrow
+                wayPointsView.frame = CGRect(x: (self.arrowLength + (increment * counter)), y:452 , width: 5, height: 5)
+                counter = counter + 1
+                //wayPointsView.alpha = 0.5
+                self.photoPreviewImageView.addSubview(wayPointsView)
+            }
+       // }
+    }
+    
     func addRotationAnimation(){
         
         /*
@@ -1950,8 +1989,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             //arrowGuideView.alpha = 0.5
             //added to main view down by the bottom of this function
             
+            self.addImageWayPoints()
+            
             self.tempView = UIImageView(image: UIImage(named: "whiteArrow")!)
-            self.tempView!.frame = CGRect(x: 0, y: 430, width: 90, height: 45)
+            self.tempView!.frame = CGRect(x: 0, y: 430, width: self.arrowLength, height: self.arrowHeight)
             self.tempView?.alpha = 0.5
             
             if(uiEffectFlag){
