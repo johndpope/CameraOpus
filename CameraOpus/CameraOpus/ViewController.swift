@@ -136,12 +136,14 @@ FLOW
  
  - add job session control
  
+ 
  - add new viewcontroller and new screens - done
  - - its important when setting up a new storyboard to connect its storyboard id to the view controller to do that you must click this
  - - stackoverflow.com/questions/26311000/how-to-connect-viewcontroller-swift-to-viewcontroller-in-storyboard
  - add bottom menu to screen so that we can change between views
  (tabviewcontroller)
  - stackoverflow.com/questions/26850411/how-add-tabs-programmatically-in-uitabbarcontroller-with-swift
+ - be able to navigate back to a previous screen without loss of state
  
  - stop crash when all photos are taken - done
  - reduce videolayer lag when taking a photo -
