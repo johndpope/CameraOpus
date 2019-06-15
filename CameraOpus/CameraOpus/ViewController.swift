@@ -2217,7 +2217,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      Mo look here
     */
     func sendImageToServer(photo: AVCapturePhoto){
-        var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo")!)
+        var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
         r.httpMethod = "POST"
         let boundary = "Boundary-\(UUID().uuidString)"
         r.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
@@ -2232,7 +2232,28 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                                 boundary: boundary,
                                 data: data ?? Data.init(),
                                 mimeType: "image/jpg",
-                                filename: "hello.jpg")
+                                filename: "file.jpg")
+        
+        let task = URLSession.shared.dataTask(with: r) { data, response, error in
+            guard let data = data,
+                let response = response as? HTTPURLResponse,
+                error == nil else {
+                    return
+            }
+            
+            guard (200 ... 299) ~= response.statusCode else {
+                return
+            }
+            
+            let responseString = String(data: data, encoding: .utf8)
+            print("responseString = \(responseString)")
+        }
+        task.resume()
+    }
+    
+    func processImagesOnServer(){
+        var r  = URLRequest(url: URL(string: "http://18.206.164.104/process/\(jobs[currentJob])")!)
+        r.httpMethod = "GET"
         
         let task = URLSession.shared.dataTask(with: r) { data, response, error in
             guard let data = data,
