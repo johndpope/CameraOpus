@@ -1938,12 +1938,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             self.newJob()
             
             let setUpView = UIImageView(image: UIImage(named: "arrowBackground"))
+            //width is screen width
+            //height is tempview starting y + 1/3 hieght of arrow
             setUpView.frame = CGRect(x: 0, y: 415, width: 375, height: 75)
             setUpView.alpha = 0.5
             
             
             let arrowGuideView = UIImageView(image: UIImage(named: "arrowGuide"))
-            arrowGuideView.frame = CGRect(x: 0, y: 430, width: 375, height: 2.5)
+            //y is tempview starting y + 1/2 hieght of arrow
+            arrowGuideView.frame = CGRect(x: 0, y: 452, width: 375, height: 2.5)
             //arrowGuideView.alpha = 0.5
             //added to main view down by the bottom of this function
             
