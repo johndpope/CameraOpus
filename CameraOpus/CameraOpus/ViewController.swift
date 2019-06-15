@@ -135,6 +135,7 @@ FLOW
  - - asked question on stack overflow -done
  
  - add job session control
+ - write function that tells the server all images have been sent for a particular job
  
  
  - add new viewcontroller and new screens - done
@@ -586,14 +587,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             // take photo
             imagesTaken = imagesTaken + 1
             if (imagesTaken == (360/imageInterval!)){
+                //send to server that we have taken all the images needed
+                //
                 resetView()
             }
         }
-        
-    }
-    
-    func sendImages(){
-        
     }
     
     /*
@@ -609,11 +607,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 self.tempView!.removeFromSuperview()
             }
         }
-        
-       
-//        if setUpView != nil {
-//            setUpView!.removeFromSuperview()
-//        }
         
         /*
          setting flags to original values
@@ -634,8 +627,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
             self.compassOn = false
             self.getInitialDirection = false
-            //initialDirection : Double?
-            //currentDirection: Double?
             self.hasInitialDirectionSet = false
             
             self.windowFull = false
