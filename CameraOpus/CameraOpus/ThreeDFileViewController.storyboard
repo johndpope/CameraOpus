@@ -10,39 +10,31 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
-        <scene sceneID="X0C-PZ-QIk">
+        <!--ThreeD File View Controller-->
+        <scene sceneID="Lmb-up-RvF">
             <objects>
-                <viewController id="cZA-Ef-f1h" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="2Yg-Su-PT9">
+                <viewController storyboardIdentifier="ThreeDFileViewController" id="Q7c-PQ-euh" customClass="ThreeDFileViewController" customModule="CameraOpus" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="4HX-Ao-Mj3">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <tabBar contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="p5X-cg-6up">
-                                <rect key="frame" x="0.0" y="729" width="375" height="49"/>
+                            <tabBar contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="uT3-h2-Tg5">
+                                <rect key="frame" x="0.0" y="706" width="375" height="49"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <items>
-                                    <tabBarItem systemItem="favorites" id="rN3-oN-IvD" userLabel="Create Model"/>
-                                    <tabBarItem title="Item" id="Vod-Xf-YNX" userLabel="Status"/>
-                                    <tabBarItem systemItem="more" id="FcQ-GO-CIb" userLabel="Model Library"/>
+                                    <tabBarItem systemItem="favorites" id="zM0-nW-zqf" userLabel="Create Model"/>
+                                    <tabBarItem title="Item" id="Jse-6I-GWu" userLabel="Status"/>
+                                    <tabBarItem systemItem="more" id="7Cf-em-xOm" userLabel="Model Library"/>
                                 </items>
                             </tabBar>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Sup my bebe" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Uvd-KT-VUN">
-                                <rect key="frame" x="100" y="332" width="142" height="86"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <viewLayoutGuide key="safeArea" id="oQ4-Cp-pAl"/>
+                        <viewLayoutGuide key="safeArea" id="z07-kZ-k8k"/>
                     </view>
                 </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="jEV-xc-H0i" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Mgr-O8-hXN" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="47.200000000000003" y="21.428571428571431"/>
         </scene>
     </scenes>
 </document>

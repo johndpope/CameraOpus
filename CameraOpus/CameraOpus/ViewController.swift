@@ -134,6 +134,8 @@ FLOW
  - - try capturing with another photo Settings obj eg get rid of depth delivery and see what happens
  - - asked question on stack overflow
  
+ - add job session control
+ 
  - add new viewcontroller and new screens
  - add bottom menu to screen so that we can change between views
  (tabviewcontroller)
@@ -264,7 +266,7 @@ Nice to Haves
  */
 
 
-class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate, AVCaptureDataOutputSynchronizerDelegate, CLLocationManagerDelegate {
+class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate, AVCaptureDataOutputSynchronizerDelegate, CLLocationManagerDelegate, UITabBarDelegate {
     
 //    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer, didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
 //
@@ -357,11 +359,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     @IBOutlet weak var textInput: UITextField!
     
+    @IBOutlet weak var tabBar: UITabBar!
     //tab buttons
     @IBOutlet var tabButtons: [UITabBarItem]!
     
     //the screens where we can see models
-    var modelLibrary: ThreeDFileViewController!
+    var modelLibrary: UIViewController!
     
     //the root screens associated with each tab item
     var screens: [UIViewController]!
@@ -379,6 +382,31 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     //var outputSynchronizer: AVCaptureDataOutputSynchronizer?
     
     private let dataOutputQueue = DispatchQueue(label: "video data queue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .workItem)
+    
+    
+    func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+        
+        print("in tabBar")
+        
+        if(item.tag == 0) {
+            print("we are pressing tab 0")
+            //your code for tab item 1
+        }
+        else if(item.tag == 1) {
+            print("we are pressing tab 1")
+            //your code for tab item 2
+        }
+        else if(item.tag == 2)
+        {
+            print("we are pressing tab 2")
+            let storyboard = UIStoryboard(name: "ThreeDFileViewController", bundle: nil)
+            let nextVc = storyboard.instantiateViewController(withIdentifier: "ThreeDFileViewController") as! ThreeDFileViewController
+            let navigationVc = UINavigationController(rootViewController: nextVc)
+            //let navigationVc = UINavigationController(rootViewController: ThreeDFileViewController.storyboardInstance()!)
+            present(navigationVc, animated: false, completion: nil)
+        }
+    
+    }
     
     // stackoverflow.com/questions/37869963/how-to-use-avcapturephotooutput
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL, from connections: [AVCaptureConnection], error: Error?) {
@@ -945,9 +973,20 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 
                 DispatchQueue.global(qos: .userInitiated).async { //[weak self] in
                     self.session.startRunning()
-                    self.modelLibrary = ThreeDFileViewController.storyboardInstance()
-                
+                    //self.modelLibrary = ThreeDFileViewController.storyboardInstance()
+                    //self.screens = [self, self.modelLibrary]
                 }
+                
+                
+                
+                modelLibrary = ThreeDFileViewController.storyboardInstance()
+                self.tabBar.delegate = self;
+                //screens =  [modelLibrary]
+                //screens[self]
+                //let storyboard = UIStoryboard(name: "ThreeDFileViewController", bundle: nil)
+                //modelLibrary = storyboard.instantiateViewController(withIdentifier: "ThreeDFileViewController")
+                
+                
             }
         }
         catch{

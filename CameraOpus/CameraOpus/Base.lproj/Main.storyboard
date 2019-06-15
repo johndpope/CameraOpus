@@ -57,14 +57,14 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <tabBar contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R1g-j8-h3W">
+                            <tabBar tag="3" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R1g-j8-h3W">
                                 <rect key="frame" x="0.0" y="729" width="375" height="49"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <items>
                                     <tabBarItem title="Create Model" id="DdX-Zs-yfi" userLabel="Create Model"/>
-                                    <tabBarItem title="Progress" id="IEQ-2Y-kUf" userLabel="Status"/>
-                                    <tabBarItem title="Model Library" id="0oi-X0-IlT" userLabel="Model Library"/>
+                                    <tabBarItem tag="1" title="Progress" id="IEQ-2Y-kUf" userLabel="Status"/>
+                                    <tabBarItem tag="2" title="Model Library" id="0oi-X0-IlT" userLabel="Model Library"/>
                                 </items>
                             </tabBar>
                         </subviews>
@@ -74,6 +74,7 @@
                     </view>
                     <connections>
                         <outlet property="photoPreviewImageView" destination="t4d-l7-BAY" id="iEs-Jy-MCS"/>
+                        <outlet property="tabBar" destination="R1g-j8-h3W" id="rI8-KW-yHx"/>
                         <outlet property="textInput" destination="cDr-p1-CKB" id="6VV-Gx-QNV"/>
                         <outlet property="textLabel" destination="Bxa-6c-qYa" id="hjO-Iu-qUO"/>
                         <outletCollection property="tabButtons" destination="DdX-Zs-yfi" collectionClass="NSMutableArray" id="aEK-hl-CFT"/>
