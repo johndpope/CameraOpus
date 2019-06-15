@@ -131,12 +131,14 @@ FLOW
  
  - speed up photo Output function (during guidedImage) to see if there is difference
  - - there doesn't seem to be much of a difference, ie the image taking process seems to be causing the pause
- - - try capturing with another photo Settings obj eg get rid of depth delivery and see what happens
- - - asked question on stack overflow
+ - - try capturing with another photo Settings obj eg get rid of depth delivery and see what happens - done saw no speed boost
+ - - asked question on stack overflow -done
  
  - add job session control
  
- - add new viewcontroller and new screens
+ - add new viewcontroller and new screens - done
+ - - its important when setting up a new storyboard to connect its storyboard id to the view controller to do that you must click this
+ - - stackoverflow.com/questions/26311000/how-to-connect-viewcontroller-swift-to-viewcontroller-in-storyboard
  - add bottom menu to screen so that we can change between views
  (tabviewcontroller)
  - stackoverflow.com/questions/26850411/how-add-tabs-programmatically-in-uitabbarcontroller-with-swift
@@ -341,6 +343,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var imageInterval: Int?
     var imagesTaken = 0
     
+    var jobs : [String] = []
+    var currentJob = 0
     
     
     // a flag set in guided to stop photoOutput from doing too much
@@ -372,8 +376,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     //let  = HomeViewController.storyboardInstance()
     
     var selectedTabIndex: Int = 0
-
-
     
     //@IBOutlet weak var previewView: PreviewView!
     
@@ -1936,6 +1938,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 self.tempView!.removeFromSuperview()
             }
             
+            self.newJob()
+            
             let setUpView = UIImageView(image: UIImage(named: "arowbackground"))
             setUpView.frame = CGRect(x: 0, y: 415, width: 375, height: 75)
             setUpView.alpha = 0.5
@@ -1972,7 +1976,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
              * we will need to eventually move more functionality away into helper functions like this one below.
              * time expired is getting too bloated and is mutating beyond its initial intentions
             */
-            self.pollDirection()
             
             /*
              dev motion option
@@ -2015,8 +2018,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         // yoursubview.removeFromSuperview()
     }
     
-    func pollDirection(){
-        
+    /*
+     * job management so that the server can communicate
+    */
+    func newJob(){
+        let job = UUID().uuidString
+        jobs.append(job)
+        //because the array is 0 indexed
+        currentJob = jobs.count - 1
     }
     
     func visualizePointInImage(cgImage: CGImage, crossHairRadius: Int, thickness: Int){
