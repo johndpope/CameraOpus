@@ -361,6 +361,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     */
     let arrowLength = 90
     let arrowHeight = 45
+    
+    //var imagePointViews: [UIImageView]
 
 
     //temp variables
@@ -1894,23 +1896,21 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //width is screen width
         
         /* when we refactor we will have something like
-         
          let increment = (photoPreviewImageView.bounds.width - arrowLength)/numWayPoints
-         
         */
         
         let numWayPoints = (360/imageInterval!)
         let increment = 285/numWayPoints
         
-        
-        
         //DispatchQueue.main.async {
             while (counter < numWayPoints){
                 let wayPointsView = UIImageView(image: UIImage(named: "picturePosition"))
+                
                 //let pos =
                 // we start at 90 because it is the length of the arrow
                 wayPointsView.frame = CGRect(x: (self.arrowLength + (increment * counter)), y:452 , width: 5, height: 5)
                 counter = counter + 1
+                //imagePointViews.append(wayPointsView)
                 //wayPointsView.alpha = 0.5
                 self.photoPreviewImageView.addSubview(wayPointsView)
             }
