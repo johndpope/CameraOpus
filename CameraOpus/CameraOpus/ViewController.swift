@@ -1674,6 +1674,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             print("about to set up delegate")
             
             print("delegate should have been created")
+            
+            
             photoOutput!.capturePhoto(with: photoSettings, delegate: self)
             
             
@@ -2490,8 +2492,15 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 
             }
             
-            var rotationTest = true
-            if(rotationTest){
+            if(self.capturePhotoFlag3){
+                
+                let avDepthData = photo.depthData
+                let temp = photo.cgImageRepresentation()
+                let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
+                
+                print("sending depth info to getDepthPoint")
+                //self.getDepthPoint(depthdata: avDepthData!, cgImage: cgim)
+                self.capturePhotoFlag1 = true
                 
                 self.addRotationAnimation()
             }
