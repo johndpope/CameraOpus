@@ -18,6 +18,7 @@
 		BA9B8F5722B4463C00EEF11D /* BottomTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5622B4463C00EEF11D /* BottomTab.swift */; };
 		BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */; };
 		BA9B8F5B22B46BCA00EEF11D /* ThreeDFileViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */; };
+		BA9B8F5D22B5C6E100EEF11D /* ModelTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5C22B5C6E100EEF11D /* ModelTableViewCell.swift */; };
 		BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9702277CC9100A671B2 /* PreviewView.swift */; };
 		BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */; };
 		BAADC97522791A0600A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC97422791A0500A671B2 /* PreviewView.swift */; };
@@ -58,6 +59,7 @@
 		BA9B8F5622B4463C00EEF11D /* BottomTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomTab.swift; sourceTree = "<group>"; };
 		BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDFileViewController.swift; sourceTree = "<group>"; };
 		BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ThreeDFileViewController.storyboard; sourceTree = "<group>"; };
+		BA9B8F5C22B5C6E100EEF11D /* ModelTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTableViewCell.swift; sourceTree = "<group>"; };
 		BAADC9702277CC9100A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCaptureDelegate.swift; sourceTree = "<group>"; };
 		BAADC97422791A0500A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 				BA261451227FA76200A59901 /* PixelExtractor.swift */,
 				BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */,
 				BA9B8F5622B4463C00EEF11D /* BottomTab.swift */,
+				BA9B8F5C22B5C6E100EEF11D /* ModelTableViewCell.swift */,
 				BAADC9702277CC9100A671B2 /* PreviewView.swift */,
 				BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */,
 				BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */,
@@ -288,6 +291,7 @@
 				BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */,
 				BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */,
 				BA9B8F5722B4463C00EEF11D /* BottomTab.swift in Sources */,
+				BA9B8F5D22B5C6E100EEF11D /* ModelTableViewCell.swift in Sources */,
 				BAADC97522791A0600A671B2 /* PreviewView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

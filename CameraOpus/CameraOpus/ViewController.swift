@@ -139,6 +139,9 @@ FLOW
  
  - add dots to the arrows line which disappear only when the image is taken
  
+ - add tableview for 3dfile viewer
+ - add example 3d file viewer
+ 
  - add new viewcontroller and new screens - done
  - - its important when setting up a new storyboard to connect its storyboard id to the view controller to do that you must click this
  - - stackoverflow.com/questions/26311000/how-to-connect-viewcontroller-swift-to-viewcontroller-in-storyboard
@@ -268,6 +271,15 @@ Nice to Haves
  
  
  - github.com/ejeinc/MetalScope
+ 
+ Certificate has been revoked
+ - Shift(⇧)+Command(⌘)+K
+ - Select Account > Team > View Details
+ - Press on your account
+ - Press plus button
+ - Add
+ 
+
  
  */
 
