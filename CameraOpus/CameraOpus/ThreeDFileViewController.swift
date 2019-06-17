@@ -12,6 +12,8 @@
  developer.apple.com/library/archive/featuredarticles/ViewControllerPGforiPhoneOS/UsingSegues.html
 
  - Add example tableViewCell when running the app
+ 
+ - When segue to new cell add
  - On tap of example cell open scnview with correct file
  
  */
@@ -20,8 +22,13 @@ import UIKit
 
 class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableViewDelegate, UITableViewDataSource {
 
-    
     var initial = true
+    
+    //number of cells
+    var modelNames:  [String] = ["Example"]
+    
+    //let parentVC : ViewController
+    
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -32,12 +39,13 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3 // your number of cells here
+        print("numberofrows")
+        return modelNames.count // your number of cells here
     }
     
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
+        print("cellforrowat")
         let cell = tableView.dequeueReusableCell(withIdentifier: "ModelTableViewCell", for: indexPath)
         //cell.textLabel?.text = ["Manny", "Moe", "Jack"][indexPath.row]
         //let cell = UITableViewCell()
@@ -45,9 +53,10 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         return cell
     }
     
-//    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-//        // cell selected code here
-//    }
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        // this is where we find the correct place to show something
+        
+    }
     
     
     func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
@@ -72,10 +81,10 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
             print("we are pressing tab 2")
             
         }
-        
     }
     
     override func viewDidLoad() {
+        print("viewdidload")
         super.viewDidLoad()
         self.tableView.delegate = self
         self.tableView.dataSource = self
@@ -93,6 +102,14 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         }
         
     }
+    
+    // developer.apple.com/documentation/uikit/uiviewcontroller/1621490-prepareforsegue
+//    override func prepareForSegue(segue: showModel, sender: AnyObject?) {
+//          sceneViewController
+//    let detailViewController = segue.destinationViewController as! MyDetailViewController
+//    detailViewController.mealName = meal.name
+    
+//    }
     
     
     

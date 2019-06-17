@@ -60,7 +60,7 @@
                                                     <state key="normal" title="Button"/>
                                                     <connections>
                                                         <action selector="showModel:" destination="Mr0-x5-zd1" eventType="touchUpInside" id="aAx-3k-hg5"/>
-                                                        <segue destination="vvt-7D-toA" kind="show" id="qih-50-rfF"/>
+                                                        <segue destination="vvt-7D-toA" kind="show" identifier="showModel" id="kB1-SM-2c0"/>
                                                     </connections>
                                                 </button>
                                                 <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="L8y-C1-uCd">
@@ -92,10 +92,10 @@
             </objects>
             <point key="canvasLocation" x="68" y="22.906403940886701"/>
         </scene>
-        <!--View Controller-->
+        <!--Scene View Controller-->
         <scene sceneID="tdy-bL-Yte">
             <objects>
-                <viewController id="vvt-7D-toA" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="sceneViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="vvt-7D-toA" customClass="sceneViewController" customModule="CameraOpus" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="cBS-zs-8UN">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -114,10 +114,20 @@
                                     <tabBarItem systemItem="more" id="Vts-VY-Tam" userLabel="Model Library"/>
                                 </items>
                             </tabBar>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0bt-oy-Xy6">
+                                <rect key="frame" x="108" y="643" width="42" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="YTf-GW-CYg"/>
                     </view>
+                    <connections>
+                        <outlet property="testText" destination="0bt-oy-Xy6" id="9v9-uJ-nBp"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LtR-Tw-kMg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

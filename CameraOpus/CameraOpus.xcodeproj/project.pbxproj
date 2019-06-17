@@ -19,6 +19,8 @@
 		BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */; };
 		BA9B8F5B22B46BCA00EEF11D /* ThreeDFileViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */; };
 		BA9B8F5D22B5C6E100EEF11D /* ModelTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5C22B5C6E100EEF11D /* ModelTableViewCell.swift */; };
+		BAA8308E22B829C70088DAEE /* sceneViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA8308D22B829C70088DAEE /* sceneViewController.swift */; };
+		BAA8309022B85B720088DAEE /* models.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = BAA8308F22B85B720088DAEE /* models.scnassets */; };
 		BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9702277CC9100A671B2 /* PreviewView.swift */; };
 		BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */; };
 		BAADC97522791A0600A671B2 /* PreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAADC97422791A0500A671B2 /* PreviewView.swift */; };
@@ -60,6 +62,8 @@
 		BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDFileViewController.swift; sourceTree = "<group>"; };
 		BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ThreeDFileViewController.storyboard; sourceTree = "<group>"; };
 		BA9B8F5C22B5C6E100EEF11D /* ModelTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTableViewCell.swift; sourceTree = "<group>"; };
+		BAA8308D22B829C70088DAEE /* sceneViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sceneViewController.swift; sourceTree = "<group>"; };
+		BAA8308F22B85B720088DAEE /* models.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = models.scnassets; sourceTree = "<group>"; };
 		BAADC9702277CC9100A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
 		BAADC9722278246A00A671B2 /* PhotoCaptureDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoCaptureDelegate.swift; sourceTree = "<group>"; };
 		BAADC97422791A0500A671B2 /* PreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreviewView.swift; sourceTree = "<group>"; };
@@ -125,8 +129,10 @@
 				BAADC9702277CC9100A671B2 /* PreviewView.swift */,
 				BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */,
 				BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */,
+				BAA8308D22B829C70088DAEE /* sceneViewController.swift */,
 				BAADC97422791A0500A671B2 /* PreviewView.swift */,
 				BA24272B227664F900218C3E /* Info.plist */,
+				BAA8308F22B85B720088DAEE /* models.scnassets */,
 			);
 			path = CameraOpus;
 			sourceTree = "<group>";
@@ -259,6 +265,7 @@
 				BA24272A227664F900218C3E /* LaunchScreen.storyboard in Resources */,
 				BA9B8F5B22B46BCA00EEF11D /* ThreeDFileViewController.storyboard in Resources */,
 				BA242727227664F900218C3E /* Assets.xcassets in Resources */,
+				BAA8309022B85B720088DAEE /* models.scnassets in Resources */,
 				BA242722227664F600218C3E /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -285,6 +292,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA24271F227664F600218C3E /* ViewController.swift in Sources */,
+				BAA8308E22B829C70088DAEE /* sceneViewController.swift in Sources */,
 				BA261452227FA76200A59901 /* PixelExtractor.swift in Sources */,
 				BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */,
 				BA24271D227664F600218C3E /* AppDelegate.swift in Sources */,
