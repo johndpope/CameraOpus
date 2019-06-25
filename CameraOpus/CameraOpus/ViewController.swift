@@ -129,6 +129,10 @@ FLOW
  
  To Do
  
+ - fix up tab bar set up
+ - //stackoverflow.com/questions/45840349/uitabbarcontroller-with-multiple-storyboards
+ - www.richardhsu.me/posts/2015/05/10/separated-storyboards.html
+ 
  - speed up photo Output function (during guidedImage) to see if there is difference
  - - there doesn't seem to be much of a difference, ie the image taking process seems to be causing the pause
  - - try capturing with another photo Settings obj eg get rid of depth delivery and see what happens - done saw no speed boost
@@ -138,6 +142,7 @@ FLOW
  - write function that tells the server all images have been sent for a particular job - done
  
  - add dots to the arrows line which disappear only when the image is taken
+ - change number of photos taken
  
  - add tableview for 3dfile viewer
  - add example 3d file viewer
@@ -430,7 +435,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             let storyboard = UIStoryboard(name: "ThreeDFileViewController", bundle: nil)
             let nextVc = storyboard.instantiateViewController(withIdentifier: "ThreeDFileViewController") as! ThreeDFileViewController
             let navigationVc = UINavigationController(rootViewController: nextVc)
-            //let navigationVc = UINavigationController(rootViewController: ThreeDFileViewController.storyboardInstance()!)
+            
+            //navigationVc.pushViewController(nextVc, animated: false)
+            
             present(navigationVc, animated: false, completion: nil)
         }
     
@@ -1001,11 +1008,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 
                 
                 modelLibrary = ThreeDFileViewController.storyboardInstance()
-                self.tabBar.delegate = self;
-                //screens =  [modelLibrary]
-                //screens[self]
-                //let storyboard = UIStoryboard(name: "ThreeDFileViewController", bundle: nil)
-                //modelLibrary = storyboard.instantiateViewController(withIdentifier: "ThreeDFileViewController")
+                //self.tabBar.delegate = self;
+                
                 
                 
             }
@@ -1949,7 +1953,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //print("image width is ", im?.width)
         
         //set the number of images we want to take
-        imageInterval = 30
+        // 360/imageInterval = number of images we want to take
+        imageInterval = 18
         var i = 0
         while(i <= 360){
             imageMap[i] = false

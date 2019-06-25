@@ -16,6 +16,9 @@
  - When segue to new cell add
  - On tap of example cell open scnview with correct file
  
+ - Add ability to go back to places with tab without losing state
+ - 
+ 
  */
 
 import UIKit
@@ -32,6 +35,7 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     
     @IBOutlet weak var tableView: UITableView!
     
+    @IBOutlet weak var tabBar: UITabBar!
     
     static func storyboardInstance() -> ThreeDFileViewController? {
         let storyboard = UIStoryboard(name: "ThreeDFileViewController", bundle: nil)
@@ -66,6 +70,10 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         if(item.tag == 0) {
             print("we are pressing tab 0")
             
+            self.navigationController?.popViewController(animated: true)
+            print("we tried popping")
+
+            
             //let storyboard = UIStoryboard(name: "ThreeDFileViewController", bundle: nil)
             //let nextVc = storyboard.instantiateViewController(withIdentifier: "ThreeDFileViewController") as! ThreeDFileViewController
             //let navigationVc = UINavigationController(rootViewController: nextVc)
@@ -84,7 +92,7 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     }
     
     override func viewDidLoad() {
-        print("viewdidload")
+        print("viewdidload 3D")
         super.viewDidLoad()
         self.tableView.delegate = self
         self.tableView.dataSource = self
@@ -102,16 +110,6 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         }
         
     }
-    
-    // developer.apple.com/documentation/uikit/uiviewcontroller/1621490-prepareforsegue
-//    override func prepareForSegue(segue: showModel, sender: AnyObject?) {
-//          sceneViewController
-//    let detailViewController = segue.destinationViewController as! MyDetailViewController
-//    detailViewController.mealName = meal.name
-    
-//    }
-    
-    
     
     
     

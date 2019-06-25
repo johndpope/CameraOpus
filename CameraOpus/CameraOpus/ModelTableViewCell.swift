@@ -15,7 +15,6 @@ class ModelTableViewCell: UITableViewCell {
     
     @IBOutlet weak var showButton: UIButton!
     
-    
     @IBAction func showModel(_ sender: UIButton) {
         //open up the model with the lable name
     }

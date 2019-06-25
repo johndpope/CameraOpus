@@ -10,7 +10,35 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--Tab Bar Controller-->
+        <scene sceneID="Ydh-n8-r2P">
+            <objects>
+                <tabBarController id="X3j-7l-gq0" sceneMemberID="viewController">
+                    <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="D17-cC-8Xf">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="49"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </tabBar>
+                    <connections>
+                        <segue destination="BYZ-38-t0r" kind="relationship" relationship="viewControllers" id="Wl9-tF-15f"/>
+                        <segue destination="0Vk-6E-tMK" kind="relationship" relationship="viewControllers" id="X9c-Z1-FRQ"/>
+                    </connections>
+                </tabBarController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="OnL-Rc-abz" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-2186" y="-285"/>
+        </scene>
+        <!--Storyboard Reference-->
+        <scene sceneID="Sfz-WB-nNX">
+            <objects>
+                <viewControllerPlaceholder storyboardIdentifier="ThreeDFileViewController" id="0Vk-6E-tMK" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Item" id="jbg-XO-8bA"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Yb5-Ov-XtQ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1305" y="-81"/>
+        </scene>
+        <!--Item-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="CameraOpus" customModuleProvider="target" sceneMemberID="viewController">
@@ -57,34 +85,21 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <tabBar tag="3" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="R1g-j8-h3W">
-                                <rect key="frame" x="0.0" y="729" width="375" height="49"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <items>
-                                    <tabBarItem title="Create Model" id="DdX-Zs-yfi" userLabel="Create Model"/>
-                                    <tabBarItem tag="1" title="Progress" id="IEQ-2Y-kUf" userLabel="Status"/>
-                                    <tabBarItem tag="2" title="Model Library" id="0oi-X0-IlT" userLabel="Model Library"/>
-                                </items>
-                            </tabBar>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <gestureRecognizers/>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
+                    <tabBarItem key="tabBarItem" title="Item" id="G64-bj-3Aa"/>
                     <connections>
                         <outlet property="photoPreviewImageView" destination="t4d-l7-BAY" id="iEs-Jy-MCS"/>
-                        <outlet property="tabBar" destination="R1g-j8-h3W" id="rI8-KW-yHx"/>
                         <outlet property="textInput" destination="cDr-p1-CKB" id="6VV-Gx-QNV"/>
                         <outlet property="textLabel" destination="Bxa-6c-qYa" id="hjO-Iu-qUO"/>
-                        <outletCollection property="tabButtons" destination="DdX-Zs-yfi" collectionClass="NSMutableArray" id="aEK-hl-CFT"/>
-                        <outletCollection property="tabButtons" destination="IEQ-2Y-kUf" collectionClass="NSMutableArray" id="Jvo-51-WLz"/>
-                        <outletCollection property="tabButtons" destination="0oi-X0-IlT" collectionClass="NSMutableArray" id="9PD-s1-d5t"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-647.20000000000005" y="-27.339901477832512"/>
+            <point key="canvasLocation" x="-1236" y="-630"/>
         </scene>
     </scenes>
 </document>
