@@ -15,7 +15,13 @@ class ModelTableViewCell: UITableViewCell {
     
     @IBOutlet weak var showButton: UIButton!
     
+    func prepareForSegue(segue: UIStoryboard, sender: AnyObject!){
+        print("opening model")
+    }
+    
     @IBAction func showModel(_ sender: UIButton) {
+        //print("opening model")
+        //let modelVC = UIStoryboardSegue.destinationView
         //open up the model with the lable name
     }
     

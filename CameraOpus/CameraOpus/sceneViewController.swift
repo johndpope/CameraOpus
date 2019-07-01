@@ -6,6 +6,16 @@
 //  Copyright © 2019 CameraOpus. All rights reserved.
 //
 
+
+/*
+ TO DO:
+ 
+ - dynamic model load function
+ - - try to send filename in ThreeDFileViewer Controller to sceneViewController
+ 
+ */
+
+
 import Foundation
 import UIKit
 import SceneKit
