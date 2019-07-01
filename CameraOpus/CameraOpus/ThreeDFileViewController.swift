@@ -35,7 +35,6 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     
     @IBOutlet weak var tableView: UITableView!
     
-    @IBOutlet weak var tabBar: UITabBar!
     
     static func storyboardInstance() -> ThreeDFileViewController? {
         let storyboard = UIStoryboard(name: "ThreeDFileViewController", bundle: nil)
@@ -45,6 +44,18 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         print("numberofrows")
         return modelNames.count // your number of cells here
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        //vcCount += 1
+        navigationItem.title = "back"
+        
+        if segue.identifier == "pizza"{
+            navigationItem.title = "Pizza to One"
+        }
+        if segue.identifier == "pasta"{
+            navigationItem.title = "Pasta to One"
+        }
     }
     
     

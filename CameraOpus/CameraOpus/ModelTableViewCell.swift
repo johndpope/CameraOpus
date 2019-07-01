@@ -32,6 +32,7 @@ class ModelTableViewCell: UITableViewCell {
 //        super.init(coder: decoder)
 //    }
     
+
     
     override func awakeFromNib() {
         super.awakeFromNib()

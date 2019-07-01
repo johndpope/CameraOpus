@@ -130,7 +130,9 @@ FLOW
  To Do
  
  - fix up tab bar set up
- - //stackoverflow.com/questions/45840349/uitabbarcontroller-with-multiple-storyboards
+ - youtube.com/watch?v=yzImO9HdbFo
+
+-  //stackoverflow.com/questions/45840349/uitabbarcontroller-with-multiple-storyboards
  - www.richardhsu.me/posts/2015/05/10/separated-storyboards.html
  
  - speed up photo Output function (during guidedImage) to see if there is difference
@@ -289,7 +291,7 @@ Nice to Haves
  */
 
 
-class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate, AVCaptureDataOutputSynchronizerDelegate, CLLocationManagerDelegate, UITabBarDelegate {
+class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutputRecordingDelegate, AVCaptureDataOutputSynchronizerDelegate, CLLocationManagerDelegate {
     
 //    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer, didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
 //
@@ -394,9 +396,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     @IBOutlet weak var textInput: UITextField!
     
-    @IBOutlet weak var tabBar: UITabBar!
+    //@IBOutlet weak var tabBar: UITabBar!
     //tab buttons
-    @IBOutlet var tabButtons: [UITabBarItem]!
+    //@IBOutlet var tabButtons: [UITabBarItem]!
     
     //the screens where we can see models
     var modelLibrary: UIViewController!

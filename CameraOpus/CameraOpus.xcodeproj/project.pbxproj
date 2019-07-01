@@ -15,6 +15,7 @@
 		BA242735227664F900218C3E /* CameraOpusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA242734227664F900218C3E /* CameraOpusTests.swift */; };
 		BA242740227664F900218C3E /* CameraOpusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24273F227664F900218C3E /* CameraOpusUITests.swift */; };
 		BA261452227FA76200A59901 /* PixelExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA261451227FA76200A59901 /* PixelExtractor.swift */; };
+		BA48938A22C873B500F6D521 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA48938822C873B500F6D521 /* Main.storyboard */; };
 		BA9B8F5722B4463C00EEF11D /* BottomTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5622B4463C00EEF11D /* BottomTab.swift */; };
 		BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */; };
 		BA9B8F5B22B46BCA00EEF11D /* ThreeDFileViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */; };
@@ -58,6 +59,7 @@
 		BA24273F227664F900218C3E /* CameraOpusUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraOpusUITests.swift; sourceTree = "<group>"; };
 		BA242741227664F900218C3E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BA261451227FA76200A59901 /* PixelExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelExtractor.swift; sourceTree = "<group>"; };
+		BA48938922C873B500F6D521 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = CameraOpus/Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BA9B8F5622B4463C00EEF11D /* BottomTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomTab.swift; sourceTree = "<group>"; };
 		BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDFileViewController.swift; sourceTree = "<group>"; };
 		BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ThreeDFileViewController.storyboard; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 		BA242710227664F600218C3E = {
 			isa = PBXGroup;
 			children = (
+				BA48938822C873B500F6D521 /* Main.storyboard */,
 				BA24271B227664F600218C3E /* CameraOpus */,
 				BA242733227664F900218C3E /* CameraOpusTests */,
 				BA24273E227664F900218C3E /* CameraOpusUITests */,
@@ -265,6 +268,7 @@
 				BA24272A227664F900218C3E /* LaunchScreen.storyboard in Resources */,
 				BA9B8F5B22B46BCA00EEF11D /* ThreeDFileViewController.storyboard in Resources */,
 				BA242727227664F900218C3E /* Assets.xcassets in Resources */,
+				BA48938A22C873B500F6D521 /* Main.storyboard in Resources */,
 				BAA8309022B85B720088DAEE /* models.scnassets in Resources */,
 				BA242722227664F600218C3E /* Main.storyboard in Resources */,
 			);
@@ -350,6 +354,14 @@
 				BA242729227664F900218C3E /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		BA48938822C873B500F6D521 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				BA48938922C873B500F6D521 /* Base */,
+			);
+			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
