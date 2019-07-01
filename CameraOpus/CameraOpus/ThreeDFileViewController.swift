@@ -30,8 +30,6 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     //number of cells
     var modelNames:  [String] = ["Example"]
     
-    //let parentVC : ViewController
-    
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -48,7 +46,7 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         //vcCount += 1
-        navigationItem.title = "back"
+        //navigationItem.title = "back"
         
         if segue.identifier == "pizza"{
             navigationItem.title = "Pizza to One"
@@ -69,6 +67,7 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     }
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        print("table view function was called")
         // this is where we find the correct place to show something
         
     }
@@ -80,10 +79,6 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         
         if(item.tag == 0) {
             print("we are pressing tab 0")
-            
-            self.navigationController?.popViewController(animated: true)
-            print("we tried popping")
-
             
             //let storyboard = UIStoryboard(name: "ThreeDFileViewController", bundle: nil)
             //let nextVc = storyboard.instantiateViewController(withIdentifier: "ThreeDFileViewController") as! ThreeDFileViewController
@@ -107,19 +102,6 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         super.viewDidLoad()
         self.tableView.delegate = self
         self.tableView.dataSource = self
-        
-        
-        do{
-            //tableView.dequeueReusableCell(withIdentifier: "ModelTableViewCell", for: 0)
-//            tableView.beginUpdates()
-//            tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
-//            tableView.endUpdates()
-            //tableView.register()
-        }
-        catch{
-            print("error in 3d viewer controller")
-        }
-        
     }
     
     
