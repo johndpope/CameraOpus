@@ -74,7 +74,9 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="z07-kZ-k8k"/>
                     </view>
+                    <tabBarItem key="tabBarItem" systemItem="more" id="2VI-ay-asg"/>
                     <navigationItem key="navigationItem" id="Mfl-rp-pbF"/>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="tableView" destination="Z0k-RX-TwD" id="a7X-vI-7ZC"/>
                     </connections>
@@ -106,6 +108,8 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="YTf-GW-CYg"/>
                     </view>
+                    <tabBarItem key="tabBarItem" systemItem="more" id="KV9-DG-YjV"/>
+                    <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="sceneView" destination="rSv-ql-fF1" id="OPU-rs-kfq"/>
                         <outlet property="testText" destination="0bt-oy-Xy6" id="9v9-uJ-nBp"/>
