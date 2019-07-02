@@ -76,14 +76,13 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         print("we iz preparing for segue")
-        /*
-         this is currently giving us problems
-        */
-//        if(modelpressed){
-//            let destinationVC = sceneViewController()
-//            destinationVC.modelName = selectedModel!
-//            destinationVC.performSegue(withIdentifier: "showModel", sender: self)
-//        }
+        
+        if(modelpressed){
+            print("in mod pressed")
+            let destinationVC = segue.destination as! sceneViewController
+            destinationVC.modelName = selectedModel!
+            shouldPerformSegue(withIdentifier: "showModel", sender: self)
+        }
     }
     
     override func viewDidLoad() {

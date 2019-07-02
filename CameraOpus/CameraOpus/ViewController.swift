@@ -1966,12 +1966,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         DispatchQueue.main.async {
             // view manipulation here so it happens with main thread.
             
-            self.tempView = UIImageView(image: UIImage(named: "move")!)
-            self.tempView!.frame = CGRect(x: 160, y: 45, width: 90, height: 30)
-            //tempView.addTag
-            
-            self.photoPreviewImageView.addSubview(self.tempView!)
-            
             self.textLabel.text = "While keeping the object in frame slowly walk around. Please maintain the same distance"
             
             var timer = Timer.scheduledTimer(timeInterval: TimeInterval(0.5), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
@@ -2290,8 +2284,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     
     /*
-     Mo look here
-    */
+     * Mo look here
+     *
+     * server address is
+     *
+     */
+    
+    var serverAddress = "http://18.206.164.104/"
+    
     func sendImageToServer(photo: AVCapturePhoto){
         var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
         r.httpMethod = "POST"
@@ -2346,6 +2346,51 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             print("responseString = \(responseString)")
         }
         task.resume()
+    }
+    
+    //stackoverflow.com/questions/48803879/obj-file-from-server-url-doesnt-work
+    func downloadFromServer(){
+        let fileManager = FileManager.default
+        let localModelName = "model.obj"
+        let serverModelURL = URL(string: serverAddress)
+        let localModelURL = fileManager
+            .urls(for: .documentDirectory, in: .userDomainMask[0]
+                .appendingPathComponent(localModelName)
+        
+        let session = URLSession(configuration: .default)
+        let task = session.downloadTask(with: modelURL) { tempLocation, response, error in
+            guard let tempLocation = tempLocation else {
+                // handle error
+                return
+            }
+            
+            do {
+                // FileManager's copyItem throws an error if the file exist
+                // so we check and remove previously downloaded file
+                // That's just for testing purposes, you probably wouldn't want to download
+                // the same model multiple times instead of just persisting it
+                
+                if fileManager.fileExists(atPath: localModelURL.path) {
+                    try fileManager.removeItem(at: localModelURL)
+                }
+                
+                try fileManager.copyItem(at: tempLocation, to: localModelURL)
+                
+            } catch {
+                // handle error
+            }
+            
+            let asset = MDLAsset(url: localURL)
+            guard let object = asset.object(at: 0) as? MDLMesh else {
+                fatalError("Failed to get mesh from asset.")
+            }
+        }
+        
+        task.resume() // don't forget to call resume to start downloading
+    }
+    
+    func createNewTableViewCells(){
+        //to do
     }
     
     func goTo3DViewer(){

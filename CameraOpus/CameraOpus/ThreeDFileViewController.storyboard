@@ -50,7 +50,7 @@
                                                     <state key="normal" title="Open Model"/>
                                                     <connections>
                                                         <action selector="showModel:" destination="Mr0-x5-zd1" eventType="touchUpInside" id="aAx-3k-hg5"/>
-                                                        <segue destination="vvt-7D-toA" kind="show" identifier="showModel" id="kB1-SM-2c0"/>
+                                                        <segue destination="vvt-7D-toA" kind="show" identifier="showModel" id="M3s-6p-1LW"/>
                                                     </connections>
                                                 </button>
                                                 <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="L8y-C1-uCd">

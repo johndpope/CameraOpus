@@ -1,3 +1,4 @@
+
 //
 //  sceneViewController.swift
 //  CameraOpus
@@ -5,7 +6,6 @@
 //  Created by Abheek Basu on 6/17/19.
 //  Copyright © 2019 CameraOpus. All rights reserved.
 //
-
 
 /*
  TO DO:
@@ -32,8 +32,8 @@ class sceneViewController : UIViewController {
     
     override func viewDidLoad() {
         testText.text = modelName
+        print("the model is ",modelName)
     }
-    
     
     
     func sceneSetUp(fileName: String){
@@ -74,8 +74,6 @@ class sceneViewController : UIViewController {
         //we set modelName to the correct modelName
         sceneSetUp(fileName: modelName)
     }
-    
-    
     
     
 }
