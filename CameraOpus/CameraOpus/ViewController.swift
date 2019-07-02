@@ -2349,46 +2349,46 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     //stackoverflow.com/questions/48803879/obj-file-from-server-url-doesnt-work
-    func downloadFromServer(){
-        let fileManager = FileManager.default
-        let localModelName = "model.obj"
-        let serverModelURL = URL(string: serverAddress)
-        let localModelURL = fileManager
-            .urls(for: .documentDirectory, in: .userDomainMask[0]
-                .appendingPathComponent(localModelName)
-        
-        let session = URLSession(configuration: .default)
-        let task = session.downloadTask(with: modelURL) { tempLocation, response, error in
-            guard let tempLocation = tempLocation else {
-                // handle error
-                return
-            }
-            
-            do {
-                // FileManager's copyItem throws an error if the file exist
-                // so we check and remove previously downloaded file
-                // That's just for testing purposes, you probably wouldn't want to download
-                // the same model multiple times instead of just persisting it
-                
-                if fileManager.fileExists(atPath: localModelURL.path) {
-                    try fileManager.removeItem(at: localModelURL)
-                }
-                
-                try fileManager.copyItem(at: tempLocation, to: localModelURL)
-                
-            } catch {
-                // handle error
-            }
-            
-            let asset = MDLAsset(url: localURL)
-            guard let object = asset.object(at: 0) as? MDLMesh else {
-                fatalError("Failed to get mesh from asset.")
-            }
-        }
-        
-        task.resume() // don't forget to call resume to start downloading
-    }
-    
+//    func downloadFromServer(){
+//        let fileManager = FileManager.default
+//        let localModelName = "model.obj"
+//        let serverModelURL = URL(string: serverAddress)
+//        let localModelURL = fileManager
+//            .urls(for: .documentDirectory, in: .userDomainMask[0]
+//                .appendingPathComponent(localModelName)
+//
+//        let session = URLSession(configuration: .default)
+//        let task = session.downloadTask(with: modelURL) { tempLocation, response, error in
+//            guard let tempLocation = tempLocation else {
+//                // handle error
+//                return
+//            }
+//
+//            do {
+//                // FileManager's copyItem throws an error if the file exist
+//                // so we check and remove previously downloaded file
+//                // That's just for testing purposes, you probably wouldn't want to download
+//                // the same model multiple times instead of just persisting it
+//
+//                if fileManager.fileExists(atPath: localModelURL.path) {
+//                    try fileManager.removeItem(at: localModelURL)
+//                }
+//
+//                try fileManager.copyItem(at: tempLocation, to: localModelURL)
+//
+//            } catch {
+//                // handle error
+//            }
+//
+//            let asset = MDLAsset(url: localURL)
+//            guard let object = asset.object(at: 0) as? MDLMesh else {
+//                fatalError("Failed to get mesh from asset.")
+//            }
+//        }
+//
+//        task.resume() // don't forget to call resume to start downloading
+//    }
+//
     func createNewTableViewCells(){
         //to do
     }
