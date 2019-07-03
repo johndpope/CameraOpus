@@ -16,6 +16,7 @@
 		BA242740227664F900218C3E /* CameraOpusUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24273F227664F900218C3E /* CameraOpusUITests.swift */; };
 		BA261452227FA76200A59901 /* PixelExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA261451227FA76200A59901 /* PixelExtractor.swift */; };
 		BA48938A22C873B500F6D521 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA48938822C873B500F6D521 /* Main.storyboard */; };
+		BA48938C22CC346300F6D521 /* TabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA48938B22CC346200F6D521 /* TabController.swift */; };
 		BA9B8F5722B4463C00EEF11D /* BottomTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5622B4463C00EEF11D /* BottomTab.swift */; };
 		BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */; };
 		BA9B8F5B22B46BCA00EEF11D /* ThreeDFileViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */; };
@@ -60,6 +61,7 @@
 		BA242741227664F900218C3E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BA261451227FA76200A59901 /* PixelExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelExtractor.swift; sourceTree = "<group>"; };
 		BA48938922C873B500F6D521 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = CameraOpus/Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		BA48938B22CC346200F6D521 /* TabController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabController.swift; sourceTree = "<group>"; };
 		BA9B8F5622B4463C00EEF11D /* BottomTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomTab.swift; sourceTree = "<group>"; };
 		BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDFileViewController.swift; sourceTree = "<group>"; };
 		BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ThreeDFileViewController.storyboard; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 				BA24271C227664F600218C3E /* AppDelegate.swift */,
 				BA24271E227664F600218C3E /* ViewController.swift */,
 				BA242720227664F600218C3E /* Main.storyboard */,
+				BA48938B22CC346200F6D521 /* TabController.swift */,
 				BA242726227664F900218C3E /* Assets.xcassets */,
 				BA242728227664F900218C3E /* LaunchScreen.storyboard */,
 				BA261451227FA76200A59901 /* PixelExtractor.swift */,
@@ -299,6 +302,7 @@
 				BAA8308E22B829C70088DAEE /* sceneViewController.swift in Sources */,
 				BA261452227FA76200A59901 /* PixelExtractor.swift in Sources */,
 				BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */,
+				BA48938C22CC346300F6D521 /* TabController.swift in Sources */,
 				BA24271D227664F600218C3E /* AppDelegate.swift in Sources */,
 				BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */,
 				BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */,

@@ -381,6 +381,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     let arrowLength = 90
     let arrowHeight = 45
     
+    //Guided Image Views
+    var wayPointsView: [UIImageView] = []
+    var arrowGuideView: UIImageView?
+    var setUpView: UIImageView?
+    
+    
     //var imagePointViews: [UIImageView]
 
 
@@ -402,6 +408,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     //the screens where we can see models
     var modelLibrary: UIViewController!
+    //when we get new files we add here
+    //var newModelNames:  [String]?
     
     //the root screens associated with each tab item
     var screens: [UIViewController]!
@@ -415,6 +423,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     @IBOutlet weak var photoPreviewImageView: UIImageView!
     
     //var outputSynchronizer: AVCaptureDataOutputSynchronizer?
+    
+    //user data
+    let defaults = UserDefaults.standard
+
     
     private let dataOutputQueue = DispatchQueue(label: "video data queue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .workItem)
     
@@ -639,6 +651,17 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             DispatchQueue.main.async {
                 // Dismiss the view from here
                 self.tempView!.removeFromSuperview()
+                
+                //iterate over array of waypoints view and remove them
+//                var counter = 0
+//                while counter < self.wayPointsView.count{
+//                    self.wayPointsView[counter].removeFromSuperview()
+//                    counter = counter + 1
+//
+//                }
+                
+                self.photoPreviewImageView.subviews.forEach({ $0.removeFromSuperview() })
+                
             }
         }
         
@@ -669,6 +692,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             self.imageMap.removeAll()
         }
         
+    }
+    
+    /*
+     * ended up adding this functionality to the resetView function
+    */
+    
+    func cleanGuidedView(){
+        // remove wayPointsView
+        // remove setUpView
+        // remove arrowGuideView
     }
     
     func holdStill(time: Double){
@@ -952,6 +985,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         super.viewDidLoad()
         textInput.delegate = self
         print("in view did load")
+        // make self the UITabBarControllerDelegate
+
+        //self.delegate = self
         do{
             /*
              this preset line is needed for depth for some reason
@@ -1007,12 +1043,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     //self.screens = [self, self.modelLibrary]
                 }
                 
-                
-                
                 modelLibrary = ThreeDFileViewController.storyboardInstance()
-                //self.tabBar.delegate = self;
-                
-                
                 
             }
         }
@@ -1041,6 +1072,17 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         }
         
     }
+    
+    override func viewWillDisappear(_ animated: Bool){
+        print("in view will disappear")
+        if(compassOn){
+            resetView()
+        }
+        
+        
+        super.viewWillDisappear(animated)
+    }
+
     
     func outputGyroData(gyroMeasure: CMRotationRate){
         //gyroMeasure
@@ -1095,6 +1137,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     //MARK: Actions
+    /*
+     * Testing function
+     * test function
+     * test test
+    */
+    
     @IBAction func setDefaultLabelText(_ sender: UIButton) {
         textLabel.text = "Default text"
         accelcount = 0
@@ -1120,6 +1168,26 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         if(resetTest){
             resetView()
+        }
+        /*
+         * we will need to tap this one twice
+        */
+        
+        var tableViewTest = true
+        if(tableViewTest){
+            if (keyExists(key: "userModelNames")){
+                print("we are removing a cell")
+                defaults.removeObject(forKey: "userModelNames")
+            }
+            else{
+                print("we are adding a cell")
+                var modelArray : [String] = []
+                modelArray.append("testtest")
+                //defaults.removeObject(forKey: "userModelNames")
+                defaults.set(modelArray, forKey: "userModelNames")
+            }
+            
+            
         }
         
         
@@ -1912,7 +1980,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //we start at 1 because we dont want a blue dot right at the beginning of the arrow
         var counter = 1
         
-        let wayPointsView = UIImageView(image: UIImage(named: "picturePosition"))
+        //wayPointsView.append(UIImageView(image: UIImage(named: "picturePosition")))
         //width is screen width
         
         /* when we refactor we will have something like
@@ -1924,15 +1992,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         //DispatchQueue.main.async {
             while (counter < numWayPoints){
-                let wayPointsView = UIImageView(image: UIImage(named: "picturePosition"))
+                wayPointsView.append(UIImageView(image: UIImage(named: "picturePosition")))
                 
-                //let pos =
                 // we start at 90 because it is the length of the arrow
-                wayPointsView.frame = CGRect(x: (self.arrowLength + (increment * counter)), y:452 , width: 5, height: 5)
+                // we take counter - 1 because the counter is 1 indexed and not zero indexed
+                wayPointsView[counter - 1].frame = CGRect(x: (self.arrowLength + (increment * counter)), y:452 , width: 5, height: 5)
+            self.photoPreviewImageView.addSubview(wayPointsView[counter - 1])
                 counter = counter + 1
-                //imagePointViews.append(wayPointsView)
+                
                 //wayPointsView.alpha = 0.5
-                self.photoPreviewImageView.addSubview(wayPointsView)
             }
        // }
     }
@@ -2010,6 +2078,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             self.tempView!.frame = CGRect(x: 0, y: 430, width: self.arrowLength, height: self.arrowHeight)
             self.tempView?.alpha = 0.5
             
+            //right now we do not use uieffectflag at all
             if(uiEffectFlag){
                 let min = CGFloat(-100)
                 let max = CGFloat()
@@ -2389,29 +2458,32 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
 //        task.resume() // don't forget to call resume to start downloading
 //    }
 //
-    func createNewTableViewCells(){
-        //to do
+    
+    /*
+     * check if the user defaults local storage contains an array
+     */
+    
+    func keyExists(key: String) -> Bool {
+        return defaults.array(forKey: key) != nil
     }
     
-    func goTo3DViewer(){
-        if let dViewController = ThreeDFileViewController.storyboardInstance(){
-            
-            // initialize all your class properties
-            // homeViewController.property1 = …
-            // homeViewController.property2 = …
-            
-            // either push or present the nextViewController,
-            // depending on your navigation structure
-            
-            //option 1 present
-            present(dViewController, animated: true, completion: nil)
-            
-            //option 2 push
-            //navigationController?.pushViewController(nextViewController,
-            //animated: true)
-            
+    func createNewTableViewCells(newModelName: String){
+        
+        //check if there are newModelNames
+        if (keyExists(key: "userModelNames")){
+            var modelArray = defaults.array(forKey: "userModelNames") as! [String]
+            modelArray.append(newModelName)
+            defaults.removeObject(forKey: "userModelNames")
+            defaults.set(modelArray, forKey: "userModelNames")
         }
+        else{
+            var modelArray: [String] = []
+            modelArray.append(newModelName)
+            defaults.set(modelArray, forKey: "userModelNames")
+        }
+        
     }
+
     
     /*
      workspace code

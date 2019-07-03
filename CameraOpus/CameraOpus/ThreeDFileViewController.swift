@@ -28,6 +28,8 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
     //number of cells
     var modelNames:  [String] = ["modelOne"]
     
+    let defaults = UserDefaults.standard
+    
     /*
      These two variables exist so that we can add the functionality to change model names etc inline with each cell in the tableview, rather than having to tap in first. We will add this functionality down the line
      
@@ -51,19 +53,6 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         return modelNames.count // your number of cells here
     }
     
-//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-//        //vcCount += 1
-//        //navigationItem.title = "back"
-//
-//        if segue.identifier == "pizza"{
-//            navigationItem.title = "Pizza to One"
-//        }
-//        if segue.identifier == "pasta"{
-//            navigationItem.title = "Pasta to One"
-//        }
-//    }
-    
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         print("cellforrowat")
         let cell = tableView.dequeueReusableCell(withIdentifier: "ModelTableViewCell", for: indexPath) as! ModelTableViewCell
@@ -74,6 +63,10 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         return cell
     }
     
+    /*
+     * This function is called when a button on the tableviewcell is pressed
+     * We set the fileName in the sceneViewController so that it can load the right model
+    */
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         print("we iz preparing for segue")
         
@@ -90,6 +83,55 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         super.viewDidLoad()
         self.tableView.delegate = self
         self.tableView.dataSource = self
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        print("view appear 3d")
+        
+        //self.tabBarController?.delegate = self
+    }
+    
+    func keyExists(key: String) -> Bool {
+        return defaults.array(forKey: key) != nil
+    }
+    
+    /*
+     * check to see if any new models have been created since the last time this screen was shown. If so we need to create a new cell
+     */
+    
+    func refreshCells(userModels: [String]){
+        print("in refreshCells")
+        //boolean tracks if there is atleast one new model to add
+        var isUpdated = false
+        for userModel in userModels {
+            //if the current cells do not contain a model create that cell
+            if !(modelNames.contains(userModel)){
+                modelNames.append(userModel)
+                isUpdated = true
+            }
+            
+        }
+        //there is a new model so we insert the cells
+        if (isUpdated) {
+            tableView.beginUpdates()
+            tableView.insertRows(at: [IndexPath(row: modelNames.count-1, section: 0)], with: .automatic)
+            tableView.endUpdates()
+        }
+        
+        //check if there are newModelNames
+
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        print("3d view will appear")
+        if (keyExists(key: "userModelNames")){
+            print("found defaults")
+            var modelArray = defaults.array(forKey: "userModelNames") as! [String]
+            refreshCells(userModels: modelArray)
+        }
+        
     }
     
 }
