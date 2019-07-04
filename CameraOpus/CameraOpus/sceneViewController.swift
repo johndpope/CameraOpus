@@ -61,7 +61,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     /*
      * This worked but not the very similar function below straight from apple's site
-     * was it NSerror vs error?
+     *
+     * it seems to be both the '_' before controller and NSError vs Error that makes this function work
     */
     func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
         print("called")
@@ -70,33 +71,9 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
 //    func mailComposeController(controller: MFMailComposeViewController,
 //                               didFinishWithResult result: MFMailComposeResult, error: NSError?) {
-//        print("in mail completion")
-//        // Check the result or perform other tasks.
-//
-//        // Dismiss the mail compose view controller.
 //        controller.dismiss(animated: true, completion: nil)
 //    }
 //
-    
-//    func mailComposeController(controller: MFMailComposeViewController, didFinishWithResult result: MFMailComposeResult, error: NSError?) {
-//        print("in did finish email")
-//        switch result.rawValue {
-//        case MFMailComposeResult.cancelled
-//.rawValue:
-//            print("Mail cancelled")
-//        case MFMailComposeResult.saved.rawValue:
-//            print("Mail saved")
-//        case MFMailComposeResult.sent.rawValue:
-//            print("Mail sent")
-//        case MFMailComposeResult.failed.rawValue:
-//            print("Mail sent failure: %@", [error!.localizedDescription])
-//        default:
-//            break
-//        }
-//        self.dismiss(animated: true, completion: nil)
-//    }
-    
-    
     
     override func viewDidLoad() {
         testText.text = modelName
