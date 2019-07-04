@@ -30,6 +30,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     @IBOutlet weak var sceneView: SCNView!
     
+    var assetLocation : URL?
+    
     //var modelName: String?
     var modelName = "modelOne"
     
@@ -49,8 +51,14 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
             
             emailController.mailComposeDelegate = self
             emailController.setToRecipients([]) //I usually leave this blank unless it's a "message the developer" type thing
-            emailController.setSubject("Here is your fancy email")
-            emailController.setMessageBody("Wow, look at this cool email", isHTML: false)
+            emailController.setSubject("Exported by CameraOpus")
+            emailController.setMessageBody("Please find your wonderful model attached", isHTML: false)
+            
+            do{ emailController.addAttachmentData(try Data(contentsOf: assetLocation!), mimeType: "text/plain", fileName: String(modelName + ".obj"))
+            }
+            catch{
+                print("there was issue with attaching the file")
+            }
             
             //self.navigationController!.present(emailController, animated: true, completion: nil)
 
@@ -60,7 +68,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     }
     
     /*
-     * This worked but not the very similar function below straight from apple's site
+     * This worked but not the very similar function below straight from apple's site, which we are keeping for posterity
      *
      * it seems to be both the '_' before controller and NSError vs Error that makes this function work
     */
@@ -86,6 +94,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
 
         guard let assetUrl = Bundle.main.url(forResource: fileName, withExtension: "obj", subdirectory: "models.scnassets")
             else { fatalError("Failed to find model file.") }
+        
+        assetLocation = assetUrl
         
         let asset = MDLAsset(url:assetUrl)
         guard let object = asset.object(at: 0) as? MDLMesh
