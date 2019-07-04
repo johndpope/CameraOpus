@@ -21,7 +21,8 @@
 
 import UIKit
 
-class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableViewDelegate, UITableViewDataSource {
+
+class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableViewDataSource  {
 
     var initial = true
     
@@ -46,6 +47,7 @@ class ThreeDFileViewController : UIViewController, UITabBarDelegate, UITableView
         let storyboard = UIStoryboard(name: "ThreeDFileViewController", bundle: nil)
         return storyboard.instantiateInitialViewController() as? ThreeDFileViewController
     }
+    
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         print("numberofrows")

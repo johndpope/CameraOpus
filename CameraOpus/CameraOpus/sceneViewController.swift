@@ -20,15 +20,83 @@ import Foundation
 import UIKit
 import SceneKit
 import SceneKit.ModelIO
+import MessageUI
 
 
-class sceneViewController : UIViewController {
+
+class sceneViewController : UIViewController, MFMailComposeViewControllerDelegate {
     
     @IBOutlet weak var testText: UILabel!
     
     @IBOutlet weak var sceneView: SCNView!
+    
     //var modelName: String?
     var modelName = "modelOne"
+    
+    @IBAction func exportFile(_ sender: UIButton) {
+        print("in export file")
+        createEmail()
+    }
+    
+    /*
+     * Lets try presenting this from the navigation view controller not the sceneview
+     */
+    
+    func createEmail(){
+        if MFMailComposeViewController.canSendMail() {
+            print("we can send email")
+            let emailController = MFMailComposeViewController()
+            
+            emailController.mailComposeDelegate = self
+            emailController.setToRecipients([]) //I usually leave this blank unless it's a "message the developer" type thing
+            emailController.setSubject("Here is your fancy email")
+            emailController.setMessageBody("Wow, look at this cool email", isHTML: false)
+            
+            //self.navigationController!.present(emailController, animated: true, completion: nil)
+
+            self.present(emailController, animated: true, completion: nil)
+            
+        }
+    }
+    
+    /*
+     * This worked but not the very similar function below straight from apple's site
+     * was it NSerror vs error?
+    */
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        print("called")
+        controller.dismiss(animated: true, completion: nil)
+    }
+    
+//    func mailComposeController(controller: MFMailComposeViewController,
+//                               didFinishWithResult result: MFMailComposeResult, error: NSError?) {
+//        print("in mail completion")
+//        // Check the result or perform other tasks.
+//
+//        // Dismiss the mail compose view controller.
+//        controller.dismiss(animated: true, completion: nil)
+//    }
+//
+    
+//    func mailComposeController(controller: MFMailComposeViewController, didFinishWithResult result: MFMailComposeResult, error: NSError?) {
+//        print("in did finish email")
+//        switch result.rawValue {
+//        case MFMailComposeResult.cancelled
+//.rawValue:
+//            print("Mail cancelled")
+//        case MFMailComposeResult.saved.rawValue:
+//            print("Mail saved")
+//        case MFMailComposeResult.sent.rawValue:
+//            print("Mail sent")
+//        case MFMailComposeResult.failed.rawValue:
+//            print("Mail sent failure: %@", [error!.localizedDescription])
+//        default:
+//            break
+//        }
+//        self.dismiss(animated: true, completion: nil)
+//    }
+    
+    
     
     override func viewDidLoad() {
         testText.text = modelName

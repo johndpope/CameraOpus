@@ -50,7 +50,7 @@
                                                     <state key="normal" title="Open Model"/>
                                                     <connections>
                                                         <action selector="showModel:" destination="Mr0-x5-zd1" eventType="touchUpInside" id="aAx-3k-hg5"/>
-                                                        <segue destination="vvt-7D-toA" kind="show" identifier="showModel" id="M3s-6p-1LW"/>
+                                                        <segue destination="vvt-7D-toA" kind="modal" identifier="showModel" animates="NO" modalPresentationStyle="currentContext" id="M3s-6p-1LW"/>
                                                     </connections>
                                                 </button>
                                                 <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="L8y-C1-uCd">
@@ -98,12 +98,20 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </sceneKitView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0bt-oy-Xy6">
-                                <rect key="frame" x="108" y="643" width="158" height="21"/>
+                                <rect key="frame" x="108" y="624" width="158" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="H7g-d5-s8U">
+                                <rect key="frame" x="147" y="653" width="63" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Export"/>
+                                <connections>
+                                    <action selector="exportFile:" destination="vvt-7D-toA" eventType="touchUpInside" id="aRr-jc-p4N"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="YTf-GW-CYg"/>
@@ -122,7 +130,7 @@
         <!--Navigation Controller-->
         <scene sceneID="XMf-y0-zvs">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="BQW-41-Gsa" sceneMemberID="viewController">
+                <navigationController restorationIdentifier="threeDNavigation" storyboardIdentifier="threeDNavigation" automaticallyAdjustsScrollViewInsets="NO" id="BQW-41-Gsa" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Mna-Xu-fUQ">
                         <rect key="frame" x="0.0" y="44" width="375" height="44"/>
