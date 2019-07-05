@@ -10,7 +10,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--ThreeD File View Controller-->
+        <!--Model Catalog-->
         <scene sceneID="Lmb-up-RvF">
             <objects>
                 <viewController storyboardIdentifier="ThreeDFileViewController" id="Q7c-PQ-euh" customClass="ThreeDFileViewController" customModule="CameraOpus" customModuleProvider="target" sceneMemberID="viewController">
@@ -50,7 +50,7 @@
                                                     <state key="normal" title="Open Model"/>
                                                     <connections>
                                                         <action selector="showModel:" destination="Mr0-x5-zd1" eventType="touchUpInside" id="aAx-3k-hg5"/>
-                                                        <segue destination="vvt-7D-toA" kind="modal" identifier="showModel" animates="NO" modalPresentationStyle="currentContext" id="M3s-6p-1LW"/>
+                                                        <segue destination="vvt-7D-toA" kind="show" identifier="showModel" animates="NO" id="M3s-6p-1LW"/>
                                                     </connections>
                                                 </button>
                                                 <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="L8y-C1-uCd">
@@ -74,7 +74,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="z07-kZ-k8k"/>
                     </view>
-                    <tabBarItem key="tabBarItem" systemItem="more" id="2VI-ay-asg"/>
+                    <tabBarItem key="tabBarItem" title="Model Catalog" image="cloud" id="2VI-ay-asg"/>
                     <navigationItem key="navigationItem" id="Mfl-rp-pbF"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
@@ -85,7 +85,7 @@
             </objects>
             <point key="canvasLocation" x="1010.4" y="22.906403940886701"/>
         </scene>
-        <!--Scene View Controller-->
+        <!--Model Catalog-->
         <scene sceneID="tdy-bL-Yte">
             <objects>
                 <viewController storyboardIdentifier="sceneViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="vvt-7D-toA" customClass="sceneViewController" customModule="CameraOpus" customModuleProvider="target" sceneMemberID="viewController">
@@ -116,7 +116,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="YTf-GW-CYg"/>
                     </view>
-                    <tabBarItem key="tabBarItem" systemItem="more" id="KV9-DG-YjV"/>
+                    <tabBarItem key="tabBarItem" title="Model Catalog" image="cloud" id="KV9-DG-YjV"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <outlet property="sceneView" destination="rSv-ql-fF1" id="OPU-rs-kfq"/>
@@ -146,4 +146,7 @@
             <point key="canvasLocation" x="68" y="22.906403940886701"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="cloud" width="30" height="30"/>
+    </resources>
 </document>

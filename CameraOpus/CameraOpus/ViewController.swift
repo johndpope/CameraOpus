@@ -619,24 +619,34 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             //photoSettings.isDepthDataDeliveryEnabled = photoOutput!.isDepthDataDeliverySupported
             
             // pop up saying hold still
-            holdStill(time: 2.0)
+            holdStill(time: 1.5)
             
-            /*
-             Taking photo and also setting flag which should send the image to the server
-            */
-            print("taking photo from within guided image")
-            guidedFlag = true
-            photoOutput!.capturePhoto(with: photoSettings, delegate: self)
-            
-            // take photo
-            imagesTaken = imagesTaken + 1
-            if (imagesTaken == (360/imageInterval!)){
-                //send to server that we have taken all the images needed
-                //
-                print("about to tell server all images were sent")
-                processImagesOnServer()
-                resetView()
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.4){
+                // your code with delay
+                
+                //I have this print statement to figure out if this code is blocking or not ie is the image capture happening simulataneously or sequentially
+                //we want simulataneously
+                print("pausing for .4 seconds to give user time to reach")
+                
+                /*
+                 Taking photo and also setting flag which should send the image to the server
+                 */
+                print("taking photo from within guided image")
+                self.guidedFlag = true
+                self.photoOutput!.capturePhoto(with: photoSettings, delegate: self)
+                
+                // take photo
+                self.imagesTaken = self.imagesTaken + 1
+                if (self.imagesTaken == (360/self.imageInterval!)){
+                    //send to server that we have taken all the images needed
+                    //
+                    print("about to tell server all images were sent")
+                    self.processImagesOnServer()
+                    self.resetView()
+                }
+                
             }
+            
         }
     }
     
@@ -710,9 +720,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         DispatchQueue.main.async {
             self.present(alert, animated: false, completion: nil)
+            print("in hold still just showed alert")
         }
         
-        // change to desired number of seconds (in this case 5 seconds)
+        // change to desired number of seconds
         let when = DispatchTime.now() + time
         DispatchQueue.main.asyncAfter(deadline: when){
             // your code with delay

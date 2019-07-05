@@ -13,6 +13,8 @@
  - dynamic model load function
  - - try to send filename in ThreeDFileViewer Controller to sceneViewController
  
+ - www.justindoan.com/tutorials/2016/9/9/creating-and-exporting-a-csv-file-in-swift
+ 
  */
 
 
@@ -59,8 +61,6 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
             catch{
                 print("there was issue with attaching the file")
             }
-            
-            //self.navigationController!.present(emailController, animated: true, completion: nil)
 
             self.present(emailController, animated: true, completion: nil)
             

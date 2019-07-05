@@ -10,7 +10,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--View Controller-->
+        <!--Create Model-->
         <scene sceneID="tne-QT-ifu">
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="CameraOpus" customModuleProvider="target" sceneMemberID="viewController">
@@ -32,7 +32,7 @@
                                 </connections>
                             </button>
                             <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" axis="vertical" alignment="top" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="VIE-Vh-VQy">
-                                <rect key="frame" x="17" y="651" width="112" height="70"/>
+                                <rect key="frame" x="17" y="651" width="111.33333333333333" height="70"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="sup" borderStyle="roundedRect" placeholder="Abheek is gay" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="cDr-p1-CKB">
@@ -62,7 +62,7 @@
                         <gestureRecognizers/>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <tabBarItem key="tabBarItem" systemItem="favorites" id="G64-bj-3Aa"/>
+                    <tabBarItem key="tabBarItem" title="Create Model" image="camera" id="G64-bj-3Aa"/>
                     <connections>
                         <outlet property="photoPreviewImageView" destination="t4d-l7-BAY" id="iEs-Jy-MCS"/>
                         <outlet property="textInput" destination="cDr-p1-CKB" id="6VV-Gx-QNV"/>
@@ -102,4 +102,7 @@
             <point key="canvasLocation" x="-1236" y="-630.29556650246309"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="camera" width="30" height="30"/>
+    </resources>
 </document>
