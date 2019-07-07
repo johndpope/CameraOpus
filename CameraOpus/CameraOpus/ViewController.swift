@@ -398,9 +398,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var moveArrowCount = 0
     
     //MARK: Properties
-    @IBOutlet weak var textLabel: UILabel!
-    
-    @IBOutlet weak var textInput: UITextField!
     
     //@IBOutlet weak var tabBar: UITabBar!
     //tab buttons
@@ -994,7 +991,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        textInput.delegate = self
+        //textInput.delegate = self
         print("in view did load")
         // make self the UITabBarControllerDelegate
 
@@ -1144,7 +1141,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     func textFieldDidEndEditing(_ textField: UITextField) {
-        textLabel.text = textField.text
+        //extLabel.text = textField.text
     }
     
     //MARK: Actions
@@ -1155,7 +1152,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     */
     
     @IBAction func setDefaultLabelText(_ sender: UIButton) {
-        textLabel.text = "Default text"
+        //textLabel.text = "Default text"
         accelcount = 0
         devCount = 0
         compassCount = 0
@@ -1958,7 +1955,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //****NOW
         
         DispatchQueue.main.async {
-            self.textLabel.text = String(val)
+            //self.textLabel.text = String(val)
             
             self.updateDepthLabel = false
             
@@ -2045,7 +2042,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         DispatchQueue.main.async {
             // view manipulation here so it happens with main thread.
             
-            self.textLabel.text = "While keeping the object in frame slowly walk around. Please maintain the same distance"
+            //self.textLabel.text = "While keeping the object in frame slowly walk around. Please maintain the same distance"
             
             var timer = Timer.scheduledTimer(timeInterval: TimeInterval(0.5), target: self, selector: "timeExpired", userInfo: nil, repeats: false)
         }
@@ -2366,14 +2363,24 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     /*
      * Mo look here
      *
-     * server address is
+     * server address is shown in aws console in ec2 instances section you can scroll and see it
      *
      */
     
-    var serverAddress = "http://18.206.164.104/"
+    //var serverAddress = "http://18.206.164.104/"
+    var serverAddress = "http://54.88.139.250/"
+    
+    //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
+
+    
     
     func sendImageToServer(photo: AVCapturePhoto){
-        var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
+        var addr = String (serverAddress + "upload/\(jobs[currentJob])")
+        print(addr)
+        
+        //var r  = URLRequest(url: URL(string: "http://54.88.139.250/upload/\(jobs[currentJob])")!)
+        
+        var r  = URLRequest(url: URL(string: addr)!)
         r.httpMethod = "POST"
         let boundary = "Boundary-\(UUID().uuidString)"
         r.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
@@ -2408,7 +2415,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     }
     
     func processImagesOnServer(){
-        var r  = URLRequest(url: URL(string: "http://18.206.164.104/process/\(jobs[currentJob])")!)
+        
+        var r  = URLRequest(url: URL(string: serverAddress + "process/\(jobs[currentJob])")!)
         r.httpMethod = "GET"
         
         let task = URLSession.shared.dataTask(with: r) { data, response, error in
