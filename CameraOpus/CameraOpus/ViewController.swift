@@ -97,7 +97,8 @@ import GLKit
 
 FLOW
  
-    - when a user touches the video layer
+        - In the viewDidLoad function we set up a touch handler called getDepthTouch
+        - When a user touches, in getDepthTouch we set a global "point" as well as call photoOutput!.capturePhoto() with the correct flags
         - the flow is capturePhoto is called, an avphotocapture session is created and captures the image and sends it to the photoOutput function with the capture3 flag on. One image is automatically saved here, then visualizeImage is called, and one image is saved there, then createDepthMap is called saving another image
         - we also start add the arrow to the view in the photoOutput method (in the capture3 flag if statement)
         - this is triggered by the addRotationAnimation method which calls the timer method
@@ -2364,11 +2365,21 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      * Mo look here
      *
      * server address is shown in aws console in ec2 instances section you can scroll and see it
+     
+        make sure  `source ~/.bashrc` is called everytime we start up the instance
+     
+     when model is ready, close the node server then
+      `sudo python -m SimpleHTTPServer 80`
+     
+     then go to most recent folder in output and grab it
+     
+     ls -lrt to find the last folder created
+     
      *
      */
     
     //var serverAddress = "http://18.206.164.104/"
-    var serverAddress = "http://54.88.139.250/"
+    var serverAddress = "http://54.144.214.159/"
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
 
