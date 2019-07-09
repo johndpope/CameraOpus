@@ -16,7 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     var window: UIWindow?
     
     func registerForPushNotifications() {
-        
+
         let center = UNUserNotificationCenter.current()
         center.requestAuthorization(options:[.badge, .alert, .sound]) { [weak self] granted, error in
             
@@ -29,6 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func getNotificationSettings() {
+    
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             print("Notification settings: \(settings)")
             guard settings.authorizationStatus == .authorized else { return }
@@ -36,6 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 UIApplication.shared.registerForRemoteNotifications()
             }
         }
+        
     }
     
     func application(
@@ -52,10 +54,36 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register: \(error)")
     }
+    
+    /*
+     to do
+    */
+    
+    func downLoadModel(){
+        
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         registerForPushNotifications()
+        
+        let notificationOption = launchOptions?[.remoteNotification]
+        
+        // 1
+        if let notification = notificationOption as? [String: AnyObject],
+            let aps = notification["aps"] as? [String: AnyObject] {
+            
+            // 2
+            //NewsItem.makeNewsItem(aps)
+            /*
+             we want to add the new model here
+             *
+            */
+            downLoadModel()
+            
+            // 3
+            (window?.rootViewController as? UITabBarController)?.selectedIndex = 1
+        }
 
         return true
     }
