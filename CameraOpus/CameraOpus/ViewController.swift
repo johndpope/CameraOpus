@@ -700,6 +700,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             self.imageMap.removeAll()
         }
         
+        addFocus()
+        
     }
     
     /*
@@ -1062,6 +1064,18 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         }
     }
     
+    func addFocus(){
+        print("in focus")
+        layer = UIView()
+        var im = UIImage(named: "focus")//?.cgImage
+        let imageView = UIImageView(image: im!)
+        imageView.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
+        print("about to add focus frame")
+        DispatchQueue.main.async {
+            self.photoPreviewImageView.addSubview(imageView)
+        }
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         print("in view did appear")
         super.viewDidAppear(animated)
@@ -1069,15 +1083,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         videoPreviewLayer!.frame = photoPreviewImageView.bounds
         
         if(focusFlag){
-            print("in focus")
-            layer = UIView()
-            var im = UIImage(named: "focus")//?.cgImage
-            let imageView = UIImageView(image: im!)
-            imageView.frame = CGRect(x: 62.5, y: 84, width: 250, height: 333)
-            print("about to add focus frame")
-            DispatchQueue.main.async {
-                self.photoPreviewImageView.addSubview(imageView)
-            }
+            addFocus()
+            
         }
         
     }
@@ -2081,7 +2088,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             //arrowGuideView.alpha = 0.5
             //added to main view down by the bottom of this function
             
-            self.addImageWayPoints()
+            //self.addImageWayPoints()
             
             self.tempView = UIImageView(image: UIImage(named: "whiteArrow")!)
             self.tempView!.frame = CGRect(x: 0, y: 430, width: self.arrowLength, height: self.arrowHeight)
