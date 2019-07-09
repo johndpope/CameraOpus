@@ -46,6 +46,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BA1ACFE022D5444E000E0DA4 /* CameraOpus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CameraOpus.entitlements; sourceTree = "<group>"; };
 		BA242719227664F600218C3E /* CameraOpus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraOpus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA24271C227664F600218C3E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BA24271E227664F600218C3E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -122,6 +123,7 @@
 		BA24271B227664F600218C3E /* CameraOpus */ = {
 			isa = PBXGroup;
 			children = (
+				BA1ACFE022D5444E000E0DA4 /* CameraOpus.entitlements */,
 				BA24271C227664F600218C3E /* AppDelegate.swift */,
 				BA24271E227664F600218C3E /* ViewController.swift */,
 				BA242720227664F600218C3E /* Main.storyboard */,
@@ -232,6 +234,11 @@
 				TargetAttributes = {
 					BA242718227664F600218C3E = {
 						CreatedOnToolsVersion = 10.2;
+						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 					BA24272F227664F900218C3E = {
 						CreatedOnToolsVersion = 10.2;
@@ -491,6 +498,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CameraOpus/CameraOpus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QZFZ74VAJR;
 				INFOPLIST_FILE = CameraOpus/Info.plist;
@@ -509,6 +517,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CameraOpus/CameraOpus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QZFZ74VAJR;
 				INFOPLIST_FILE = CameraOpus/Info.plist;
