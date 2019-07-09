@@ -91,9 +91,13 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     func sceneSetUp(fileName: String){
         let scene = SCNScene()
+        print("the file we are looking for is ",fileName )
 
         guard let assetUrl = Bundle.main.url(forResource: fileName, withExtension: "obj", subdirectory: "models.scnassets")
-            else { fatalError("Failed to find model file.") }
+            else {
+                //print("couldn't find, ", fileName)
+                fatalError("Failed to find model file.")
+            }
         
         assetLocation = assetUrl
         
@@ -109,6 +113,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
 //        print("the asset url is ", assetMaterialUrl)
         
         //youtube.com/watch?v=D2UWvR2nR0A
+        print("the material we are loading is ", modelName)
         newNode.geometry?.firstMaterial?.diffuse.contents = UIImage(named: modelName + ".png")
         
 //        newNode.geometry?.firstMaterial?.diffuse.contents = UIImage(named: assetMaterialUrl)

@@ -27,7 +27,7 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
     var initial = true
     
     //number of cells
-    var modelNames:  [String] = ["modelOne"]
+    var modelNames:  [String] = ["modelOne", "modelTwo", "modelThree","modelFour","modelFive","modelSix"]
     
     let defaults = UserDefaults.standard
     
@@ -54,15 +54,28 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
         print("the number of models", modelNames.count)
         return modelNames.count // your number of cells here
     }
+    /*
+     * Asks the data source for a cell to insert in a particular location of the table view.
+     *
+     * You can treat this function as something that is called when the tableview is loaded. It is essentially called in loop for each cell we need to show when we navigate to this tab
+     *
+     * So in this case we are simply loading the appropriate text for each cell
+    */
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         print("cellforrowat")
         let cell = tableView.dequeueReusableCell(withIdentifier: "ModelTableViewCell", for: indexPath) as! ModelTableViewCell
-        selectedModel = modelNames[indexPath.row]
-        modelpressed = true
-        cell.cellLabel.text = selectedModel
-        
+        //selectedModel =
+        //modelpressed = true
+        cell.cellLabel.text = modelNames[indexPath.row]
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("You selected cell number: \(indexPath.row)!")
+        modelpressed = true
+        selectedModel = modelNames[indexPath.row]
+        //self.performSegueWithIdentifier("yourIdentifier", sender: self)
     }
     
     /*

@@ -2368,18 +2368,30 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      
         make sure  `source ~/.bashrc` is called everytime we start up the instance
      
-     when model is ready, close the node server then
-      `sudo python -m SimpleHTTPServer 80`
+     then go to meshroom
+     
+     sudo node index.js
+     
+     use the app
      
      then go to most recent folder in output and grab it
      
-     ls -lrt to find the last folder created
+     cd /home/ubuntu/meshroom/output
+     
+     to find the last folder created
+     
+     ls -lrt
+     
+     when model is ready, close the node server then
+     `sudo python -m SimpleHTTPServer 80`
+     
      
      *
      */
     
     //var serverAddress = "http://18.206.164.104/"
-    var serverAddress = "http://54.144.214.159/"
+    var serverAddress = "http://54.210.33.195/"
+    
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
 
