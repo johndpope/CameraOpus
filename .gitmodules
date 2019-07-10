@@ -1,0 +1,3 @@
+[submodule "CameraOpus/CryptoSwift"]
+	path = CameraOpus/CryptoSwift
+	url = https://github.com/krzyzanowskim/CryptoSwift.git

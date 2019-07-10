@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BA1ACFE222D56E32000E0DA4 /* Login.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA1ACFE122D56E32000E0DA4 /* Login.storyboard */; };
 		BA24271D227664F600218C3E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24271C227664F600218C3E /* AppDelegate.swift */; };
 		BA24271F227664F600218C3E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24271E227664F600218C3E /* ViewController.swift */; };
 		BA242722227664F600218C3E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA242720227664F600218C3E /* Main.storyboard */; settings = {ASSET_TAGS = (library, ); }; };
@@ -29,6 +30,41 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		BA1ACFEB22D594D4000E0DA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 754BE45519693E190098E6F3;
+			remoteInfo = CryptoSwift;
+		};
+		BA1ACFED22D594D4000E0DA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 75211F92207249D8004E41F8;
+			remoteInfo = "CryptoSwift-TestHostApp";
+		};
+		BA1ACFEF22D594D4000E0DA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 754BE46019693E190098E6F3;
+			remoteInfo = Tests;
+		};
+		BA1ACFF122D594D4000E0DA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7595C14A2072E48C00EA1A5F;
+			remoteInfo = "TestsPerformance-Mac";
+		};
+		BA1ACFF322D594D4000E0DA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7564F0602072EAEB00CA5A96;
+			remoteInfo = "TestsPerformance-iOS";
+		};
 		BA242731227664F900218C3E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BA242711227664F600218C3E /* Project object */;
@@ -47,6 +83,8 @@
 
 /* Begin PBXFileReference section */
 		BA1ACFE022D5444E000E0DA4 /* CameraOpus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CameraOpus.entitlements; sourceTree = "<group>"; };
+		BA1ACFE122D56E32000E0DA4 /* Login.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Login.storyboard; sourceTree = "<group>"; };
+		BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CryptoSwift.xcodeproj; path = CryptoSwift/CryptoSwift.xcodeproj; sourceTree = "<group>"; };
 		BA242719227664F600218C3E /* CameraOpus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraOpus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA24271C227664F600218C3E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BA24271E227664F600218C3E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -99,9 +137,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BA1ACFE422D594D4000E0DA4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BA1ACFEC22D594D4000E0DA4 /* CryptoSwift.framework */,
+				BA1ACFEE22D594D4000E0DA4 /* CryptoSwift-TestHostApp.app */,
+				BA1ACFF022D594D4000E0DA4 /* Tests.xctest */,
+				BA1ACFF222D594D4000E0DA4 /* TestsPerformance-Mac.xctest */,
+				BA1ACFF422D594D4000E0DA4 /* TestsPerformance-iOS.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		BA242710227664F600218C3E = {
 			isa = PBXGroup;
 			children = (
+				BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */,
 				BA48938822C873B500F6D521 /* Main.storyboard */,
 				BA24271B227664F600218C3E /* CameraOpus */,
 				BA242733227664F900218C3E /* CameraOpusTests */,
@@ -125,6 +176,7 @@
 			children = (
 				BA1ACFE022D5444E000E0DA4 /* CameraOpus.entitlements */,
 				BA24271C227664F600218C3E /* AppDelegate.swift */,
+				BA1ACFE122D56E32000E0DA4 /* Login.storyboard */,
 				BA24271E227664F600218C3E /* ViewController.swift */,
 				BA242720227664F600218C3E /* Main.storyboard */,
 				BA48938B22CC346200F6D521 /* TabController.swift */,
@@ -261,6 +313,12 @@
 			mainGroup = BA242710227664F600218C3E;
 			productRefGroup = BA24271A227664F600218C3E /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = BA1ACFE422D594D4000E0DA4 /* Products */;
+					ProjectRef = BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				BA242718227664F600218C3E /* CameraOpus */,
@@ -270,6 +328,44 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXReferenceProxy section */
+		BA1ACFEC22D594D4000E0DA4 /* CryptoSwift.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = CryptoSwift.framework;
+			remoteRef = BA1ACFEB22D594D4000E0DA4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BA1ACFEE22D594D4000E0DA4 /* CryptoSwift-TestHostApp.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = "CryptoSwift-TestHostApp.app";
+			remoteRef = BA1ACFED22D594D4000E0DA4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BA1ACFF022D594D4000E0DA4 /* Tests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = Tests.xctest;
+			remoteRef = BA1ACFEF22D594D4000E0DA4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BA1ACFF222D594D4000E0DA4 /* TestsPerformance-Mac.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "TestsPerformance-Mac.xctest";
+			remoteRef = BA1ACFF122D594D4000E0DA4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		BA1ACFF422D594D4000E0DA4 /* TestsPerformance-iOS.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "TestsPerformance-iOS.xctest";
+			remoteRef = BA1ACFF322D594D4000E0DA4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
 /* Begin PBXResourcesBuildPhase section */
 		BA242717227664F600218C3E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
@@ -277,6 +373,7 @@
 			files = (
 				BA24272A227664F900218C3E /* LaunchScreen.storyboard in Resources */,
 				BA9B8F5B22B46BCA00EEF11D /* ThreeDFileViewController.storyboard in Resources */,
+				BA1ACFE222D56E32000E0DA4 /* Login.storyboard in Resources */,
 				BA242727227664F900218C3E /* Assets.xcassets in Resources */,
 				BA48938A22C873B500F6D521 /* Main.storyboard in Resources */,
 				BAA8309022B85B720088DAEE /* models.scnassets in Resources */,

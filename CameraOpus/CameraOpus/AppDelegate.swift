@@ -56,10 +56,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     /*
-     to do
+      to do
+      we will serve the model and associated png files in this method
     */
     
-    func downLoadModel(){
+    var serverAddress = "http://54.210.33.195/"
+    
+    func downLoadModel(modelkey: String){
+        
+        let testing = false
+        if(testing){
+            let parameters: [String: Any] = [
+                "modelid": modelkey
+            ]
+            
+            var r  = URLRequest(url: URL(string: serverAddress + "retrieve/")!)
+            r.httpMethod = "POST"
+            
+            do {
+                r.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to nsdata object and set it as request body
+            } catch let error {
+                print(error.localizedDescription)
+            }
+            
+            r.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            r.addValue("application/json", forHTTPHeaderField: "Accept")
+            
+            let task = URLSession.shared.dataTask(with: r) { data, response, error in
+                guard let data = data,
+                    let response = response as? HTTPURLResponse,
+                    error == nil else {
+                        return
+                }
+                
+                guard (200 ... 299) ~= response.statusCode else {
+                    return
+                }
+                
+                let responseString = String(data: data, encoding: .utf8)
+                print("responseString = \(responseString)")
+            }
+            task.resume()
+            
+        }
         
     }
 
@@ -73,20 +112,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         if let notification = notificationOption as? [String: AnyObject],
             let aps = notification["aps"] as? [String: AnyObject] {
             
+            print("opening app from notification")
             // 2
             //NewsItem.makeNewsItem(aps)
             /*
              we want to add the new model here
-             *
+             *"
             */
-            downLoadModel()
+            print("we got a key", notification["yourCustomKey"])
+            
+            downLoadModel(modelkey: notification["yourCustomKey"] as! String)
+            
             
             // 3
-            (window?.rootViewController as? UITabBarController)?.selectedIndex = 1
+            //(window?.rootViewController as? UITabBarController)?.selectedIndex = 2
         }
 
         return true
     }
+    
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler:
+        @escaping (UIBackgroundFetchResult) -> Void
+        ) {
+        guard let aps = userInfo["aps"] as? [String: AnyObject] else {
+            completionHandler(.failed)
+            return
+        }
+        print("we got a key", userInfo["yourCustomKey"])
+        
+        downLoadModel(modelkey: userInfo["yourCustomKey"] as! String)
+        //NewsItem.makeNewsItem(aps)
+    }
+
 
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

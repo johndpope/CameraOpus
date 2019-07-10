@@ -288,7 +288,12 @@ Nice to Haves
  - Add
  
  Apple notes
- team id: 
+ team id:
+ 
+ push notification:
+ Outside of these, you can add as much custom data as you want, as long as the payload does not exceed 4,096 bytes.
+ 
+
  
 
  
@@ -2422,6 +2427,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let image = photo.cgImageRepresentation()
         let im = image!.takeUnretainedValue()
         let uimg = UIImage(cgImage: im)
+        //compression quality 1 is the least compression aka the highest quality image
         let data = uimg.jpegData(compressionQuality: 1)
         
         r.httpBody = createBody(parameters: [:],
