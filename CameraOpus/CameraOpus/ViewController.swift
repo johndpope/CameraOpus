@@ -1188,7 +1188,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             }
         }
         
-        var resetTest = true
+        var resetTest = false
         
         if(resetTest){
             resetView()
@@ -1197,7 +1197,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
          * we will need to tap this one twice
         */
         
-        var tableViewTest = true
+        var tableViewTest = false
         if(tableViewTest){
             if (keyExists(key: "userModelNames")){
                 print("we are removing a cell")
@@ -1212,6 +1212,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             }
             
             
+        }
+        
+        var serverTest = true
+        if serverTest {
+            ServerHelper.downLoadModel(modelkey: "1aef")
         }
         
         
@@ -2405,7 +2410,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      */
     
     //var serverAddress = "http://18.206.164.104/"
-    var serverAddress = "http://54.210.33.195/"
+    var serverAddress = "http://3.86.241.146/"
     
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)

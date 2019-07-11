@@ -58,49 +58,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     /*
       to do
       we will serve the model and associated png files in this method
+     
+     right now the modelKey will just be the job id but this will change as have more than a handful of users (to maintain data privacy)
     */
-    
-    var serverAddress = "http://54.210.33.195/"
-    
-    func downLoadModel(modelkey: String){
-        
-        let testing = false
-        if(testing){
-            let parameters: [String: Any] = [
-                "modelid": modelkey
-            ]
-            
-            var r  = URLRequest(url: URL(string: serverAddress + "retrieve/")!)
-            r.httpMethod = "POST"
-            
-            do {
-                r.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: .prettyPrinted) // pass dictionary to nsdata object and set it as request body
-            } catch let error {
-                print(error.localizedDescription)
-            }
-            
-            r.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            r.addValue("application/json", forHTTPHeaderField: "Accept")
-            
-            let task = URLSession.shared.dataTask(with: r) { data, response, error in
-                guard let data = data,
-                    let response = response as? HTTPURLResponse,
-                    error == nil else {
-                        return
-                }
-                
-                guard (200 ... 299) ~= response.statusCode else {
-                    return
-                }
-                
-                let responseString = String(data: data, encoding: .utf8)
-                print("responseString = \(responseString)")
-            }
-            task.resume()
-            
-        }
-        
-    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -121,7 +81,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             */
             print("we got a key", notification["yourCustomKey"])
             
-            downLoadModel(modelkey: notification["yourCustomKey"] as! String)
+            ServerHelper.downLoadModel(modelkey: notification["yourCustomKey"] as! String)
             
             
             // 3
@@ -143,8 +103,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         print("we got a key", userInfo["yourCustomKey"])
         
-        downLoadModel(modelkey: userInfo["yourCustomKey"] as! String)
+        ServerHelper.downLoadModel(modelkey: userInfo["yourCustomKey"] as! String)
         //NewsItem.makeNewsItem(aps)
+    }
+    
+    /*
+     to do
+    */
+    
+    func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+        debugPrint("handleEventsForBackgroundURLSession: \(identifier)")
+        completionHandler()
     }
 
 

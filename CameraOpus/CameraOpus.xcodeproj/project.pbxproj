@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		BA1ACFE222D56E32000E0DA4 /* Login.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA1ACFE122D56E32000E0DA4 /* Login.storyboard */; };
+		BA1ACFF622D68EDA000E0DA4 /* ServerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1ACFF522D68EDA000E0DA4 /* ServerHelper.swift */; };
+		BA1ACFF822D6C365000E0DA4 /* Downloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1ACFF722D6C365000E0DA4 /* Downloader.swift */; };
 		BA24271D227664F600218C3E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24271C227664F600218C3E /* AppDelegate.swift */; };
 		BA24271F227664F600218C3E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA24271E227664F600218C3E /* ViewController.swift */; };
 		BA242722227664F600218C3E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA242720227664F600218C3E /* Main.storyboard */; settings = {ASSET_TAGS = (library, ); }; };
@@ -85,6 +87,8 @@
 		BA1ACFE022D5444E000E0DA4 /* CameraOpus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CameraOpus.entitlements; sourceTree = "<group>"; };
 		BA1ACFE122D56E32000E0DA4 /* Login.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Login.storyboard; sourceTree = "<group>"; };
 		BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = CryptoSwift.xcodeproj; path = CryptoSwift/CryptoSwift.xcodeproj; sourceTree = "<group>"; };
+		BA1ACFF522D68EDA000E0DA4 /* ServerHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerHelper.swift; sourceTree = "<group>"; };
+		BA1ACFF722D6C365000E0DA4 /* Downloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Downloader.swift; sourceTree = "<group>"; };
 		BA242719227664F600218C3E /* CameraOpus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CameraOpus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA24271C227664F600218C3E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BA24271E227664F600218C3E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -177,7 +181,9 @@
 				BA1ACFE022D5444E000E0DA4 /* CameraOpus.entitlements */,
 				BA24271C227664F600218C3E /* AppDelegate.swift */,
 				BA1ACFE122D56E32000E0DA4 /* Login.storyboard */,
+				BA1ACFF522D68EDA000E0DA4 /* ServerHelper.swift */,
 				BA24271E227664F600218C3E /* ViewController.swift */,
+				BA1ACFF722D6C365000E0DA4 /* Downloader.swift */,
 				BA242720227664F600218C3E /* Main.storyboard */,
 				BA48938B22CC346200F6D521 /* TabController.swift */,
 				BA242726227664F900218C3E /* Assets.xcassets */,
@@ -410,6 +416,8 @@
 				BA24271D227664F600218C3E /* AppDelegate.swift in Sources */,
 				BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */,
 				BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */,
+				BA1ACFF822D6C365000E0DA4 /* Downloader.swift in Sources */,
+				BA1ACFF622D68EDA000E0DA4 /* ServerHelper.swift in Sources */,
 				BA9B8F5722B4463C00EEF11D /* BottomTab.swift in Sources */,
 				BA9B8F5D22B5C6E100EEF11D /* ModelTableViewCell.swift in Sources */,
 				BAADC97522791A0600A671B2 /* PreviewView.swift in Sources */,
