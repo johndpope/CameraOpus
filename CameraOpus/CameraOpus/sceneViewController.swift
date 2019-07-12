@@ -34,6 +34,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     var assetLocation : URL?
     
+    var materialImage : UIImage?
+    
     //var modelName: String?
     var modelName = "modelOne"
     
@@ -95,8 +97,11 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         
         var assetUrl = Bundle.main.url(forResource: fileName, withExtension: "obj", subdirectory: "models.scnassets")
         
+        var fileSystemFlag = false
+        
         if assetUrl == nil
         {
+            fileSystemFlag = true
             
             do {
                 let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -121,23 +126,35 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         assetLocation = assetUrl
         
         let asset = MDLAsset(url:assetUrl!)
+        
         guard let object = asset.object(at: 0) as? MDLMesh
             else { fatalError("Failed to get mesh from asset.") }
         
         let newNode  = SCNNode(mdlObject: object)
         
+        /*
+         * The following condition is only ever true if
+         * We are loading a models from models.scnassets
+         * ie not from the documents folder
+         */
+        
+        if(!fileSystemFlag){
+            print("the material we are loading is ", modelName)
+            
+            guard let assetMaterialUrl = Bundle.main.path(forResource: fileName, ofType: "png", inDirectory: "models.scnassets")
+                else { fatalError("Failed to find model texture.") }
+            
+             materialImage = UIImage(contentsOfFile: assetMaterialUrl)
+        }
+
+        
         //youtube.com/watch?v=D2UWvR2nR0A
-        print("the material we are loading is ", modelName)
         
-        guard let assetMaterialUrl = Bundle.main.path(forResource: fileName, ofType: "png", inDirectory: "models.scnassets")
-            else { fatalError("Failed to find model texture.") }
-        
-        let tempim = UIImage(contentsOfFile: assetMaterialUrl)
         
         //print("the asset url is ", assetMaterialUrl)
     
         
-        newNode.geometry?.firstMaterial?.diffuse.contents = tempim
+        newNode.geometry?.firstMaterial?.diffuse.contents = materialImage!
         
         /*
          * flag for testing print statements
@@ -148,9 +165,6 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
 //            print("the height of the material is ", tempim?.size.height)
 //            print("the model name is", String(fileName + ".png") )
 //        }
-        //newNode.geometry?.firstMaterial?.diffuse.contents = UIImage(named: String(fileName + ".png"))
-        
-//        newNode.geometry?.firstMaterial?.diffuse.contents = UIImage(named: assetMaterialUrl)
         
         
         scene.rootNode.addChildNode(newNode)
