@@ -1212,7 +1212,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 defaults.set(modelArray, forKey: "userModelNames")
             }
             
-            
         }
         
         var serverTest = false
@@ -1222,7 +1221,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         var downloadTest = true
         if downloadTest {
-            ServerHelper.downloadModel(address: "http://3.83.212.138/download/model/")
+            
+            let url = URL(string: "http://3.83.212.138/download/model/")!
+            
+            Downloader.shared.download(url)
+            
+            //ServerHelper.downloadModel(address: "http://3.83.212.138/download/model/")
         }
         
 

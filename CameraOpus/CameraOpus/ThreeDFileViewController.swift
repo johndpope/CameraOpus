@@ -27,7 +27,7 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
     var initial = true
     
     //number of cells
-    var modelNames:  [String] = ["modelOne", "modelTwo", "modelThree","modelFour","modelFive","modelSix"]
+    var modelNames:  [String] = ["modelOne", "modelThree","modelFour","modelFive","modelSix"]
     
     let defaults = UserDefaults.standard
     
@@ -39,6 +39,8 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
     var selectedModel : String?
     var modelpressed = false
     
+    var fileURLs: [URL] = []
+
     
     @IBOutlet weak var tableView: UITableView!
     
@@ -93,11 +95,52 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
         }
     }
     
+    func loadFiles(){
+        
+        let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        
+        do {
+            // Get the directory contents urls (including subfolders urls)
+            let directoryContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
+            print("directory contents are", directoryContents)
+            
+            let newPath = directoryContents[0].path + ".obj"
+            
+            // if you want to filter the directory contents you can do like this:
+            let objFiles = directoryContents.filter{ $0.pathExtension == "obj" }
+            print("obj urls:",objFiles)
+            let objFileNames = objFiles.map{ $0.deletingPathExtension().lastPathComponent }
+            print("obj list:", objFileNames)
+            
+            /*
+             * we are renaming the file
+             * we can get rid of this later
+             */
+            
+            if(objFileNames.count == 0){
+                //url.setResourceValue(newName, forKey: NSURLNameKey)
+                print("tryna rename")
+                
+                //URL(fileURLWithPath: "/Users/xxx/Desktop/Media/")
+                
+                try FileManager.default.moveItem(at:                  URL(fileURLWithPath: directoryContents[0].path), to: URL(fileURLWithPath: newPath))
+                let newContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
+                print("new contents are", newContents)
+                
+            }
+            
+        } catch {
+            print(error)
+        }
+        
+    }
+    
     override func viewDidLoad() {
         print("viewdidload 3D")
         super.viewDidLoad()
         self.tableView.delegate = self
         self.tableView.dataSource = self
+        loadFiles()
     }
     
     override func viewDidAppear(_ animated: Bool) {
