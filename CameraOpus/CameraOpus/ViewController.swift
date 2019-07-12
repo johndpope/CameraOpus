@@ -1222,7 +1222,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         var downloadTest = true
         if downloadTest {
             
-            let url = URL(string: "http://3.83.212.138/download/model/")!
+            let url = URL(string: "http://3.82.110.198/download/model.png")!
             
             Downloader.shared.download(url)
             
@@ -2419,7 +2419,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      */
     
     //var serverAddress = "http://18.206.164.104/"
-    var serverAddress = "http://3.83.212.138/"
+    var serverAddress = "http://3.82.110.198/"
     
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
@@ -2721,7 +2721,6 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 self.guidedFlag = false
                 return
             }
-            
 
         }
     }

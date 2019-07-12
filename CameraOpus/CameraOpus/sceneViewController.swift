@@ -108,12 +108,30 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
                 
                 let directoryContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
                 
-                let objFiles = directoryContents.filter{ $0.path.contains(fileName) }
+                let modelFiles = directoryContents.filter{ $0.path.contains(fileName) }
                 
-                print(objFiles)
+                /*
+                 * for some reason the path extension attempt did not work
+                 *
+                 * .pathextension == ".obj"
+                 */
+                let objFiles = modelFiles.filter{
+                    $0.path.contains("obj")
+                }
+                
+                print("model files are", modelFiles)
+                print("obj files are", objFiles)
                 
                 assetUrl = objFiles[0]
                 print("we set the asset URL to the obj file in docs")
+                
+                let materialFiles = modelFiles.filter{
+                    $0.path.contains("png")
+                }
+                print("material files are", materialFiles)
+                
+                materialImage = UIImage(contentsOfFile: materialFiles[0].path)
+                
             }
             catch{
                 print(error)
@@ -149,11 +167,9 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
 
         
         //youtube.com/watch?v=D2UWvR2nR0A
-        
-        
+    
         //print("the asset url is ", assetMaterialUrl)
     
-        
         newNode.geometry?.firstMaterial?.diffuse.contents = materialImage!
         
         /*
@@ -166,14 +182,12 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
 //            print("the model name is", String(fileName + ".png") )
 //        }
         
-        
         scene.rootNode.addChildNode(newNode)
         
         sceneView.scene = scene
         sceneView.allowsCameraControl = true
         // we need this to see the item's texture
         sceneView.autoenablesDefaultLighting = true
-
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -195,6 +209,5 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
      *    objectNode?.geometry?.materials = [material]
      *
     */
-    
     
 }
