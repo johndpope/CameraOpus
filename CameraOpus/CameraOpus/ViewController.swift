@@ -293,7 +293,8 @@ Nice to Haves
  push notification:
  Outside of these, you can add as much custom data as you want, as long as the payload does not exceed 4,096 bytes.
  
-
+ to get the push notification test server worker do
+ `npm start`
  
 
  
@@ -1214,11 +1215,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
         }
         
-        var serverTest = true
+        var serverTest = false
         if serverTest {
             ServerHelper.downLoadModel(modelkey: "1aef")
         }
         
+        var downloadTest = true
+        if downloadTest {
+            ServerHelper.downloadModel(address: "http://3.83.212.138/download/model/")
+        }
         
 
         
@@ -2410,7 +2415,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      */
     
     //var serverAddress = "http://18.206.164.104/"
-    var serverAddress = "http://3.86.241.146/"
+    var serverAddress = "http://3.83.212.138/"
     
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
@@ -2475,7 +2480,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             }
             
             let responseString = String(data: data, encoding: .utf8)
-            print("responseString = \(responseString)")
+            print("processing responseString = \(responseString)")
         }
         task.resume()
     }

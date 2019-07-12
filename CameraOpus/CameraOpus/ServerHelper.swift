@@ -15,7 +15,7 @@ class ServerHelper{
         
         print("in download model")
         
-        let serverAddress = "http://3.86.241.146/"
+        let serverAddress = "http://3.83.212.138/"
         
         let testing = true
         if(testing){
@@ -56,7 +56,7 @@ class ServerHelper{
 //        return URLSession(configuration: config, delegate: self, delegateQueue: nil)
 //    }()
 //
-    func downloadModel(address: String){
+    static func downloadModel(address: String){
         let url = URL(string: address)!
         let task = Downloader.shared.activate().downloadTask(with: url)
         task.resume()
