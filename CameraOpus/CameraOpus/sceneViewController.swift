@@ -92,16 +92,35 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     func sceneSetUp(fileName: String){
         let scene = SCNScene()
         print("the file we are looking for is ",fileName )
-
-        guard let assetUrl = Bundle.main.url(forResource: fileName, withExtension: "obj", subdirectory: "models.scnassets")
-            else {
-                //print("couldn't find, ", fileName)
-                fatalError("Failed to find model file.")
+        
+        var assetUrl = Bundle.main.url(forResource: fileName, withExtension: "obj", subdirectory: "models.scnassets")
+        
+        if assetUrl == nil
+        {
+            
+            do {
+                let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+                
+                let directoryContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
+                
+                let objFiles = directoryContents.filter{ $0.path.contains(fileName) }
+                
+                print(objFiles)
+                
+                assetUrl = objFiles[0]
+                print("we set the asset URL to the obj file in docs")
+            }
+            catch{
+                print(error)
+                fatalError("could not find file")
+            }
+                    //print("couldn't find, ", fileName)
+                    //fatalError("Failed to find model file.")
             }
         
         assetLocation = assetUrl
         
-        let asset = MDLAsset(url:assetUrl)
+        let asset = MDLAsset(url:assetUrl!)
         guard let object = asset.object(at: 0) as? MDLMesh
             else { fatalError("Failed to get mesh from asset.") }
         
@@ -110,27 +129,25 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         //youtube.com/watch?v=D2UWvR2nR0A
         print("the material we are loading is ", modelName)
         
-        
         guard let assetMaterialUrl = Bundle.main.path(forResource: fileName, ofType: "png", inDirectory: "models.scnassets")
             else { fatalError("Failed to find model texture.") }
         
         let tempim = UIImage(contentsOfFile: assetMaterialUrl)
         
-        print("the asset url is ", assetMaterialUrl)
-        
-        //let tempim = UIImage(named: String(fileName))
+        //print("the asset url is ", assetMaterialUrl)
+    
         
         newNode.geometry?.firstMaterial?.diffuse.contents = tempim
         
         /*
          * flag for testing print statements
         */
-        let testing = true
-        if testing{
-            print("the width of the material is ", tempim?.size.width)
-            print("the height of the material is ", tempim?.size.height)
-            print("the model name is", String(fileName + ".png") )
-        }
+//        let testing = false
+//        if testing{
+//            print("the width of the material is ", tempim?.size.width)
+//            print("the height of the material is ", tempim?.size.height)
+//            print("the model name is", String(fileName + ".png") )
+//        }
         //newNode.geometry?.firstMaterial?.diffuse.contents = UIImage(named: String(fileName + ".png"))
         
 //        newNode.geometry?.firstMaterial?.diffuse.contents = UIImage(named: assetMaterialUrl)

@@ -112,6 +112,10 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
             let objFileNames = objFiles.map{ $0.deletingPathExtension().lastPathComponent }
             print("obj list:", objFileNames)
             
+            for fi in objFileNames{
+                modelNames.append(fi)
+            }
+            
             /*
              * we are renaming the file
              * we can get rid of this later
@@ -126,13 +130,11 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
                 try FileManager.default.moveItem(at:                  URL(fileURLWithPath: directoryContents[0].path), to: URL(fileURLWithPath: newPath))
                 let newContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
                 print("new contents are", newContents)
-                
             }
             
         } catch {
             print(error)
         }
-        
     }
     
     override func viewDidLoad() {
@@ -140,6 +142,10 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
         super.viewDidLoad()
         self.tableView.delegate = self
         self.tableView.dataSource = self
+        /*
+         * we might want to change loadFiles to return a bool
+         * if we did then we want to refresh to the table view to contain the cells
+         */
         loadFiles()
     }
     
