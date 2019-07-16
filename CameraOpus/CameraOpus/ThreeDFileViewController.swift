@@ -112,8 +112,11 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
             let objFileNames = objFiles.map{ $0.deletingPathExtension().lastPathComponent }
             print("obj list:", objFileNames)
             
+            //we add all the files that are not in the datasource to the datasource
             for fi in objFileNames{
-                modelNames.append(fi)
+                if !(modelNames.contains(fi)){
+                        modelNames.append(fi)
+                }
             }
             
             /*

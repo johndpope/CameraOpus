@@ -111,6 +111,15 @@ FLOW
             - the takeGuidedImage checks if an image is taken at the right locations, and increments the global imagesTaken counter to keep track (efficiently)
             - when the imagesTaken is full we alert user and refresh the view and reset flags
  
+    Downloading
+     - Once a model is complete the server sends a push with a unique url of the structure http://[address]/download/[unique_id]
+     - In app delegate one of the two functions for handling push notifications is called and the downloader function makes 2 get request to the server of the structure
+        - http://[address]/download/[unique_id].obj
+        - http://[address]/download/[unique_id].png
+        It then moves the temporary files to filesystem
+    - When a user taps on the models tab, the view Did load function of ThreeDFileViewer finds the files adds them to the datasouce for the table view.
+    - When a user taps on a model from the filesystem the sceneSetUp function finds the files from the filesystem
+ 
 */
  
 /*
@@ -1222,11 +1231,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         var downloadTest = true
         if downloadTest {
             
-            let url = URL(string: "http://3.82.110.198/download/model.png")!
-            
+            var url = URL(string: "http://3.91.161.96/mesh/52549118-E8EE-4293-82E7-6A56FB79F361")!
             Downloader.shared.download(url)
             
-            //ServerHelper.downloadModel(address: "http://3.83.212.138/download/model/")
+            url =  URL(string: "http://3.91.161.96/texture/52549118-E8EE-4293-82E7-6A56FB79F361")!
+            Downloader.shared.download(url)
         }
         
 
@@ -2419,7 +2428,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      */
     
     //var serverAddress = "http://18.206.164.104/"
-    var serverAddress = "http://3.82.110.198/"
+    var serverAddress = "http://3.91.161.96/"
     
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)

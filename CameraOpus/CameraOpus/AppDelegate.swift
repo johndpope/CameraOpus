@@ -81,7 +81,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             */
             print("we got a key", notification["yourCustomKey"])
             
-            ServerHelper.downLoadModel(modelkey: notification["yourCustomKey"] as! String)
+            //ServerHelper.downLoadModel(modelkey: notification["yourCustomKey"] as! String)
+            
+            let materialString = notification["yourCustomKey"] as! String + ".png"
+            let assetString = notification["yourCustomKey"] as! String + ".obj"
+            
+            var url = URL(string: materialString)!
+            Downloader.shared.download(url)
+            
+            url =  URL(string: assetString)!
+            Downloader.shared.download(url)
             
             
             // 3
@@ -103,7 +112,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
         print("we got a key", userInfo["yourCustomKey"])
         
-        ServerHelper.downLoadModel(modelkey: userInfo["yourCustomKey"] as! String)
+        
+        let materialString = userInfo["yourCustomKey"] as! String + ".png"
+        let assetString = userInfo["yourCustomKey"] as! String + ".obj"
+        
+        var url = URL(string: materialString)!
+        Downloader.shared.download(url)
+        
+        url =  URL(string: assetString)!
+        Downloader.shared.download(url)
+        
         //NewsItem.makeNewsItem(aps)
     }
     
