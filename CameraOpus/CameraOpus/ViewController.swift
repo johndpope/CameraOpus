@@ -1231,10 +1231,10 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         var downloadTest = true
         if downloadTest {
             
-            var url = URL(string: "http://3.91.161.96/mesh/52549118-E8EE-4293-82E7-6A56FB79F361")!
+            var url = URL(string: "http://3.82.80.228/mesh/52549118-E8EE-4293-82E7-6A56FB79F361")!
             Downloader.shared.download(url)
             
-            url =  URL(string: "http://3.91.161.96/texture/52549118-E8EE-4293-82E7-6A56FB79F361")!
+            url =  URL(string: "http://3.82.80.228/texture/52549118-E8EE-4293-82E7-6A56FB79F361")!
             Downloader.shared.download(url)
         }
         
@@ -2428,7 +2428,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      */
     
     //var serverAddress = "http://18.206.164.104/"
-    var serverAddress = "http://3.91.161.96/"
+    var serverAddress = "http://3.82.80.228/"
     
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)

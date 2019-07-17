@@ -14,6 +14,8 @@ class Downloader : NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
     
     var url : URL?
     
+    //var destinationUrl: string?
+    
     typealias ProgressHandler = (Float) -> ()
     
     var onProgress : ProgressHandler? {
@@ -64,7 +66,18 @@ class Downloader : NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
         debugPrint("Download finished: \(location)")
         
         let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let destinationUrl = documentsUrl!.appendingPathComponent(url!.lastPathComponent)
+        //if(url.path.contains("texture")){
+            //destinationUrl = documentsUrl!.appendingPathComponent
+        //}
+        var destinationUrl = documentsUrl!.appendingPathComponent(url!.lastPathComponent)
+        if(url!.path.contains("texture")){
+            print("we have a texture")
+            destinationUrl = destinationUrl.appendingPathExtension("png")//".png"
+        }
+        if(url!.path.contains("mesh")){
+            print("we have a mesh")
+            destinationUrl = destinationUrl.appendingPathExtension("obj")
+        }
         let dataFromURL = try? Data(contentsOf: location)
         try? dataFromURL?.write(to: destinationUrl, options: [.atomic])
         print("the destination ur' is", destinationUrl)

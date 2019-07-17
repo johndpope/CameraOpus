@@ -15,7 +15,7 @@ class ServerHelper{
         
         print("in download model")
         
-        let serverAddress = "http://3.91.161.96/"
+        let serverAddress = "http://3.82.80.228/"
         
         let testing = true
         if(testing){

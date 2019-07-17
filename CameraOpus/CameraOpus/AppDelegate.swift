@@ -9,6 +9,9 @@
 import UIKit
 import CoreData
 import UserNotifications
+import Fabric
+import Crashlytics
+
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -65,7 +68,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         registerForPushNotifications()
-        
+
         let notificationOption = launchOptions?[.remoteNotification]
         
         // 1
@@ -79,23 +82,28 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
              we want to add the new model here
              *"
             */
-            print("we got a key", notification["yourCustomKey"])
+            print("our job id", notification["jobID"])
             
             //ServerHelper.downLoadModel(modelkey: notification["yourCustomKey"] as! String)
             
-            let materialString = notification["yourCustomKey"] as! String + ".png"
-            let assetString = notification["yourCustomKey"] as! String + ".obj"
+            let materialString = notification["jobID"] as! String //+ ".png"
+            let assetString = notification["jobID"] as! String //+ ".obj"
             
-            var url = URL(string: materialString)!
+            var url =  URL(string: "http://3.82.80.228/" + "mesh/" + assetString)!
+            print("downloading mesh")
             Downloader.shared.download(url)
             
-            url =  URL(string: assetString)!
+            url = URL(string: "http://3.82.80.228/" + "texture/" + materialString)!
+            print("downloading texture")
             Downloader.shared.download(url)
             
             
             // 3
             //(window?.rootViewController as? UITabBarController)?.selectedIndex = 2
         }
+        print("adding crashlytics")
+        Crashlytics().debugMode = true
+        Fabric.with([Crashlytics.self])
 
         return true
     }
@@ -110,19 +118,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             completionHandler(.failed)
             return
         }
-        print("we got a key", userInfo["yourCustomKey"])
+        print("our job: ", userInfo["jobID"])
         
         
-        let materialString = userInfo["yourCustomKey"] as! String + ".png"
-        let assetString = userInfo["yourCustomKey"] as! String + ".obj"
+        let materialString = userInfo["jobID"] as! String //+ ".png"
+        let assetString = userInfo["jobID"] as! String //+ ".obj"
         
-        var url = URL(string: materialString)!
+        var url =  URL(string: "http://3.82.80.228/" + "mesh/" + assetString)!
+        print("downloading mesh")
         Downloader.shared.download(url)
         
-        url =  URL(string: assetString)!
+        url = URL(string: "http://3.82.80.228/" + "texture/" + materialString)!
+        print("downloading texture")
         Downloader.shared.download(url)
         
-        //NewsItem.makeNewsItem(aps)
     }
     
     /*

@@ -21,6 +21,8 @@
 		BA48938A22C873B500F6D521 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA48938822C873B500F6D521 /* Main.storyboard */; };
 		BA48938C22CC346300F6D521 /* TabController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA48938B22CC346200F6D521 /* TabController.swift */; };
 		BA7A19C822D824A90031E352 /* FolderHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA7A19C722D824A90031E352 /* FolderHelper.swift */; };
+		BA7A19CC22DE8BE30031E352 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA7A19CA22DE8BE30031E352 /* Crashlytics.framework */; };
+		BA7A19CD22DE8BE30031E352 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA7A19CB22DE8BE30031E352 /* Fabric.framework */; };
 		BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */; };
 		BA9B8F5B22B46BCA00EEF11D /* ThreeDFileViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */; };
 		BA9B8F5D22B5C6E100EEF11D /* ModelTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5C22B5C6E100EEF11D /* ModelTableViewCell.swift */; };
@@ -106,6 +108,8 @@
 		BA48938922C873B500F6D521 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = CameraOpus/Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BA48938B22CC346200F6D521 /* TabController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabController.swift; sourceTree = "<group>"; };
 		BA7A19C722D824A90031E352 /* FolderHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderHelper.swift; sourceTree = "<group>"; };
+		BA7A19CA22DE8BE30031E352 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
+		BA7A19CB22DE8BE30031E352 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Fabric.framework; sourceTree = "<group>"; };
 		BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDFileViewController.swift; sourceTree = "<group>"; };
 		BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ThreeDFileViewController.storyboard; sourceTree = "<group>"; };
 		BA9B8F5C22B5C6E100EEF11D /* ModelTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTableViewCell.swift; sourceTree = "<group>"; };
@@ -121,6 +125,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA7A19CC22DE8BE30031E352 /* Crashlytics.framework in Frameworks */,
+				BA7A19CD22DE8BE30031E352 /* Fabric.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -156,6 +162,8 @@
 		BA242710227664F600218C3E = {
 			isa = PBXGroup;
 			children = (
+				BA7A19CA22DE8BE30031E352 /* Crashlytics.framework */,
+				BA7A19CB22DE8BE30031E352 /* Fabric.framework */,
 				BA1ACFE322D594D4000E0DA4 /* CryptoSwift.xcodeproj */,
 				BA48938822C873B500F6D521 /* Main.storyboard */,
 				BA24271B227664F600218C3E /* CameraOpus */,
@@ -231,6 +239,7 @@
 				BA242715227664F600218C3E /* Sources */,
 				BA242716227664F600218C3E /* Frameworks */,
 				BA242717227664F600218C3E /* Resources */,
+				BA7A19C922DE8B9B0031E352 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -402,6 +411,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BA7A19C922DE8B9B0031E352 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n./Fabric.framework/run f34c919ca0f0c39a11a563761bb58bb424e9cabd 658c7245bd29005143194437753b12fab0d1f73797fffaae59d38af01cd78f8c\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BA242715227664F600218C3E /* Sources */ = {
@@ -606,6 +635,10 @@
 				CODE_SIGN_ENTITLEMENTS = CameraOpus/CameraOpus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QZFZ74VAJR;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = CameraOpus/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -625,6 +658,10 @@
 				CODE_SIGN_ENTITLEMENTS = CameraOpus/CameraOpus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = QZFZ74VAJR;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = CameraOpus/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
