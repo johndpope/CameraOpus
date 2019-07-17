@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import SSZipArchive
 
 class Downloader : NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
     
@@ -70,6 +71,13 @@ class Downloader : NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
             //destinationUrl = documentsUrl!.appendingPathComponent
         //}
         var destinationUrl = documentsUrl!.appendingPathComponent(url!.lastPathComponent)
+        
+        /*
+         * We are prolly gonna use
+         *
+         * SSZipArchive.unzipFileAtPath(zipPath, toDestination: unzipPath)
+         */
+        
         if(url!.path.contains("texture")){
             print("we have a texture")
             destinationUrl = destinationUrl.appendingPathExtension("png")//".png"
