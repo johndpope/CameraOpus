@@ -97,6 +97,8 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
     
     func loadFiles(){
         
+        print("in loadFiles three file")
+        
         let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         
         var newDestinationUrl = documentsUrl.appendingPathComponent("model")
@@ -108,31 +110,38 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
             
             
 //            let directoryContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
-            let directoryContents = try FileManager.default.contentsOfDirectory(at: newDestinationUrl, includingPropertiesForKeys: nil)
-            print("directory contents are", directoryContents)
+
             
             let subDirs = newDestinationUrl.subDirectories
             print("the path is",newDestinationUrl.path)
             for x in subDirs{
                 if (x.isDirectory){
                     print("subdirectory is ", x.path)
-                    // if you want to filter the directory contents you can do like this:
-                    let objFiles = directoryContents.filter{ $0.pathExtension == "obj" }
-                    print("obj urls:",objFiles)
-                    let objFileNames = objFiles.map{ $0.deletingPathExtension().lastPathComponent }
-                    print("obj list:", objFileNames)
+                    let directoryContents = try FileManager.default.contentsOfDirectory(at: x, includingPropertiesForKeys: nil)
+                    print("directory contents are", directoryContents)
                     
-                    let materialFiles = directoryContents.filter{
-                        $0.path.contains("png")
+                    if !(modelNames.contains(x.lastPathComponent)){
+                        modelNames.append(x.lastPathComponent)
                     }
-                    print("material files are", materialFiles)
                     
+                    /*
+                     * the stuff below is for debugging
+                     */
+                    
+
+//                    // if you want to filter the directory contents you can do like this:
+//                    let objFiles = directoryContents.filter{ $0.pathExtension == "obj" }
+//                    print("obj urls:",objFiles)
+//                    let objFileNames = objFiles.map{ $0.deletingPathExtension().lastPathComponent }
+//                    print("obj list:", objFileNames)
+//
+//                    let materialFiles = directoryContents.filter{
+//                        $0.path.contains("png")
+//                    }
+//                    print("material files are", materialFiles)
+//
+//
                     //we add all the files that are not in the datasource to the datasource
-                    for fi in objFileNames{
-                        if !(modelNames.contains(fi)){
-                            modelNames.append(fi)
-                        }
-                    }
                     
                 }
                 
