@@ -99,41 +99,65 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
         
         let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         
+        var newDestinationUrl = documentsUrl.appendingPathComponent("model")
+        
         do {
             // Get the directory contents urls (including subfolders urls)
-            let directoryContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
+//            let directoryContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
+//            print("directory contents are", directoryContents)
+            
+            
+//            let directoryContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
+            let directoryContents = try FileManager.default.contentsOfDirectory(at: newDestinationUrl, includingPropertiesForKeys: nil)
             print("directory contents are", directoryContents)
             
-            let newPath = directoryContents[0].path + ".obj"
-            
-            // if you want to filter the directory contents you can do like this:
-            let objFiles = directoryContents.filter{ $0.pathExtension == "obj" }
-            print("obj urls:",objFiles)
-            let objFileNames = objFiles.map{ $0.deletingPathExtension().lastPathComponent }
-            print("obj list:", objFileNames)
-            
-            //we add all the files that are not in the datasource to the datasource
-            for fi in objFileNames{
-                if !(modelNames.contains(fi)){
-                        modelNames.append(fi)
+            let subDirs = newDestinationUrl.subDirectories
+            print("the path is",newDestinationUrl.path)
+            for x in subDirs{
+                if (x.isDirectory){
+                    print("subdirectory is ", x.path)
+                    // if you want to filter the directory contents you can do like this:
+                    let objFiles = directoryContents.filter{ $0.pathExtension == "obj" }
+                    print("obj urls:",objFiles)
+                    let objFileNames = objFiles.map{ $0.deletingPathExtension().lastPathComponent }
+                    print("obj list:", objFileNames)
+                    
+                    let materialFiles = directoryContents.filter{
+                        $0.path.contains("png")
+                    }
+                    print("material files are", materialFiles)
+                    
+                    //we add all the files that are not in the datasource to the datasource
+                    for fi in objFileNames{
+                        if !(modelNames.contains(fi)){
+                            modelNames.append(fi)
+                        }
+                    }
+                    
                 }
+                
             }
+            
+//            try? FileManager.default.removeItem(at: URL(string: "/private/var/mobile/Containers/Data/Application/E0FF7CA2-9D98-45F4-ACB6-FB1ED54D9454/Documents/model/F7CFE07B-1B1D-4023-95E8-27935201FE09.obj")!)
+//
+            
+            //let newPath = directoryContents[0].path + ".obj"
             
             /*
              * we are renaming the file
              * we can get rid of this later
              */
             
-            if(objFileNames.count == 0){
-                //url.setResourceValue(newName, forKey: NSURLNameKey)
-                print("tryna rename")
-                
-                //URL(fileURLWithPath: "/Users/xxx/Desktop/Media/")
-                
-                try FileManager.default.moveItem(at:                  URL(fileURLWithPath: directoryContents[0].path), to: URL(fileURLWithPath: newPath))
-                let newContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
-                print("new contents are", newContents)
-            }
+//            if(objFileNames.count == 0){
+//                //url.setResourceValue(newName, forKey: NSURLNameKey)
+//                print("tryna rename")
+//
+//                //URL(fileURLWithPath: "/Users/xxx/Desktop/Media/")
+//
+//                try FileManager.default.moveItem(at:                  URL(fileURLWithPath: directoryContents[0].path), to: URL(fileURLWithPath: newPath))
+//                let newContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
+//                print("new contents are", newContents)
+//            }
             
         } catch {
             print(error)
@@ -201,4 +225,17 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
         
     }
     
+}
+
+extension URL {
+    var isDirectory: Bool {
+        if self.path.contains(".obj"){
+            return false
+        }
+        return (try? resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
+    }
+    var subDirectories: [URL] {
+        guard isDirectory else { return [] }
+        return (try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]).filter{ $0.isDirectory }) ?? []
+    }
 }

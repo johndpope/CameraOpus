@@ -49,19 +49,6 @@ class ServerHelper{
         
     }
     
-//    private lazy var urlSession: URLSession = {
-//        let config = URLSessionConfiguration.background(withIdentifier: "modelDownloader")
-//        config.isDiscretionary = true
-//        config.sessionSendsLaunchEvents = true
-//        return URLSession(configuration: config, delegate: self, delegateQueue: nil)
-//    }()
-//
-    static func downloadModel(address: String){
-        let url = URL(string: address)!
-        let task = Downloader.shared.activate().downloadTask(with: url)
-        task.resume()
-        
-    }
 }
 
 extension Dictionary {

@@ -1223,10 +1223,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
         }
         
-        var serverTest = false
-        if serverTest {
-            ServerHelper.downLoadModel(modelkey: "1aef")
-        }
         
         var downloadTest = true
         if downloadTest {

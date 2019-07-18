@@ -72,23 +72,35 @@ class Downloader : NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
         //}
         var destinationUrl = documentsUrl!.appendingPathComponent(url!.lastPathComponent)
         
+        print("the destination ur' is", destinationUrl)
         /*
          * We are prolly gonna use
          *
          * SSZipArchive.unzipFileAtPath(zipPath, toDestination: unzipPath)
          */
         
-        if(url!.path.contains("texture")){
-            print("we have a texture")
-            destinationUrl = destinationUrl.appendingPathExtension("png")//".png"
-        }
-        if(url!.path.contains("mesh")){
-            print("we have a mesh")
-            destinationUrl = destinationUrl.appendingPathExtension("obj")
-        }
+//        if(url!.path.contains("texture")){
+//            print("we have a texture")
+//            destinationUrl = destinationUrl.appendingPathExtension("png")//".png"
+//        }
+//        if(url!.path.contains("mesh")){
+//            print("we have a mesh")
+//            destinationUrl = destinationUrl.appendingPathExtension("obj")
+//        }
+        
         let dataFromURL = try? Data(contentsOf: location)
         try? dataFromURL?.write(to: destinationUrl, options: [.atomic])
-        print("the destination ur' is", destinationUrl)
+        var newDestinationUrl = documentsUrl!.appendingPathComponent("model")
+        newDestinationUrl = newDestinationUrl.appendingPathComponent(url!.lastPathComponent)
+        print("new destination is", newDestinationUrl.path)
+        
+        print("we are trying to unzip")
+        try? SSZipArchive.unzipFile(atPath: destinationUrl.path, toDestination: newDestinationUrl.path)
+        print("unzipped")
+        
+        let directoryContents = try? FileManager.default.contentsOfDirectory(at: newDestinationUrl, includingPropertiesForKeys: nil)
+        print("unzipped contents are", directoryContents)
+        
         
         try? FileManager.default.removeItem(at: location)
     }

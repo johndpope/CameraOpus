@@ -89,13 +89,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             let materialString = notification["jobID"] as! String //+ ".png"
             let assetString = notification["jobID"] as! String //+ ".obj"
             
-            var url =  URL(string: "http://3.82.80.228/" + "mesh/" + assetString)!
-            print("downloading mesh")
+            var url =  URL(string: "http://3.82.80.228/" + "output/" + assetString)!
+            print("downloading output")
             Downloader.shared.download(url)
             
-            url = URL(string: "http://3.82.80.228/" + "texture/" + materialString)!
-            print("downloading texture")
-            Downloader.shared.download(url)
+            //url = URL(string: "http://3.82.80.228/" + "texture/" + materialString)!
+            //print("downloading texture")
+            //Downloader.shared.download(url)
             
             
             // 3
@@ -124,13 +124,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let materialString = userInfo["jobID"] as! String //+ ".png"
         let assetString = userInfo["jobID"] as! String //+ ".obj"
         
-        var url =  URL(string: "http://3.82.80.228/" + "mesh/" + assetString)!
-        print("downloading mesh")
+        var url =  URL(string: "http://3.82.80.228/" + "output/" + assetString)!
+        print("downloading output")
         Downloader.shared.download(url)
         
-        url = URL(string: "http://3.82.80.228/" + "texture/" + materialString)!
-        print("downloading texture")
-        Downloader.shared.download(url)
+        //url = URL(string: "http://3.82.80.228/" + "texture/" + materialString)!
+        //print("downloading texture")
+        //Downloader.shared.download(url)
         
     }
     

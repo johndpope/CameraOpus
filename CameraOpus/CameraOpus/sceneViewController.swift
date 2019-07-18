@@ -92,8 +92,9 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     
     func sceneSetUp(fileName: String){
+        print("in scene set up")
         let scene = SCNScene()
-        print("the file we are looking for is ",fileName )
+        print("the folder we are looking for is ",fileName )
         
         var assetUrl = Bundle.main.url(forResource: fileName, withExtension: "obj", subdirectory: "models.scnassets")
         
@@ -106,31 +107,52 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
             do {
                 let documentsUrl =  FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
                 
-                let directoryContents = try FileManager.default.contentsOfDirectory(at: documentsUrl, includingPropertiesForKeys: nil)
+                var newDestinationUrl = documentsUrl.appendingPathComponent("model")
                 
-                let modelFiles = directoryContents.filter{ $0.path.contains(fileName) }
+                let subDirs = newDestinationUrl.subDirectories
+                
+                /*
+                 * Iterate through folders until we find the right one
+                 *
+                 *
+                 */
+                
+                for x in subDirs{
+                    if ((x.isDirectory) && (x.path.contains(fileName))){
+                        let directoryContents = try FileManager.default.contentsOfDirectory(at: x, includingPropertiesForKeys: nil)
+                        
+                        let modelFiles = directoryContents.filter{ $0.path.contains(fileName) }
+                        
+                        let objFiles = modelFiles.filter{
+                            $0.path.contains("obj")
+                        }
+                        
+                        print("model files are", modelFiles)
+                        print("obj files are", objFiles)
+                        
+                        assetUrl = objFiles[0]
+                        print("we set the asset URL to the obj file in docs")
+                        
+                        let materialFiles = modelFiles.filter{
+                            $0.path.contains("png")
+                        }
+                        print("material files are", materialFiles)
+                        
+                        materialImage = UIImage(contentsOfFile: materialFiles[0].path)
+                        
+                    }
+                }
+                
+                //let directoryContents = try FileManager.default.contentsOfDirectory(at: newDestinationUrl, includingPropertiesForKeys: nil)
+                
+                
                 
                 /*
                  * for some reason the path extension attempt did not work
                  *
                  * .pathextension == ".obj"
                  */
-                let objFiles = modelFiles.filter{
-                    $0.path.contains("obj")
-                }
                 
-                print("model files are", modelFiles)
-                print("obj files are", objFiles)
-                
-                assetUrl = objFiles[0]
-                print("we set the asset URL to the obj file in docs")
-                
-                let materialFiles = modelFiles.filter{
-                    $0.path.contains("png")
-                }
-                print("material files are", materialFiles)
-                
-                materialImage = UIImage(contentsOfFile: materialFiles[0].path)
                 
             }
             catch{
@@ -211,3 +233,4 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     */
     
 }
+
