@@ -34,6 +34,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     var assetLocation : URL?
     
+    var materialLocation : URL?
+    
     var materialImage : UIImage?
     
     //var modelName: String?
@@ -61,7 +63,13 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
             do{ emailController.addAttachmentData(try Data(contentsOf: assetLocation!), mimeType: "text/plain", fileName: String(modelName + ".obj"))
             }
             catch{
-                print("there was issue with attaching the file")
+                print("there was issue with attaching the model")
+            }
+            
+            do{ emailController.addAttachmentData(try Data(contentsOf: materialLocation!), mimeType: "image/png", fileName: String(modelName + ".png"))
+            }
+            catch{
+                print("there was issue with attaching the png")
             }
 
             self.present(emailController, animated: true, completion: nil)
@@ -140,12 +148,13 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
                         
                         materialImage = UIImage(contentsOfFile: materialFiles[0].path)
                         
+                        materialLocation = materialFiles[0]
+                        //break
+                        
                     }
                 }
                 
                 //let directoryContents = try FileManager.default.contentsOfDirectory(at: newDestinationUrl, includingPropertiesForKeys: nil)
-                
-                
                 
                 /*
                  * for some reason the path extension attempt did not work
@@ -164,6 +173,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
             }
         
         assetLocation = assetUrl
+        
+        
         
         let asset = MDLAsset(url:assetUrl!)
         
@@ -185,8 +196,10 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
                 else { fatalError("Failed to find model texture.") }
             
              materialImage = UIImage(contentsOfFile: assetMaterialUrl)
+             materialLocation = URL(string:assetMaterialUrl)
         }
 
+        
         
         //youtube.com/watch?v=D2UWvR2nR0A
     

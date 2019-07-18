@@ -103,6 +103,10 @@ class Downloader : NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
         
         
         try? FileManager.default.removeItem(at: location)
+        print("about to end session")
+        session.invalidateAndCancel()
+        
+        //invalidateAndCancel()
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
