@@ -72,33 +72,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register: \(error)")
     }
+
+    
+//    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void)
+//    {
+//        NSLog("*** in receive remote notification")
+//
+//        guard let aps = userInfo["aps"] as? [String: AnyObject] else {
+//            completionHandler(.failed)
+//            return
+//        }
+//        //NSLog("our job: ", userInfo["jobID"])
+//
+//        //do something
+//        completionHandler(UIBackgroundFetchResult.newData)
+//        NSLog("after completion handler")
+//
+//        let materialString = userInfo["jobID"] as! String //+ ".png"
+//        let assetString = userInfo["jobID"] as! String //+ ".obj"
+//
+//        var url =  URL(string: "http://3.82.80.228/" + "output/" + assetString)!
+//
+//
+//    }
     
     /*
-      to do
-      we will serve the model and associated png files in this method
+     we will serve the model and associated png files in this method
      
      right now the modelKey will just be the job id but this will change as have more than a handful of users (to maintain data privacy)
-    */
-    
-    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void)
-    {
-        print("in receive remote notification")
-        
-        guard let aps = userInfo["aps"] as? [String: AnyObject] else {
-            completionHandler(.failed)
-            return
-        }
-        print("our job: ", userInfo["jobID"])
-        
-        
-        let materialString = userInfo["jobID"] as! String //+ ".png"
-        let assetString = userInfo["jobID"] as! String //+ ".obj"
-        
-        var url =  URL(string: "http://3.82.80.228/" + "output/" + assetString)!
-        
-        //do something
-        completionHandler(UIBackgroundFetchResult.newData)
-    }
+     */
     
 //    func application(_:didReceiveRemoteNotification:fetchCompletionHandler:){
 //
@@ -153,19 +155,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         fetchCompletionHandler completionHandler:
         @escaping (UIBackgroundFetchResult) -> Void
         ) {
+        
+        NSLog("did recieve remote not")
         guard let aps = userInfo["aps"] as? [String: AnyObject] else {
             completionHandler(.failed)
             return
         }
-        print("our job: ", userInfo["jobID"])
+        //print("our job: ", userInfo["jobID"])
         
         
         let materialString = userInfo["jobID"] as! String //+ ".png"
         let assetString = userInfo["jobID"] as! String //+ ".obj"
         
         var url =  URL(string: "http://3.82.80.228/" + "output/" + assetString)!
-        print("downloading output")
+        NSLog("downloading output")
+        NSLog(materialString)
         Downloader.shared.download(url)
+        
+        completionHandler(UIBackgroundFetchResult.newData)
+        NSLog("after completion handler")
+        
+        /*
+         To do: let user know that the model is complete
+         - Maybe have push
+         -
+         -
+        */
         
         //url = URL(string: "http://3.82.80.228/" + "texture/" + materialString)!
         //print("downloading texture")

@@ -13,6 +13,7 @@ import CoreMotion
 
 import CoreLocation
 import GLKit
+import SocketIO
 
 
 /*
@@ -1245,6 +1246,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             Downloader.shared.download(url)
         }
         
+        let socketTest = true
+        if socketTest {
+            testsocket()
+        }
+        
 
         
     }
@@ -2449,7 +2455,25 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
 
-    
+    func testsocket(){
+        print("in testsocket")
+        let manager = SocketManager(socketURL: URL(string: "http://3.82.80.228:80")!, config: [.log(true), .compress])
+        let socket = manager.defaultSocket
+        
+        let jsonObject: [String: Any] = [
+        "name": 1,
+        "photo":"",
+        "jobID": 123
+        ]
+        socket.connect()
+        print("about to emit")
+        let data = (try? JSONSerialization.data(withJSONObject: jsonObject))
+        socket.emit("photo", data!)
+        
+
+        
+        //let socket = SocketIOClient(mana)
+    }
     
     func sendImageToServer(photo: AVCapturePhoto){
         var addr = String (serverAddress + "upload/\(jobs[currentJob])")
