@@ -346,6 +346,11 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var capturePhotoFlag2 = false
     var capturePhotoFlag3 = false
     
+    /*
+     * Debugging touch co-ordinates
+     */
+    var touchTest = false
+    
     //flag to add the focus box
     var focusFlag = true
     
@@ -397,8 +402,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     /*
      * when we refactor we will need to set it to some fraction of screen width in viewDidAppear or somewhere like that
     */
-    let arrowLength = 90
-    let arrowHeight = 45
+    var arrowLength = 90
+    var arrowHeight = 45
     
     //Guided Image Views
     var wayPointsView: [UIImageView] = []
@@ -1072,6 +1077,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     //self.screens = [self, self.modelLibrary]
                 }
                 
+                //print("width of imageview is", photoPreviewImageView.bounds.width)
+                //375
+                print("height of imageview is", photoPreviewImageView.bounds.height)
+                arrowLength = 90
+                arrowHeight = 45
+                
                 modelLibrary = ThreeDFileViewController.storyboardInstance()
                 
             }
@@ -1198,7 +1209,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             }
         }
         
-        var resetTest = false
+        var resetTest = true
         
         if(resetTest){
             resetView()
@@ -1224,7 +1235,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         }
         
         
-        var downloadTest = true
+        var downloadTest = false
         if downloadTest {
             
             var url = URL(string: "http://3.82.80.228/mesh/52549118-E8EE-4293-82E7-6A56FB79F361")!
@@ -1768,6 +1779,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let point: CGPoint?
         if gesture.state == .began {
             print("**()**")
+            
+            //CG
+        } else if  gesture.state == .ended {
+            print("&&&&&")
+            /*
+             Once the gesture has ended we set the capturePhotoFlag3 variable, and this allows the image capture process to take place after the use touches the photo preview view
+            */
+            capturePhotoFlag3 = true
+            capturePhotoFlag1 = false
+            
             point = gesture.location(in: photoPreviewImageView)
             print("the x coord was", point!.x)
             print("the y coord was", point!.y)
@@ -1781,15 +1802,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             print("scaled x is ", scaledx)
             print("scaled y is ", scaledy)
             
-            
-            //CG
-        } else if  gesture.state == .ended {
-            print("&&&&&")
-            /*
-             Once the gesture has ended we set the capturePhotoFlag3 variable, and this allows the image capture process to take place after the use touches the photo preview view
-            */
-            capturePhotoFlag3 = true
-            capturePhotoFlag1 = false
+            touchTest = true
             
             //set up av capture process
             
@@ -2253,7 +2266,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         //let pixelBuffer = buffer.bindMemory(to: RGBA32.self, capacity: pixelsWide * pixelsHigh)
         
         /*
-         we are going to create a line arround the pixel we touched
+         we are copying the pixels from the original image to a new buffer where we will draw the cross later in *section 2* draw the
         */
         
         for row in 0 ..< Int(pixelsHigh) {
@@ -2276,8 +2289,8 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let scaledx = 1.0 - Float ((currentTouch!.x) / photoPreviewImageView.bounds.size.width)
         let scaledy = Float (currentTouch!.y / photoPreviewImageView.bounds.size.height)
         
-        print("scaled x is ", scaledx)
-        print("scaled y is ", scaledy)
+        print("recalculated x is ", scaledx)
+        print("recalculated y is ", scaledy)
         
         /*
          The multiplication below is a little tricky because we needed to get the double value then convert to int, otherwise it just becomes 0
@@ -2300,61 +2313,68 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         */
         
         
-//        for j in -(thickness) ..< thickness{
-//            var newoffset = offset + (j * (pixelsWide - 1) * 4)
-//            /*
-//             **** as found from testing
-//             this gives us a horizontal line
-//             */
-//
-//
-//            for i in -(crossHairRadius) ..< crossHairRadius {
-//                //offset = offset - pixelsWide
-//                newDataBuf[newoffset + (pixelsWide * i * 4)] = 0
-//                newDataBuf[newoffset + (pixelsWide * i * 4) + 1] = 220
-//                newDataBuf[newoffset + (pixelsWide * i * 4) + 2] = 220
-//                newDataBuf[newoffset + (pixelsWide * i * 4) + 3] = 1
-//            }
-//
-//            /*
-//             this gives a vertical line
-//             */
-//
-//            for k in -(crossHairRadius) ..< crossHairRadius{
-//                newDataBuf[newoffset + (k * 4)] = 0
-//                newDataBuf[newoffset + (k * 4) + 1] = 220
-//                newDataBuf[newoffset + (k * 4) + 2] = 220
-//                newDataBuf[newoffset + (k * 4) + 3] = 1
-//            }
-//
-//        }
+        for j in -(thickness) ..< thickness{
+            var newoffset = offset + (j * (pixelsWide - 1) * 4)
+            /*
+             **** as found from testing
+             this gives us a horizontal line
+             */
+
+
+            for i in -(crossHairRadius) ..< crossHairRadius {
+                //offset = offset - pixelsWide
+                newDataBuf[newoffset + (pixelsWide * i * 4)] = 0
+                newDataBuf[newoffset + (pixelsWide * i * 4) + 1] = 220
+                newDataBuf[newoffset + (pixelsWide * i * 4) + 2] = 220
+                newDataBuf[newoffset + (pixelsWide * i * 4) + 3] = 1
+            }
+
+            /*
+             this gives a vertical line
+             */
+
+            for k in -(crossHairRadius) ..< crossHairRadius{
+                newDataBuf[newoffset + (k * 4)] = 0
+                newDataBuf[newoffset + (k * 4) + 1] = 220
+                newDataBuf[newoffset + (k * 4) + 2] = 220
+                newDataBuf[newoffset + (k * 4) + 3] = 1
+            }
+
+        }
         
 //
         //shall use this to find the right offset
         //120,000 is getting us br
         let attempt = 400
         
-        for j in 0 ..< 5{//thickness{
-        var newattempt = attempt + (j * (pixelsWide - 1) * 4)
-                    /*
-                     **** as found from testing
-                     this gives us a horizontal line
-                     */
-            for i in 0 ..< 20 {
-                //offset = offset - pixelsWide
-                newDataBuf[newattempt + (pixelsWide * i * 4)] = 220
-                newDataBuf[newattempt + (pixelsWide * i * 4) + 1] = 220
-                newDataBuf[newattempt + (pixelsWide * i * 4) + 2] = 220
-                newDataBuf[newattempt + (pixelsWide * i * 4) + 3] = 1
-            }
-
-            for i in 0 ..< 20{
-                newDataBuf[newattempt + (i * 4)] = 0
-                newDataBuf[newattempt + (i * 4) + 1] = 220
-                newDataBuf[newattempt + (i * 4) + 2] = 0
-                newDataBuf[newattempt + (i * 4) + 3] = 1
-            }
-        }
+        /*
+         * Here we draw the cross denoting where the user touched the image
+         *
+         */
+        
+        
+        
+//        for j in 0 ..< 5{//thickness{
+//        var newattempt = attempt + (j * (pixelsWide - 1) * 4)
+//                    /*
+//                     **** as found from testing
+//                     this gives us a horizontal line
+//                     */
+//            for i in 0 ..< 20 {
+//                //offset = offset - pixelsWide
+//                newDataBuf[newattempt + (pixelsWide * i * 4)] = 220
+//                newDataBuf[newattempt + (pixelsWide * i * 4) + 1] = 220
+//                newDataBuf[newattempt + (pixelsWide * i * 4) + 2] = 220
+//                newDataBuf[newattempt + (pixelsWide * i * 4) + 3] = 1
+//            }
+//
+//            for i in 0 ..< 20{
+//                newDataBuf[newattempt + (i * 4)] = 0
+//                newDataBuf[newattempt + (i * 4) + 1] = 220
+//                newDataBuf[newattempt + (i * 4) + 2] = 0
+//                newDataBuf[newattempt + (i * 4) + 3] = 1
+//            }
+//        }
         
         print("about to create visualized image")
         let outputCGImage = otherContext!.makeImage()!
@@ -2474,7 +2494,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     func processImagesOnServer(){
         
-        var r  = URLRequest(url: URL(string: serverAddress + "process/\(jobs[currentJob])")!)
+        var token = defaults.string(forKey: "deviceToken")
+        print("the token is", token)
+        var objs = defaults.object(forKey: "deviceToken")
+        print("the token ob is ", objs)
+        
+        var r  = URLRequest(url: URL(string: serverAddress + "process/\(jobs[currentJob])/\(token!))")!)
         r.httpMethod = "GET"
         
         let task = URLSession.shared.dataTask(with: r) { data, response, error in
@@ -2591,6 +2616,14 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
             print("we seem to be error free")
             //photoData = photo.fileDataRepresentation()
             
+            
+            /*
+             * Main functionality encapsulated later in MAIN section
+             * speed test statement contains depth map and file saving flows
+             * which needs to be refactored out of the giant statement
+             */
+            
+            
             var speedTest = false
             if(speedTest){
                 PHPhotoLibrary.requestAuthorization { status in
@@ -2705,6 +2738,13 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 
             }
             
+            
+            /*
+             *
+             * Main section
+             *
+             */
+            
             if(self.capturePhotoFlag3){
                 
                 let avDepthData = photo.depthData
@@ -2723,8 +2763,31 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 
                 self.sendImageToServer( photo :photo)
                 
+                /*
+                 * For debugging
+                 */
+                let savingTFlag = false
+                if(savingTFlag){
+                    let temp = photo.cgImageRepresentation()
+                    let cgim = temp!.takeUnretainedValue()
+                    let outputImage = UIImage(cgImage: cgim, scale: 1, orientation: .right)
+                    print("saving image that we sent to server")
+                    UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+                }
+                
                 self.guidedFlag = false
                 return
+            }
+            
+            /*
+             * For debugging touch co-ords
+            */
+            //self.touchTest = false
+            if(self.touchTest){
+                let temp = photo.cgImageRepresentation()
+                let cgim = temp!.takeUnretainedValue()
+                visualizePointInImage(cgImage: cgim, crossHairRadius: 200, thickness: 10 )
+                touchTest = false
             }
 
         }

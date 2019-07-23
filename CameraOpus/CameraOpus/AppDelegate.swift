@@ -43,6 +43,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
     }
     
+    let defaults = UserDefaults.standard
+    
+    func keyExists(key: String) -> Bool {
+        return defaults.object(forKey: key) != nil
+    }
+    
     func application(
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
@@ -50,6 +56,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
         let token = tokenParts.joined()
         print("Device Token: \(token)")
+        
+        if (keyExists(key: "deviceToken")){
+            defaults.removeObject(forKey: "deviceToken")
+            defaults.set(token, forKey: "deviceToken")
+        }
+        else{
+            defaults.set(token, forKey: "deviceToken")
+        }
+        
     }
     
     func application(
@@ -64,6 +79,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
      
      right now the modelKey will just be the job id but this will change as have more than a handful of users (to maintain data privacy)
     */
+    
+    func application(application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void)
+    {
+        print("in receive remote notification")
+        
+        guard let aps = userInfo["aps"] as? [String: AnyObject] else {
+            completionHandler(.failed)
+            return
+        }
+        print("our job: ", userInfo["jobID"])
+        
+        
+        let materialString = userInfo["jobID"] as! String //+ ".png"
+        let assetString = userInfo["jobID"] as! String //+ ".obj"
+        
+        var url =  URL(string: "http://3.82.80.228/" + "output/" + assetString)!
+        
+        //do something
+        completionHandler(UIBackgroundFetchResult.newData)
+    }
+    
+//    func application(_:didReceiveRemoteNotification:fetchCompletionHandler:){
+//
+//    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
