@@ -2452,25 +2452,31 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     //var serverAddress = "http://18.206.164.104/"
     var serverAddress = "http://3.82.80.228/"
     
+    struct CustomData : SocketData {
+        let name: String
+        let photo: String
+        let jobID: String
+        
+        func socketRepresentation() -> SocketData {
+            return ["name": name, "photo": photo, "jobID": jobID]
+        }
+    }
+    
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
 
     func testsocket(){
         print("in testsocket")
-        let manager = SocketManager(socketURL: URL(string: "http://3.82.80.228:80")!, config: [.log(true), .compress])
+        let manager = SocketManager(socketURL: URL(string: "http://localhost:3000")!, config: [.log(true), .compress])
         let socket = manager.defaultSocket
         
-        let jsonObject: [String: Any] = [
-        "name": 1,
-        "photo":"",
-        "jobID": 123
-        ]
+        socket.on(clientEvent: .connect) {data, ack in
+            print("socket connected")
+            socket.emit("photo", CustomData(name: "1",photo:"",jobID: "123"))
+        }
+        
         socket.connect()
         print("about to emit")
-        let data = (try? JSONSerialization.data(withJSONObject: jsonObject))
-        socket.emit("photo", data!)
-        
-
         
         //let socket = SocketIOClient(mana)
     }
