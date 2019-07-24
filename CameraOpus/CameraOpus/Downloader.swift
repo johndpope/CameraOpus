@@ -94,12 +94,18 @@ class Downloader : NSObject, URLSessionDelegate, URLSessionDownloadDelegate {
         newDestinationUrl = newDestinationUrl.appendingPathComponent(url!.lastPathComponent)
         print("new destination is", newDestinationUrl.path)
         
+        /*
+         add proper try catch here
+         what happens if catch is not unzipped?
+        */
+        
         print("we are trying to unzip")
         try? SSZipArchive.unzipFile(atPath: destinationUrl.path, toDestination: newDestinationUrl.path)
         print("unzipped")
         
-        let directoryContents = try? FileManager.default.contentsOfDirectory(at: newDestinationUrl, includingPropertiesForKeys: nil)
-        print("unzipped contents are", directoryContents)
+        //uncomment for more visibility into what is happening
+        //let directoryContents = try? FileManager.default.contentsOfDirectory(at: newDestinationUrl, includingPropertiesForKeys: nil)
+        //print("unzipped contents are", directoryContents)
         
         
         try? FileManager.default.removeItem(at: location)

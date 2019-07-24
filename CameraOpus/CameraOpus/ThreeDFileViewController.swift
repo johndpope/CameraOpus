@@ -40,6 +40,8 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
     var modelpressed = false
     
     var fileURLs: [URL] = []
+    
+    var isUpdated = false
 
     
     @IBOutlet weak var tableView: UITableView!
@@ -122,6 +124,8 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
                     
                     if !(modelNames.contains(x.lastPathComponent)){
                         modelNames.append(x.lastPathComponent)
+                        isUpdated = true
+                        print("just added", x.lastPathComponent)
                     }
                     
                     /*
@@ -203,11 +207,12 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
     func refreshCells(userModels: [String]){
         print("in refreshCells")
         //boolean tracks if there is atleast one new model to add
-        var isUpdated = false
+        
         for userModel in userModels {
             //if the current cells do not contain a model create that cell
             if !(modelNames.contains(userModel)){
                 modelNames.append(userModel)
+                print("we should update models")
                 isUpdated = true
             }
             
@@ -217,6 +222,7 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
             tableView.beginUpdates()
             tableView.insertRows(at: [IndexPath(row: modelNames.count-1, section: 0)], with: .automatic)
             tableView.endUpdates()
+            isUpdated = false
         }
         
         //check if there are newModelNames
@@ -226,11 +232,14 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
     
     override func viewWillAppear(_ animated: Bool) {
         print("3d view will appear")
-        if (keyExists(key: "userModelNames")){
-            print("found defaults")
-            var modelArray = defaults.array(forKey: "userModelNames") as! [String]
-            refreshCells(userModels: modelArray)
-        }
+        loadFiles()
+        refreshCells(userModels: modelNames)
+        //not sure if this is needed after we changed the fileManager to include a models folder
+//        if (keyExists(key: "userModelNames")){
+//            print("found defaults")
+//            var modelArray = defaults.array(forKey: "userModelNames") as! [String]
+//            refreshCells(userModels: modelArray)
+//        }
         
     }
     
