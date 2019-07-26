@@ -14,6 +14,7 @@ import CoreMotion
 import CoreLocation
 import GLKit
 import SocketIO
+import Starscream
 
 
 /*
@@ -320,6 +321,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     var count = 1
     
+    
     var session = AVCaptureSession()
     var photoOutput: AVCapturePhotoOutput?
     var videoPreviewLayer: AVCaptureVideoPreviewLayer?
@@ -448,6 +450,20 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     //user data
     let defaults = UserDefaults.standard
+    
+    /*
+     * Sockets
+     */
+    
+    //socketIO uiNu
+    let manager = SocketManager(socketURL: URL(string: "http://3.82.80.228:80")!, config: [.log(true), .compress])
+    var isSocketConnected = false
+    var socket: SocketIOClient?
+    //let managerT = SocketManager(socketURL: URL(string: "http://3.82.80.228:80")!, config: [.log(true), .compress])
+    var socketFlag = true
+    
+//    var socket = WebSocket(url: URL(string: "ws://3.82.80.228:1337/")!, protocols: ["chat"])
+
 
     
     private let dataOutputQueue = DispatchQueue(label: "video data queue", qos: .userInitiated, attributes: [], autoreleaseFrequency: .workItem)
@@ -824,6 +840,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 //this function determines whether we should take an image
                 takeGuidedImage(angle: newDir!)
                 
+//                socket.on(clientEvent: .connect) {data, ack in
+//                    print("socket connected")
+//                    socket.emit("test", test2);
+//                    if imageInputFlag{
+//                        socket.emit("test", test2);
+//                    }
+//
+//                }
+                
                 moveArrow(angle: newDir!)
                 //update the array to get the new value
                 window.removeFirst()
@@ -1020,6 +1045,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         super.viewDidLoad()
         //textInput.delegate = self
         print("in view did load")
+        
+        
+        /*
+         * starscream
+        */
+//        socket.delegate = self
+//        socket.connect()
+        
         // make self the UITabBarControllerDelegate
 
         //self.delegate = self
@@ -1085,7 +1118,18 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 arrowHeight = 45
                 
                 modelLibrary = ThreeDFileViewController.storyboardInstance()
+                socket = manager.defaultSocket
+                socket!.on(clientEvent: .connect) {data, ack in
+                    print("socket connected")
+                    self.isSocketConnected = true
+                }
                 
+                socket!.on(clientEvent: .disconnect) {data, ack in
+                    print("socket disconnected")
+                    self.isSocketConnected = false
+                    self.socket!.connect()
+                }
+                socket!.connect()
             }
         }
         catch{
@@ -1093,6 +1137,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             return
         }
     }
+    
+    /*
+     * starscream
+    */
+    
+//    deinit {
+//        socket.disconnect(forceTimeout: 0)
+//        socket.delegate = nil
+//    }
     
     func addFocus(){
         print("in focus")
@@ -1196,6 +1249,23 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         compassCount = 0
         moveArrowCount = 0
         
+        var deviceTokenTest = false
+        if deviceTokenTest{
+            print("in device token test")
+            processImagesOnServer()
+            
+        }
+        
+        var resetTest = true
+        
+        if(resetTest){
+            resetView()
+        }
+        /*
+         * we will need to tap this one twice
+        */
+        
+        
         var testAlert = false
         //testing alers
         if(testAlert){
@@ -1209,15 +1279,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                 alert.dismiss(animated: true, completion: nil)
             }
         }
-        
-        var resetTest = true
-        
-        if(resetTest){
-            resetView()
-        }
-        /*
-         * we will need to tap this one twice
-        */
         
         var tableViewTest = false
         if(tableViewTest){
@@ -1246,12 +1307,25 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             Downloader.shared.download(url)
         }
         
-        let socketTest = true
+        let socketTest = false
         if socketTest {
+            
+            //todotodo
+            
+//            print("checking socket is working")
+//            testsocket()
+//            print ("socket is working")
+            
+            print("now seeing if we can send photo with socket")
+            
+//            var photoSettings = AVCapturePhotoSettings()
+//            photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+//
+//            photoOutput!.capturePhoto(with: photoSettings, delegate: self)
+//
+            
             testsocket()
         }
-        
-
         
     }
     /*
@@ -2452,34 +2526,96 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     //var serverAddress = "http://18.206.164.104/"
     var serverAddress = "http://3.82.80.228/"
     
-    struct CustomData : SocketData {
-        let name: String
-        let photo: String
-        let jobID: String
-        
-        func socketRepresentation() -> SocketData {
-            return ["name": name, "photo": photo, "jobID": jobID]
-        }
-    }
     
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
-
+ 
+//    func testImSocket(photoString: String){
+//        print("about to send image to socket server")
+////        let socket = manager.defaultSocket?
+//
+//        socket.once(clientEvent: .connect) {data, ack in
+//            print("socket connected")
+//            socket.emit("test", photoString)
+//
+//        }
+//
+//        socket.connect()
+//
+//    }
+    
+    
+    //imageString: String?
     func testsocket(){
         print("in testsocket")
-        let manager = SocketManager(socketURL: URL(string: "http://localhost:3000")!, config: [.log(true), .compress])
-        let socket = manager.defaultSocket
+        /*
+         * below is working with socket io
+         * to get working again you need to uncomment out the socket manager up here: uiNu
+        */
+        var imageInputFlag = false
         
-        socket.on(clientEvent: .connect) {data, ack in
-            print("socket connected")
-            socket.emit("photo", CustomData(name: "1",photo:"",jobID: "123"))
+//        if imageString != nil{
+//            imageInputFlag = true
+//        }
+        
+        var test: [String: String] = ["test":"1"]
+        var test2 = ["1", "2","3"]
+
+        if (self.isSocketConnected) {
+            print("the socket is about to emit...")
+            self.socket!.emit("test", "testing")
+        } else {
+            print("why isnt the socket connected...")
         }
         
-        socket.connect()
-        print("about to emit")
+        
+        
+//        if imageInputFlag{
+//            print("trying to emit out of the main client event")
+//
+//            let swiftSocket = manager.socket(forNamespace: "/imtest")
+//            swiftSocket.on(clientEvent: .connect) {data, ack in
+//                print("swiftSocket connected")
+//                var test3 = "ey"
+//                swiftSocket.emit("test", test3)
+//
+//            }
+//
+//            //socket.emit("test", test3);
+//        }
+        
+        
+        //socket.on("test") { data, ack in
+          //  print("about to emit test")
+            //socket.emit("test", test);
+        //}
+
+//        socket.on("currentAmount") {data, ack in
+//            guard let cur = data[0] as? Double else { return }
+//
+//            socket.emitWithAck("canUpdate", cur).timingOut(after: 0) {data in
+//                socket.emit("update", ["amount": cur + 2.50])
+//                print("emit socket")
+//            }
+//
+//            ack.with("Got your currentAmount", "dude")
+//        }
+
+//        socket.connect()
+//
+//        if (isSocketConnected) {
+//            socket.emit("test", "test")
+//        }
+    
+        print("socket func ended")
         
         //let socket = SocketIOClient(mana)
     }
+    
+    
+    /*
+     * Right now the server sending should not be working
+    */
     
     func sendImageToServer(photo: AVCapturePhoto){
         var addr = String (serverAddress + "upload/\(jobs[currentJob])")
@@ -2487,39 +2623,72 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         
         //var r  = URLRequest(url: URL(string: "http://54.88.139.250/upload/\(jobs[currentJob])")!)
         
-        var r  = URLRequest(url: URL(string: addr)!)
-        r.httpMethod = "POST"
-        let boundary = "Boundary-\(UUID().uuidString)"
-        r.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-    
-        //let image = photo.cgImageRepresentation() as! CGImage
-        let image = photo.cgImageRepresentation()
-        let im = image!.takeUnretainedValue()
-        let uimg = UIImage(cgImage: im)
-        //compression quality 1 is the least compression aka the highest quality image
-        let data = uimg.jpegData(compressionQuality: 1)
         
-        r.httpBody = createBody(parameters: [:],
-                                boundary: boundary,
-                                data: data ?? Data.init(),
-                                mimeType: "image/jpg",
-                                filename: "file.jpg")
-        
-        let task = URLSession.shared.dataTask(with: r) { data, response, error in
-            guard let data = data,
-                let response = response as? HTTPURLResponse,
-                error == nil else {
+        socketFlag = false
+        if !socketFlag{
+            var r  = URLRequest(url: URL(string: addr)!)
+            r.httpMethod = "POST"
+            let boundary = "Boundary-\(UUID().uuidString)"
+            r.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+            
+            //let image = photo.cgImageRepresentation() as! CGImage
+            let image = photo.cgImageRepresentation()
+            let im = image!.takeUnretainedValue()
+            let uimg = UIImage(cgImage: im)
+            //compression quality 1 is the least compression aka the highest quality image
+            let data = uimg.jpegData(compressionQuality: 1)
+            
+            r.httpBody = createBody(parameters: [:],
+                                    boundary: boundary,
+                                    data: data ?? Data.init(),
+                                    mimeType: "image/jpg",
+                                    filename: "file.jpg")
+            
+            let task = URLSession.shared.dataTask(with: r) { data, response, error in
+                guard let data = data,
+                    let response = response as? HTTPURLResponse,
+                    error == nil else {
+                        return
+                }
+                
+                guard (200 ... 299) ~= response.statusCode else {
                     return
+                }
+                
+                let responseString = String(data: data, encoding: .utf8)
+                print("responseString = \(responseString)")
             }
-            
-            guard (200 ... 299) ~= response.statusCode else {
-                return
-            }
-            
-            let responseString = String(data: data, encoding: .utf8)
-            print("responseString = \(responseString)")
+            task.resume()
         }
-        task.resume()
+        
+        if(socketFlag){
+            
+            //todotodo
+            
+            var imageName = String(imagesTaken) + ".png"
+            
+            let temp = photo.cgImageRepresentation()
+            let cgim = temp!.takeUnretainedValue()
+            let outputImage = UIImage(cgImage: cgim)
+            
+            let imageData:Data = outputImage.jpegData(compressionQuality: 1)!
+            let strBase64 = imageData.base64EncodedString(options: .lineLength64Characters)
+            let data = [imageName ,jobs[currentJob], strBase64]
+            
+            if(isSocketConnected){
+                socket!.emit("photo", data)
+            }
+            else{
+                socket!.once(clientEvent: .connect) {data, ack in
+                    print("socket wasn't connected in send image so we reconnected")
+                    self.socket!.emit("photo", data)
+                }
+            }
+            
+            //socket.connect()
+            
+        }
+
     }
     
     func processImagesOnServer(){
@@ -2529,7 +2698,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         var objs = defaults.object(forKey: "deviceToken")
         print("the token ob is ", objs)
         
-        var r  = URLRequest(url: URL(string: serverAddress + "process/\(jobs[currentJob])/\(token!))")!)
+        var r  = URLRequest(url: URL(string: serverAddress + "process/\(jobs[currentJob])/\(token!)")!)
         r.httpMethod = "GET"
         
         let task = URLSession.shared.dataTask(with: r) { data, response, error in
@@ -2819,6 +2988,26 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 visualizePointInImage(cgImage: cgim, crossHairRadius: 200, thickness: 10 )
                 touchTest = false
             }
+            //todotodo
+            //testing - we will move this to sendimage to server
+            if(self.socketFlag){
+                //get base64 rep of photo
+                // call testsocketIm
+                let temp = photo.cgImageRepresentation()
+                let cgim = temp!.takeUnretainedValue()
+                let outputImage = UIImage(cgImage: cgim)
+                
+                let imageData:Data = outputImage.jpegData(compressionQuality: 1)!
+                
+                let strBase64 = imageData.base64EncodedString(options: .lineLength64Characters)
+                
+                //https://stackoverflow.com/questions/20631994/socket-io-emit-progress-check
+                
+                
+                //print("here is the base64 rep")
+                //print(strBase64)
+                //testImSocket(photoString: strBase64)
+            }
 
         }
     }
@@ -2831,3 +3020,29 @@ extension NSMutableData {
         append(data!)
     }
 }
+
+
+/*
+ * starscream
+ */
+
+//extension ViewController : WebSocketDelegate {
+//    func websocketDidConnect(socket: WebSocketClient) {
+//        print("websocket is connected")
+//
+//    }
+//
+//    func websocketDidDisconnect(socket: WebSocketClient, error: Error?) {
+//        print("websocket is disconnected: \(String(describing: error?.localizedDescription))")
+//
+//    }
+//
+//    func websocketDidReceiveMessage(socket: WebSocketClient, text: String) {
+//        //print("websocket recieve message: \(String(describing: error?.localizedDescription))")
+//
+//    }
+//
+//    func websocketDidReceiveData(socket: WebSocketClient, data: Data) {
+//
+//    }
+//}
