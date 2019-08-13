@@ -11,6 +11,7 @@
  TO DO:
  
  - www.justindoan.com/tutorials/2016/9/9/creating-and-exporting-a-csv-file-in-swift
+ - show parts button only if segmentation is possible
  
  */
 
@@ -38,16 +39,31 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     //var modelName: String?
     var modelName = "modelOne"
     
+    var partsPossible = false
+    
     @IBAction func seeParts(_ sender: UIButton) {
         print("see parts")
-        sceneView.backgroundColor = UIColor.black
-        //getNumberOfSegments()
-        
+        if(partsPossible){
+            sceneView.backgroundColor = UIColor.black
+            //getNumberOfSegments()
+            let segments = readSegments(segmentsLocation: assetLocation!.deletingPathExtension()
+                .appendingPathExtension("seg"))
+            var pointsAndColours = readFiletoCloud(FileUrl: assetLocation!, segments: segments)
+            
+        }
+
     }
     
     @IBAction func exportFile(_ sender: UIButton) {
         print("in export file")
         createEmail()
+    }
+    
+    func readSegments(segmentsLocation: URL)->[Int]{
+        let contents = try? String (contentsOf: segmentsLocation)
+        print("splitting lines")
+        let segs : [Int] = contents!.components(separatedBy: "\n")
+        return segs
     }
     
     /*
@@ -172,7 +188,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
      * Ie there are two spaces between the v and the 1st element
     */
     
-    func readFiletoCloud(FileUrl: String, numPoints: Int, segments: [Int]) -> (verts: [[SCNVector3]], cols: [[UInt8]]) {
+    func readFiletoCloud(FileUrl: String, segments: [Int]) -> (verts: [[SCNVector3]], cols: [[UInt8]]) {
         print("in read File to Cloud" )
         let testFileUrl = assetLocation!
         /*
@@ -183,24 +199,24 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         var points : [String] = convertString(string: testContents!).components(separatedBy: "\n")
         //testContents.removeAll()
         
+    
         let vertexStart = indexOfFirstVertex(objContents: points)
-        let vertexLines = points[vertexStart..<(vertexStart+numPoints)]
+        let vertexLines = points[vertexStart..<(vertexStart+segments.count)]
         
         // make sure this doesnt result in any weird reference errors
         points.removeAll()
         print("conversion is complete")
-        points.removeFirst()
+        //points.removeFirst()
         print("there are", points.count, "points")
         
         var cloudResult = [[SCNVector3]]()
         var colorResult = [[UInt8]]()
         
         for i in 0..<segments.count{
-            let segmentValues = createVertexData(vertexLines: points, segment: segments[i] )
+            let segmentValues = createVertexData(vertexLines: vertexLines, segment: segments[i] )
             cloudResult.append(segmentValues.coords)
             colorResult.append(segmentValues.cols)
         }
-        
         return (verts: cloudResult,cols: colorResult)
     }
     
