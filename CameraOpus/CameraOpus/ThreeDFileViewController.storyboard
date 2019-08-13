@@ -105,8 +105,16 @@
                                     <action selector="exportFile:" destination="vvt-7D-toA" eventType="touchUpInside" id="aRr-jc-p4N"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="h3W-sE-Oyj">
+                                <rect key="frame" x="305" y="176" width="54" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Parts"/>
+                                <connections>
+                                    <action selector="seeParts:" destination="vvt-7D-toA" eventType="touchUpInside" id="F1g-kK-29d"/>
+                                </connections>
+                            </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0bt-oy-Xy6">
-                                <rect key="frame" x="108" y="108" width="158" height="21"/>
+                                <rect key="frame" x="147" y="104" width="158" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>

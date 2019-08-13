@@ -26,6 +26,7 @@
 		BA7A19C822D824A90031E352 /* FolderHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA7A19C722D824A90031E352 /* FolderHelper.swift */; };
 		BA7A19CC22DE8BE30031E352 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA7A19CA22DE8BE30031E352 /* Crashlytics.framework */; };
 		BA7A19CD22DE8BE30031E352 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA7A19CB22DE8BE30031E352 /* Fabric.framework */; };
+		BA84922022EBCD7000A64039 /* ImageManipulationUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA84921F22EBCD7000A64039 /* ImageManipulationUtil.swift */; };
 		BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */; };
 		BA9B8F5B22B46BCA00EEF11D /* ThreeDFileViewController.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */; };
 		BA9B8F5D22B5C6E100EEF11D /* ModelTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9B8F5C22B5C6E100EEF11D /* ModelTableViewCell.swift */; };
@@ -84,6 +85,7 @@
 		BA7A19C722D824A90031E352 /* FolderHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderHelper.swift; sourceTree = "<group>"; };
 		BA7A19CA22DE8BE30031E352 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Crashlytics.framework; sourceTree = "<group>"; };
 		BA7A19CB22DE8BE30031E352 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Fabric.framework; sourceTree = "<group>"; };
+		BA84921F22EBCD7000A64039 /* ImageManipulationUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageManipulationUtil.swift; sourceTree = "<group>"; };
 		BA9B8F5822B4687E00EEF11D /* ThreeDFileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreeDFileViewController.swift; sourceTree = "<group>"; };
 		BA9B8F5A22B46BCA00EEF11D /* ThreeDFileViewController.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ThreeDFileViewController.storyboard; sourceTree = "<group>"; };
 		BA9B8F5C22B5C6E100EEF11D /* ModelTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTableViewCell.swift; sourceTree = "<group>"; };
@@ -172,6 +174,7 @@
 				BA1ACFE122D56E32000E0DA4 /* Login.storyboard */,
 				BA1ACFF522D68EDA000E0DA4 /* ServerHelper.swift */,
 				BA24271E227664F600218C3E /* ViewController.swift */,
+				BA84921F22EBCD7000A64039 /* ImageManipulationUtil.swift */,
 				BA1ACFF722D6C365000E0DA4 /* Downloader.swift */,
 				BA7A19C722D824A90031E352 /* FolderHelper.swift */,
 				BA242720227664F600218C3E /* Main.storyboard */,
@@ -480,6 +483,7 @@
 				BAADC9712277CC9100A671B2 /* PreviewView.swift in Sources */,
 				BA48938C22CC346300F6D521 /* TabController.swift in Sources */,
 				BA24271D227664F600218C3E /* AppDelegate.swift in Sources */,
+				BA84922022EBCD7000A64039 /* ImageManipulationUtil.swift in Sources */,
 				BA7A19C822D824A90031E352 /* FolderHelper.swift in Sources */,
 				BA9B8F5922B4687E00EEF11D /* ThreeDFileViewController.swift in Sources */,
 				BAADC9732278246A00A671B2 /* PhotoCaptureDelegate.swift in Sources */,

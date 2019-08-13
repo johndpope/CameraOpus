@@ -101,10 +101,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
      
      right now the modelKey will just be the job id but this will change as have more than a handful of users (to maintain data privacy)
      */
-    
-//    func application(_:didReceiveRemoteNotification:fetchCompletionHandler:){
-//
-//    }
+
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -127,20 +124,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             
             //ServerHelper.downLoadModel(modelkey: notification["yourCustomKey"] as! String)
             
-            let materialString = notification["jobID"] as! String //+ ".png"
+            //let materialString = notification["jobID"] as! String //+ ".png"
             let assetString = notification["jobID"] as! String //+ ".obj"
             
             var url =  URL(string: "http://3.82.80.228/" + "output/" + assetString)!
             print("downloading output")
-            Downloader.shared.download(url)
+            
+            NSLog(assetString)
+            
+            if (assetString.contains("error")){
+                //completionHandler(UIBackgroundFetchResult.noData)
+                NSLog("twas an error returned from server")
+            }
+            else{
+                Downloader.shared.download(url)
+               // completionHandler(UIBackgroundFetchResult.newData)
+                NSLog("after completion handler")
+            }
+            
+            
             
             //url = URL(string: "http://3.82.80.228/" + "texture/" + materialString)!
             //print("downloading texture")
             //Downloader.shared.download(url)
             
-            
-            // 3
-            //(window?.rootViewController as? UITabBarController)?.selectedIndex = 2
         }
         print("adding crashlytics")
         Crashlytics().debugMode = true
@@ -164,27 +171,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         //print("our job: ", userInfo["jobID"])
         
         
-        let materialString = userInfo["jobID"] as! String //+ ".png"
+        //let materialString = userInfo["jobID"] as! String //+ ".png"
         let assetString = userInfo["jobID"] as! String //+ ".obj"
         
         var url =  URL(string: "http://3.82.80.228/" + "output/" + assetString)!
         NSLog("downloading output")
-        NSLog(materialString)
-        Downloader.shared.download(url)
+        NSLog(assetString)
         
-        completionHandler(UIBackgroundFetchResult.newData)
-        NSLog("after completion handler")
+        if (assetString.contains("error")){
+            completionHandler(UIBackgroundFetchResult.noData)
+            NSLog("twas an error returned from server")
+        }
+        else{
+            Downloader.shared.download(url)
+            completionHandler(UIBackgroundFetchResult.newData)
+            NSLog("after completion handler")
+        }
         
-        /*
-         To do: let user know that the model is complete
-         - Maybe have push
-         -
-         -
-        */
         
-        //url = URL(string: "http://3.82.80.228/" + "texture/" + materialString)!
-        //print("downloading texture")
-        //Downloader.shared.download(url)
+        
         
     }
     

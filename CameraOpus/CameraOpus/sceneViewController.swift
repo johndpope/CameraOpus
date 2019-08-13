@@ -10,9 +10,6 @@
 /*
  TO DO:
  
- - dynamic model load function
- - - try to send filename in ThreeDFileViewer Controller to sceneViewController
- 
  - www.justindoan.com/tutorials/2016/9/9/creating-and-exporting-a-csv-file-in-swift
  
  */
@@ -41,9 +38,214 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     //var modelName: String?
     var modelName = "modelOne"
     
+    @IBAction func seeParts(_ sender: UIButton) {
+        print("see parts")
+        sceneView.backgroundColor = UIColor.black
+        //getNumberOfSegments()
+        
+    }
+    
     @IBAction func exportFile(_ sender: UIButton) {
         print("in export file")
         createEmail()
+    }
+    
+    /*
+     returns the number of segments as well as each segment
+     the result array's 0th element contains the number of segments
+     
+     eg: f: [3,2 3,4,3,6] --> [4,2,3,4,6]
+    */
+    
+    func getNumberOfSegments(input: [Int]) -> [Int]{
+        
+        var result : [Int] = []
+        let uniques = input.unique()
+        //let a = ["four","one", "two", "one", "three","four", "four"]
+        
+        //print("these are the uniques")
+        result.append(uniques.count)
+        
+        for item in uniques{
+            result.append(item)
+            print(item)
+        }
+        //print(a.unique) // ["four", "one", "two", "three"]
+        return result
+    }
+    
+    
+    func convertString(string: String) -> String {
+        var data = string.data(using: String.Encoding.ascii, allowLossyConversion: true)
+        return NSString(data: data!, encoding: String.Encoding.ascii.rawValue) as! String
+    }
+    
+    struct PointCloudVertex {
+        var x: Float, y: Float, z: Float
+        var r: Float, g: Float, b: Float
+    }
+    
+    func buildNode(points: [PointCloudVertex]) -> SCNNode {
+        print("in buildNode")
+        let vertexData = NSData(
+            bytes: points,
+            length: MemoryLayout<PointCloudVertex>.size * points.count
+        )
+        let positionSource = SCNGeometrySource(
+            data: vertexData as Data,
+            semantic: SCNGeometrySource.Semantic.vertex,
+            vectorCount: points.count,
+            usesFloatComponents: true,
+            componentsPerVector: 3,
+            bytesPerComponent: MemoryLayout<Float>.size,
+            dataOffset: 0,
+            dataStride: MemoryLayout<PointCloudVertex>.size
+        )
+        let colorSource = SCNGeometrySource(
+            data: vertexData as Data,
+            semantic: SCNGeometrySource.Semantic.color,
+            vectorCount: points.count,
+            usesFloatComponents: true,
+            componentsPerVector: 3,
+            bytesPerComponent: MemoryLayout<Float>.size,
+            dataOffset: MemoryLayout<Float>.size * 3,
+            dataStride: MemoryLayout<PointCloudVertex>.size
+        )
+        let element = SCNGeometryElement(
+            data: nil,
+            primitiveType: .point,
+            primitiveCount: points.count,
+            bytesPerIndex: MemoryLayout<Int>.size
+        )
+        
+        // for bigger dots
+        element.pointSize = 2
+        element.minimumPointScreenSpaceRadius = 2
+        element.maximumPointScreenSpaceRadius = 2
+        
+        let pointsGeometry = SCNGeometry(sources: [positionSource, colorSource], elements: [element])
+        
+        return SCNNode(geometry: pointsGeometry)
+    }
+    
+    func pointCloudNode(pointCloud: [SCNVector3], colors:[UInt8]  ) -> SCNNode {
+        print("in pointCloudNode")
+        let points = pointCloud
+        var vertices = Array(repeating: PointCloudVertex(x: 0,y: 0,z: 0,r: 0,g: 0,b: 0), count: points.count)
+        
+        for i in 0...(points.count-1) {
+            let p = points[i]
+            vertices[i].x = Float(p.x)
+            vertices[i].y = Float(p.y)
+            vertices[i].z = Float(p.z)
+            vertices[i].r = Float(colors[i * 4]) / 255.0
+            vertices[i].g = Float(colors[i * 4 + 1]) / 255.0
+            vertices[i].b = Float(colors[i * 4 + 2]) / 255.0
+        }
+        
+        let node = buildNode(points: vertices)
+        return node
+    }
+    
+    
+    /*
+     Takes in obj file input (in a string array) and outputs the index of the fist line containing a vertex. I.E it discounts the header of the file
+    */
+    func indexOfFirstVertex(objContents: [String])-> Int{
+        var counter = 0
+        while counter < objContents.count{
+            let currentLine = objContents[counter]
+            if currentLine.range(of: #"^v "#, options: .regularExpression) != nil{
+                return counter
+            }
+            counter = counter + 1
+        }
+        // we should only get here if the array does not contain what we are looking for
+        return -1
+    }
+    
+    /*
+     * What happens if int is largest than largest int?
+     *
+     *
+     * Real obj file conatins v  x_1 x_2 x_3
+     * Ie there are two spaces between the v and the 1st element
+    */
+    
+    func readFiletoCloud(FileUrl: String, numPoints: Int, segments: [Int]) -> (verts: [[SCNVector3]], cols: [[UInt8]]) {
+        print("in read File to Cloud" )
+        let testFileUrl = assetLocation!
+        /*
+         * do we need to wrap a bunch of this in a proper try catch?
+        */
+        let testContents = try? String (contentsOf: testFileUrl)
+        print("splitting lines")
+        var points : [String] = convertString(string: testContents!).components(separatedBy: "\n")
+        //testContents.removeAll()
+        
+        let vertexStart = indexOfFirstVertex(objContents: points)
+        let vertexLines = points[vertexStart..<(vertexStart+numPoints)]
+        
+        // make sure this doesnt result in any weird reference errors
+        points.removeAll()
+        print("conversion is complete")
+        points.removeFirst()
+        print("there are", points.count, "points")
+        
+        var cloudResult = [[SCNVector3]]()
+        var colorResult = [[UInt8]]()
+        
+        for i in 0..<segments.count{
+            let segmentValues = createVertexData(vertexLines: points, segment: segments[i] )
+            cloudResult.append(segmentValues.coords)
+            colorResult.append(segmentValues.cols)
+        }
+        
+        return (verts: cloudResult,cols: colorResult)
+    }
+    
+    //create a vertex cloud for each part of the model
+    func createVertexData(vertexLines: [String], segment: Int)->(coords: [SCNVector3], cols:[UInt8]){
+        
+        print ("in create vertex data")
+        var segCount = 0
+        for line in vertexLines {
+            if segment == Int(line){
+                segCount = segCount + 1
+            }
+        }
+        
+        /*
+         * the if statement below is the check for the null case
+         * It shouldnt ever get there because the segments are
+        */
+        
+        var vertices = Array<SCNVector3>(repeating: SCNVector3(x:0,y:0,z:0), count: segCount)
+        
+        if segCount == 0{
+            return (vertices, [UInt8]())
+        }
+        
+        for i in 0..<(segCount) {
+            let line = vertexLines[i]
+            let x = Double(line.components(separatedBy: " ")[1])!
+            let y = Double(line.components(separatedBy: " ")[2])!
+            let z = Double(line.components(separatedBy: " ")[3])!
+            
+            vertices[i].x = Float(x)
+            vertices[i].y = Float(y)
+            vertices[i].z = Float(z)
+        }
+        
+        var colors : [UInt8] = Array(repeating: 0, count: segCount * 4)
+        print("colors array created")
+        for index in 0 ..< (segCount) {
+            colors[index * 4] = 250
+            colors[(index * 4) + 3] = 0
+        }
+        print("colors created")
+        
+        return (vertices, colors)
     }
     
     /*
@@ -245,5 +447,12 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
      *
     */
     
+}
+
+extension Sequence where Iterator.Element: Hashable {
+    func unique() -> [Iterator.Element] {
+        var seen: [Iterator.Element: Bool] = [:]
+        return self.filter { seen.updateValue(true, forKey: $0) == nil }
+    }
 }
 
