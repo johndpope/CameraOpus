@@ -15,6 +15,13 @@
  
  */
 
+/*
+ *  Segments Flow:
+ *  button touch (seeParts) -> reads '.seg' file (readSegments) and passes to readFiletoCloud
+ *  readFiletoCloud reads the obj file, gets only the vertices (indexOfFirstVertex) --> returns data structures consisting of point clouds and their colours
+ *
+ */
+
 
 import Foundation
 import UIKit
@@ -29,6 +36,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     @IBOutlet weak var testText: UILabel!
     
     @IBOutlet weak var sceneView: SCNView!
+    
+    var scene: SCNScene?
     
     var assetLocation : URL?
     
@@ -48,10 +57,17 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
             //getNumberOfSegments()
             let segments = readSegments(segmentsLocation: assetLocation!.deletingPathExtension()
                 .appendingPathExtension("seg"))
-            var pointsAndColours = readFiletoCloud(FileUrl: assetLocation!, segments: segments)
+            var pointsAndColours = readFiletoCloud(segments: segments)
+            let verts = pointsAndColours.verts
+            let cols = pointsAndColours.cols
+            for i in 0..<verts.count{
+                var cloud = pointCloudNode(pointCloud: verts[i], colors: cols[i])
+                cloud.position = SCNVector3(x: 0, y: 0, z: 0)
+                cloud.geometry?.firstMaterial?.lightingModel = SCNMaterial.LightingModel.constant
+                scene!.rootNode.addChildNode(cloud)
+            }
             
         }
-
     }
     
     @IBAction func exportFile(_ sender: UIButton) {
@@ -62,8 +78,9 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     func readSegments(segmentsLocation: URL)->[Int]{
         let contents = try? String (contentsOf: segmentsLocation)
         print("splitting lines")
-        let segs : [Int] = contents!.components(separatedBy: "\n")
-        return segs
+        let segs = contents!.components(separatedBy: "\n")
+        let intArray = segs.map { Int($0)!}
+        return intArray
     }
     
     /*
@@ -78,7 +95,6 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         var result : [Int] = []
         let uniques = input.unique()
         //let a = ["four","one", "two", "one", "three","four", "four"]
-        
         //print("these are the uniques")
         result.append(uniques.count)
         
@@ -90,12 +106,18 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         return result
     }
     
+    /*
+     * This makes sure that the files read have asci characters and throw errors
+     */
     
     func convertString(string: String) -> String {
         var data = string.data(using: String.Encoding.ascii, allowLossyConversion: true)
         return NSString(data: data!, encoding: String.Encoding.ascii.rawValue) as! String
     }
     
+    /*
+     * The structure of the point cloud
+    */
     struct PointCloudVertex {
         var x: Float, y: Float, z: Float
         var r: Float, g: Float, b: Float
@@ -144,6 +166,10 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         return SCNNode(geometry: pointsGeometry)
     }
     
+    /*
+     * Converts the scnvector 3 point cloud into something we can add to the scene
+     */
+    
     func pointCloudNode(pointCloud: [SCNVector3], colors:[UInt8]  ) -> SCNNode {
         print("in pointCloudNode")
         let points = pointCloud
@@ -188,7 +214,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
      * Ie there are two spaces between the v and the 1st element
     */
     
-    func readFiletoCloud(FileUrl: String, segments: [Int]) -> (verts: [[SCNVector3]], cols: [[UInt8]]) {
+    func readFiletoCloud(segments: [Int]) -> (verts: [[SCNVector3]], cols: [[UInt8]]) {
         print("in read File to Cloud" )
         let testFileUrl = assetLocation!
         /*
@@ -199,9 +225,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         var points : [String] = convertString(string: testContents!).components(separatedBy: "\n")
         //testContents.removeAll()
         
-    
         let vertexStart = indexOfFirstVertex(objContents: points)
-        let vertexLines = points[vertexStart..<(vertexStart+segments.count)]
+        let vertexLines = Array(points[vertexStart..<(vertexStart+segments.count)])
         
         // make sure this doesnt result in any weird reference errors
         points.removeAll()
@@ -213,15 +238,24 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         var colorResult = [[UInt8]]()
         
         for i in 0..<segments.count{
-            let segmentValues = createVertexData(vertexLines: vertexLines, segment: segments[i] )
+            let segmentValues = createVertexData(vertexLines: vertexLines, segment: segments[i], colorChoice: i )
             cloudResult.append(segmentValues.coords)
             colorResult.append(segmentValues.cols)
         }
         return (verts: cloudResult,cols: colorResult)
     }
     
-    //create a vertex cloud for each part of the model
-    func createVertexData(vertexLines: [String], segment: Int)->(coords: [SCNVector3], cols:[UInt8]){
+    /*
+     *
+     *  Takes in the input from a file and creates the scnvector3 representation of a point cloud
+     *  This representation will then later be converted into the vertexdata struct format needed to actually build the cloud on a screen
+     *
+     *  NB
+     *  This needs to be adapated if the number of segmens is increased beyond 4
+     *  NB
+     *
+     */
+    func createVertexData(vertexLines: [String], segment: Int, colorChoice: Int)->(coords: [SCNVector3], cols:[UInt8]){
         
         print ("in create vertex data")
         var segCount = 0
@@ -252,15 +286,34 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
             vertices[i].y = Float(y)
             vertices[i].z = Float(z)
         }
-        
+        /*
+         * This part needs to be determined more programittically, we need to automatically adjust to the number of segments the number of colours
+         *
+        */
         var colors : [UInt8] = Array(repeating: 0, count: segCount * 4)
         print("colors array created")
-        for index in 0 ..< (segCount) {
-            colors[index * 4] = 250
-            colors[(index * 4) + 3] = 0
+        if(colorChoice == 0){
+            for index in 0 ..< (segCount) {
+                colors[index * 4] = 250
+            }
+        }
+        if(colorChoice == 1){
+            for index in 0 ..< (segCount) {
+                colors[(index * 4) + 1] = 250
+            }
+        }
+        if(colorChoice == 2){
+            for index in 0 ..< (segCount) {
+                colors[(index * 4) + 2] = 250
+            }
+        }
+        if(colorChoice == 3){
+            for index in 0 ..< (segCount) {
+                colors[(index * 4) + 1] = 250
+                colors[(index * 4) + 0] = 250
+            }
         }
         print("colors created")
-        
         return (vertices, colors)
     }
     
@@ -319,7 +372,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     func sceneSetUp(fileName: String){
         print("in scene set up")
-        let scene = SCNScene()
+        scene = SCNScene()
         print("the folder we are looking for is ",fileName )
         
         var assetUrl = Bundle.main.url(forResource: fileName, withExtension: "obj", subdirectory: "models.scnassets")
@@ -435,7 +488,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
 //            print("the model name is", String(fileName + ".png") )
 //        }
         
-        scene.rootNode.addChildNode(newNode)
+        scene!.rootNode.addChildNode(newNode)
         
         sceneView.scene = scene
         sceneView.allowsCameraControl = true
