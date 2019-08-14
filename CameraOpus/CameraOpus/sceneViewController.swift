@@ -216,6 +216,24 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         return -1
     }
     
+    
+    /*
+     * Filter the vertex lines for a specifc segment
+     * f: ->
+     */
+    
+    
+    func filterVertices(data: [String], segmentClass: Int, segments: [Int] )->[String]{
+        var result : [String] = []
+        for i in 0..<segments.count {
+            if segments[i] == segmentClass{
+                result.append(data[i])
+            }
+        }
+        print("we found",result.count , "instances of this class", segmentClass)
+        return(result)
+    }
+    
     /*
      * What happens if int is largest than largest int?
      *
@@ -227,6 +245,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     func readFiletoCloud(segments: [Int]) -> (verts: [[SCNVector3]], cols: [[UInt8]]) {
         print("in read File to Cloud" )
         let testFileUrl = assetLocation!
+        print("the file we are going to parse is", testFileUrl.path)
         /*
          * do we need to wrap a bunch of this in a proper try catch?
         */
@@ -242,7 +261,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         points.removeAll()
         print("conversion is complete")
         //points.removeFirst()
-        print("there are", vertexLines.count, "points")
+        print("there are", vertexLines.count, "points in this function")
         
         var cloudResult = [[SCNVector3]]()
         var colorResult = [[UInt8]]()
@@ -250,7 +269,13 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         let segmentClasses = getNumberOfSegments(input: segments)
         print("segmentClasses", segmentClasses)
         for i in 0..<segmentClasses.count{
-            let segmentValues = createVertexData(vertexLines: vertexLines, segment: segments[i], colorChoice: i )
+            
+            /*
+             * Need to add a filter function that filters vertexLines for the segment and passes that in to createVertexData
+             */
+            
+            let segmentValues = createVertexData(vertexLines: filterVertices(data:vertexLines,segmentClass: segmentClasses[i], segments: segments), segment: segmentClasses[i], colorChoice: i)
+            //print("In", i, "we found",segmentValues.coords )
             cloudResult.append(segmentValues.coords)
             colorResult.append(segmentValues.cols)
         }
@@ -270,25 +295,19 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     func createVertexData(vertexLines: [String], segment: Int, colorChoice: Int)->(coords: [SCNVector3], cols:[UInt8]){
         
         print ("in create vertex data")
-        var segCount = 0
-        for line in vertexLines {
-            if segment == Int(line){
-                segCount = segCount + 1
-            }
-        }
         
         /*
          * the if statement below is the check for the null case
          * It shouldnt ever get there because the segments are
         */
         
-        var vertices = Array<SCNVector3>(repeating: SCNVector3(x:0,y:0,z:0), count: segCount)
+        var vertices = Array<SCNVector3>(repeating: SCNVector3(x:0,y:0,z:0), count: vertexLines.count)
         
-        if segCount == 0{
+        if vertexLines.count == 0{
             return (vertices, [UInt8]())
         }
         
-        for i in 0..<(segCount) {
+        for i in 0..<(vertexLines.count) {
             let line = vertexLines[i]
             let x = Double(line.components(separatedBy: " ")[1])!
             let y = Double(line.components(separatedBy: " ")[2])!
@@ -302,25 +321,25 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
          * This part needs to be determined more programittically, we need to automatically adjust to the number of segments the number of colours
          *
         */
-        var colors : [UInt8] = Array(repeating: 0, count: segCount * 4)
+        var colors : [UInt8] = Array(repeating: 0, count: vertexLines.count * 4)
         print("colors array created")
         if(colorChoice == 0){
-            for index in 0 ..< (segCount) {
+            for index in 0 ..< (vertexLines.count) {
                 colors[index * 4] = 250
             }
         }
         if(colorChoice == 1){
-            for index in 0 ..< (segCount) {
+            for index in 0 ..< (vertexLines.count) {
                 colors[(index * 4) + 1] = 250
             }
         }
         if(colorChoice == 2){
-            for index in 0 ..< (segCount) {
+            for index in 0 ..< (vertexLines.count) {
                 colors[(index * 4) + 2] = 250
             }
         }
         if(colorChoice == 3){
-            for index in 0 ..< (segCount) {
+            for index in 0 ..< (vertexLines.count) {
                 colors[(index * 4) + 1] = 250
                 colors[(index * 4) + 0] = 250
             }
