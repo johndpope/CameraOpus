@@ -52,6 +52,10 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     @IBAction func seeParts(_ sender: UIButton) {
         print("see parts")
+        // testing
+        partsPossible = true
+        //
+        
         if(partsPossible){
             sceneView.backgroundColor = UIColor.black
             //getNumberOfSegments()
@@ -76,10 +80,12 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     }
     
     func readSegments(segmentsLocation: URL)->[Int]{
+        print("in read segments")
         let contents = try? String (contentsOf: segmentsLocation)
         print("splitting lines")
         let segs = contents!.components(separatedBy: "\n")
         let intArray = segs.map { Int($0)!}
+        print("the size of the array is", intArray.count)
         return intArray
     }
     
@@ -88,6 +94,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
      the result array's 0th element contains the number of segments
      
      eg: f: [3,2 3,4,3,6] --> [4,2,3,4,6]
+     
+     NB no longer true we removed the 0th element as the count
     */
     
     func getNumberOfSegments(input: [Int]) -> [Int]{
@@ -96,7 +104,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         let uniques = input.unique()
         //let a = ["four","one", "two", "one", "three","four", "four"]
         //print("these are the uniques")
-        result.append(uniques.count)
+        //result.append(uniques.count)
         
         for item in uniques{
             result.append(item)
@@ -172,10 +180,12 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     func pointCloudNode(pointCloud: [SCNVector3], colors:[UInt8]  ) -> SCNNode {
         print("in pointCloudNode")
+        print("There are" , pointCloud.count, "points")
+        //print(pointCloud)
         let points = pointCloud
         var vertices = Array(repeating: PointCloudVertex(x: 0,y: 0,z: 0,r: 0,g: 0,b: 0), count: points.count)
         
-        for i in 0...(points.count-1) {
+        for i in 0..<points.count {
             let p = points[i]
             vertices[i].x = Float(p.x)
             vertices[i].y = Float(p.y)
@@ -232,12 +242,14 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         points.removeAll()
         print("conversion is complete")
         //points.removeFirst()
-        print("there are", points.count, "points")
+        print("there are", vertexLines.count, "points")
         
         var cloudResult = [[SCNVector3]]()
         var colorResult = [[UInt8]]()
         
-        for i in 0..<segments.count{
+        let segmentClasses = getNumberOfSegments(input: segments)
+        print("segmentClasses", segmentClasses)
+        for i in 0..<segmentClasses.count{
             let segmentValues = createVertexData(vertexLines: vertexLines, segment: segments[i], colorChoice: i )
             cloudResult.append(segmentValues.coords)
             colorResult.append(segmentValues.cols)
@@ -463,11 +475,16 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         if(!fileSystemFlag){
             print("the material we are loading is ", modelName)
             
-            guard let assetMaterialUrl = Bundle.main.path(forResource: fileName, ofType: "png", inDirectory: "models.scnassets")
-                else { fatalError("Failed to find model texture.") }
             
-             materialImage = UIImage(contentsOfFile: assetMaterialUrl)
-             materialLocation = URL(string:assetMaterialUrl)
+            let assetMaterialUrl = Bundle.main.path(forResource: fileName, ofType: "png", inDirectory: "models.scnassets")
+            if(assetMaterialUrl != nil){
+                materialImage = UIImage(contentsOfFile: assetMaterialUrl!)
+                materialLocation = URL(string:assetMaterialUrl!)
+            }
+            
+                //else { fatalError("Failed to find model texture.") }
+            
+            
         }
 
         
@@ -475,8 +492,10 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         //youtube.com/watch?v=D2UWvR2nR0A
     
         //print("the asset url is ", assetMaterialUrl)
-    
-        newNode.geometry?.firstMaterial?.diffuse.contents = materialImage!
+        if(materialImage != nil){
+            newNode.geometry?.firstMaterial?.diffuse.contents = materialImage!
+        }
+        
         
         /*
          * flag for testing print statements
