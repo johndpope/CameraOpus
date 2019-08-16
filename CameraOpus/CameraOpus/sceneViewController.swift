@@ -45,6 +45,8 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
     var materialImage : UIImage?
     
+    var newNode : SCNNode?
+    
     //var modelName: String?
     var modelName = "modelOne"
     
@@ -68,7 +70,9 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
                 var cloud = pointCloudNode(pointCloud: verts[i], colors: cols[i])
                 cloud.position = SCNVector3(x: 0, y: 0, z: 0)
                 cloud.geometry?.firstMaterial?.lightingModel = SCNMaterial.LightingModel.constant
+                newNode!.removeFromParentNode()
                 scene!.rootNode.addChildNode(cloud)
+                
             }
             
         }
@@ -344,6 +348,18 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
                 colors[(index * 4) + 0] = 250
             }
         }
+        if(colorChoice == 4){
+            for index in 0 ..< (vertexLines.count) {
+                colors[(index * 4) + 2] = 250
+                colors[(index * 4) + 0] = 250
+            }
+        }
+        if(colorChoice == 5){
+            for index in 0 ..< (vertexLines.count) {
+                colors[(index * 4) + 3] = 250
+                colors[(index * 4) + 1] = 250
+            }
+        }
         print("colors created")
         return (vertices, colors)
     }
@@ -483,7 +499,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
         guard let object = asset.object(at: 0) as? MDLMesh
             else { fatalError("Failed to get mesh from asset.") }
         
-        let newNode  = SCNNode(mdlObject: object)
+        newNode  = SCNNode(mdlObject: object)
         
         /*
          * The following condition is only ever true if
@@ -512,7 +528,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
     
         //print("the asset url is ", assetMaterialUrl)
         if(materialImage != nil){
-            newNode.geometry?.firstMaterial?.diffuse.contents = materialImage!
+            newNode!.geometry?.firstMaterial?.diffuse.contents = materialImage!
         }
         
         
@@ -526,7 +542,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
 //            print("the model name is", String(fileName + ".png") )
 //        }
         
-        scene!.rootNode.addChildNode(newNode)
+        scene!.rootNode.addChildNode(newNode!)
         
         sceneView.scene = scene
         sceneView.allowsCameraControl = true

@@ -27,7 +27,7 @@ class ThreeDFileViewController : UIViewController, UITableViewDelegate, UITableV
     var initial = true
     
     //number of cells
-    var modelNames:  [String] = ["airplane","modelFour","modelFive", "ciscotrytwo"]
+    var modelNames:  [String] = ["modelFour","modelFive", "woodenchair", "chairtm", "h3", "h5", "h_mesh"]
     
     let defaults = UserDefaults.standard
     
