@@ -2,12 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:h.obj">
-   </FileRef>
-   <FileRef
-      location = "group:h.seg">
-   </FileRef>
-   <FileRef
       location = "group:CameraOpus.xcodeproj">
    </FileRef>
    <FileRef

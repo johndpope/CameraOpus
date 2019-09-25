@@ -28,6 +28,26 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BA24272F227664F900218C3E"
+               BuildableName = "CameraOpusTests.xctest"
+               BlueprintName = "CameraOpusTests"
+               ReferencedContainer = "container:CameraOpus.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "BA24273A227664F900218C3E"
+               BuildableName = "CameraOpusUITests.xctest"
+               BlueprintName = "CameraOpusUITests"
+               ReferencedContainer = "container:CameraOpus.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference

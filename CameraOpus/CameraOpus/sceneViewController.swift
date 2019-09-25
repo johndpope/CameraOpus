@@ -542,6 +542,7 @@ class sceneViewController : UIViewController, MFMailComposeViewControllerDelegat
 //            print("the model name is", String(fileName + ".png") )
 //        }
         
+        sceneView.backgroundColor = UIColor.black
         scene!.rootNode.addChildNode(newNode!)
         
         sceneView.scene = scene

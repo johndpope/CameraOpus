@@ -21,6 +21,8 @@ import Starscream
  General Info learnt
  
  **************************
+ In general we have the conventional idea of width and height flipped with iphone camera
+ IE 'width' >> 'height' implying that width is the vertical dimension
  
  **************************
  
@@ -49,6 +51,22 @@ import Starscream
  (true depth)
  the depthmap width is  640
  the depthmap height is  480
+ 
+ PHOTO seems to be the same:
+ (true depth)
+ the depthmap width is  640
+ the depthmap height is  480
+ 
+ 
+ //www.forbes.com/sites/simonrockman1/2019/07/04/why-apple-is-wrong-to-drop-face-id/#6921b07d747b
+ 
+ A Vertical Cavity Surface Emitting Laser (VCSEL) time of flight sensor initiates the process, measuring the distance from phone to face to determine exposure times for the other sensors. The user’s face is then flooded with infrared light before a separate array is used to project a dot matrix onto the face and a combination of infrared and visible imaging system sensors then maps out the dots.
+ 
+ 
+ - 30,000 dots
+ - 25-50 cm
+ 
+ //news.ycombinator.com/item?id=15845400
  
  **************************
  
@@ -349,6 +367,9 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     var capturePhotoFlag2 = false
     var capturePhotoFlag3 = false
     
+    //we use this flag to extract the depth data
+    var capturePhotoFlag4 = false
+    
     /*
      * Debugging touch co-ordinates
      */
@@ -451,15 +472,20 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     //user data
     let defaults = UserDefaults.standard
     
+    
+    //var serverAddress = "http://18.206.164.104/"
+    //var serverAddress = "http://3.82.80.228/"
+    var serverAddress = "http://3.225.55.127"
+    
     /*
      * Sockets
      */
     
     //socketIO uiNu
-    let manager = SocketManager(socketURL: URL(string: "http://3.82.80.228:80")!, config: [.log(true), .compress])
+    let manager = SocketManager(socketURL: URL(string: "http://3.225.55.127")!, config: [.log(true), .compress])
     var isSocketConnected = false
     var socket: SocketIOClient?
-    //let managerT = SocketManager(socketURL: URL(string: "http://3.82.80.228:80")!, config: [.log(true), .compress])
+    
     var socketFlag = true
     
 //    var socket = WebSocket(url: URL(string: "ws://3.82.80.228:1337/")!, protocols: ["chat"])
@@ -1063,8 +1089,16 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
             session.sessionPreset = .photo
             //We are trying to set the input device to the session ie the back camera
-            guard let backCamera =  try AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back) else { print("Default video device is unavailable."); return }
-            let DeviceInput = try AVCaptureDeviceInput(device: backCamera)
+            
+            print("trying to set up new camera")
+            guard let frontCamera = try AVCaptureDevice.default(.builtInTrueDepthCamera, for: .video, position: .front) else { print("Default video device is unavailable."); return }
+            
+            let DeviceInput = try AVCaptureDeviceInput(device: frontCamera)
+            
+            capturePhotoFlag4 = true
+            //guard let backCamera =  try AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back) else { print("Default video device is unavailable."); return }
+            //let DeviceInput = try AVCaptureDeviceInput(device: backCamera)
+            
             if session.canAddInput(DeviceInput) {
                 session.addInput(DeviceInput)
                 print("was able to add deviceinput")
@@ -1265,6 +1299,24 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
          * we will need to tap this one twice
         */
         
+        
+        var testCameraSpecificts = true
+        if testCameraSpecificts{
+            capturePhotoFlag4 = true
+            
+            var photoSettings = AVCapturePhotoSettings()
+            //photoSettings.isDepthDataDeliveryEnabled = true
+            photoSettings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+            //JUST ADDED
+            photoSettings.isDepthDataDeliveryEnabled =
+                photoOutput!.isDepthDataDeliverySupported
+            
+            print("getting intrinsics info")
+            
+            photoOutput!.capturePhoto(with: photoSettings, delegate: self)
+            //capturePhotoFlag4 = false
+            
+        }
         
         var testAlert = false
         //testing alers
@@ -1543,7 +1595,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     /*
      the rectification function as clarified by some sources, the only remaining ambiguity is the value for optical center
-     takes ina cgimage, and saves an image with call to UIImageWriteToSavedPhotosAlbum
+     takes in a cgimage, and saves an image with call to UIImageWriteToSavedPhotosAlbum
      */
     
     func rectifyPixelData(cgImage: CGImage, lookupTable: Data, distortionOpticalCenter opticalCenter: CGPoint, channels: Int = 4, bitsPerComp: Int = 8) {
@@ -1845,6 +1897,15 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     */
     func getDepthAtPoint(){
         
+        
+        //forums.developer.apple.com/thread/106438
+        
+        //stackoverflow.com/questions/47229698/how-to-read-depth-data-at-a-cgpoint-from-avdepthdata-buffer
+        
+        //let point = CGPoint(35,26)
+        //let width = CVPixelBufferGetWidth(depthDataMap)
+        //let distanceAtXYPoint = depthPointer[Int(point.y * CGFloat(width) + point.x)]
+        
         //let scale = CGFloat(CVPixelBufferGetWidth(depthFrame)) / CGFloat(CVPixelBufferGetWidth(videoFrame))
         //let depthPoint = CGPoint(x: CGFloat(CVPixelBufferGetWidth(depthFrame)) - 1.0 - texturePoint.x * scale, y: texturePoint.y * scale)
         
@@ -2057,8 +2118,14 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
         let depthPixelBuffer = depthdata.depthDataMap
         let pixelsWide = cgImage.width
         let pixelsHeight = cgImage.height
+        print("helooooo")
+        NSLog("in getDepthPoint")
         
-        print("we are accessing this")
+        let width = CVPixelBufferGetWidth(depthPixelBuffer)
+        let height = CVPixelBufferGetHeight(depthPixelBuffer)
+        
+        NSLog("the width of depth buffer is ", width)
+        NSLog("the height of depth buffer is ", CVPixelBufferGetHeight(depthPixelBuffer))
         
         //let scale = CGFloat(CVPixelBufferGetWidth(depthPixelBuffer)) / (Float (pixelsWide))
         
@@ -2089,8 +2156,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             
         }
         
-        print("the width of depth buffer is ", CVPixelBufferGetWidth(depthPixelBuffer))
-        print("the height of depth buffer is ", CVPixelBufferGetHeight(depthPixelBuffer))
+
         
         //TOGGLE
         createDepthImageFromMap(avDepthData: depthdata, orientation: .right, visualBool: true)
@@ -2523,9 +2589,6 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      *
      */
     
-    //var serverAddress = "http://18.206.164.104/"
-    var serverAddress = "http://3.82.80.228/"
-    
     
     
     //var r  = URLRequest(url: URL(string: "http://18.206.164.104/photo/\(jobs[currentJob])")!)
@@ -2937,6 +3000,61 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 
             }
             
+            /*
+             * For testing purposes
+             * we are using capturePhotoFlag4 to get the depth data
+             * into a point cloud format
+             *
+             * the values are being sent to the server via a web socket
+             
+             */
+            
+            if(self.capturePhotoFlag4){
+                print("in photocapture in Flag4 we should see camera info")
+                
+                let avDepthData = photo.depthData
+                let depthDataMap = avDepthData!.depthDataMap
+                
+                CVPixelBufferLockBaseAddress(depthDataMap, CVPixelBufferLockFlags(rawValue: 0))
+                
+                let floatBuffer = unsafeBitCast(CVPixelBufferGetBaseAddress(depthDataMap), to: UnsafeMutablePointer<Float32>.self)
+
+                let width = CVPixelBufferGetWidth(depthDataMap)
+                let height = CVPixelBufferGetHeight(depthDataMap)
+                
+                let PHOTO_WIDTH = 3024
+                let PHOTO_HEIGHT = 4032
+                
+                // we have to use the conventions of the iphone here
+                let focalY = Float(width) * (2887.9104 / Float(PHOTO_WIDTH))
+                let focalX = Float(height) * ( 2887.9104 / Float(PHOTO_HEIGHT))
+                let principalPointY = Float(width) * (1542.5887 / Float(PHOTO_WIDTH))
+                let principalPointX = Float(height) * (1150.0247 / Float(PHOTO_HEIGHT))
+                
+                if(isSocketConnected){
+                    var data : [[Float]] = []
+                    for i in 0 ..< height{
+                        for j in 0 ..< width{
+                            let zval = floatBuffer[Int((i * width) + j)]
+                            let x = (Float(j) - principalPointX) * zval / focalX
+                            let y = (Float(i) - principalPointY) * zval / focalY
+                            let vals = [x,y,zval]
+                            data.append(vals)
+                        }
+                    }
+                    socket!.emit("pointcloud", data)
+                }
+                
+
+                
+                let temp = photo.cgImageRepresentation()
+                let cgim = temp!.takeUnretainedValue()
+                let intrinsicMatrix = avDepthData?.cameraCalibrationData?.intrinsicMatrix
+                print("the intrinsic matrix is ", intrinsicMatrix)
+                //capturePhotoFlag4 = false
+                
+            }
+            
             
             /*
              *
@@ -2951,7 +3069,7 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 let cgim = temp!.takeUnretainedValue()//!.takeRetainedValue()
                 
                 print("sending depth info to getDepthPoint")
-                //self.getDepthPoint(depthdata: avDepthData!, cgImage: cgim)
+                self.getDepthPoint(depthdata: avDepthData!, cgImage: cgim)
                 self.capturePhotoFlag1 = true
                 
                 self.addRotationAnimation()
