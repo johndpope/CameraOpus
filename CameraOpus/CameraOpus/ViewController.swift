@@ -1158,6 +1158,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
                     self.isSocketConnected = true
                 }
                 
+                //
                 socket!.on(clientEvent: .disconnect) {data, ack in
                     print("socket disconnected")
                     self.isSocketConnected = false
