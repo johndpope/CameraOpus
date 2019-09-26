@@ -57,6 +57,9 @@ import Starscream
  the depthmap width is  640
  the depthmap height is  480
  
+ the depthdata format is Optional('dpth'/'hdep'  160x  90, { 2- 30 fps}, HRSI: 640x 360, fov:61.161)
+ 
+ https://developer.apple.com/library/archive/technotes/tn2409/_index.html
  
  //www.forbes.com/sites/simonrockman1/2019/07/04/why-apple-is-wrong-to-drop-face-id/#6921b07d747b
  
@@ -369,6 +372,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
     
     //we use this flag to extract the depth data
     var capturePhotoFlag4 = false
+    var depthFormat: AVCaptureDevice.Format?
     
     /*
      * Debugging touch co-ordinates
@@ -1088,14 +1092,55 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
              */
             
             session.sessionPreset = .photo
-            //We are trying to set the input device to the session ie the back camera
+            //We are setting up the input device to the session
+            
+            // front camera stuff
             
             print("trying to set up new camera")
             guard let frontCamera = try AVCaptureDevice.default(.builtInTrueDepthCamera, for: .video, position: .front) else { print("Default video device is unavailable."); return }
             
+            
+            // Select a depth (not disparity) format that works with the active color format.
+            let availableFormats = frontCamera.activeFormat.supportedDepthDataFormats
+            
+            depthFormat = availableFormats.filter { format in
+                let pixelFormatType =
+                    CMFormatDescriptionGetMediaSubType(format.formatDescription)
+                
+                return (pixelFormatType == kCVPixelFormatType_DepthFloat32 || pixelFormatType == kCVPixelFormatType_DepthFloat16
+                    )
+                }.first!
+            
+            print("the depthdata format is", depthFormat)
+            
+            //session.lockForConfiguration()
+            
+            
+            do {
+                try frontCamera.lockForConfiguration()
+                frontCamera.activeDepthDataFormat = depthFormat
+                frontCamera.unlockForConfiguration()
+            } catch {
+                print("Could not lock device for configuration: \(error)")
+                
+                session.commitConfiguration()
+                return
+            }
+            
+            //session.beginConfiguration()
+            //frontCamera.activeDepthDataFormat = depthFormat
+            //session.commitConfiguration()
+            
+            
             let DeviceInput = try AVCaptureDeviceInput(device: frontCamera)
             
+            //end of front camera stuff
+            
+            
             capturePhotoFlag4 = true
+            
+            //back camera stuff
+            
             //guard let backCamera =  try AVCaptureDevice.default(.builtInDualCamera, for: .video, position: .back) else { print("Default video device is unavailable."); return }
             //let DeviceInput = try AVCaptureDeviceInput(device: backCamera)
             
@@ -1275,6 +1320,7 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
      * Testing function
      * test function
      * test test
+     * reset reset
     */
     
     @IBAction func setDefaultLabelText(_ sender: UIButton) {
@@ -3013,8 +3059,12 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
             if(self.capturePhotoFlag4){
                 print("in photocapture in Flag4 we should see camera info")
                 
-                let avDepthData = photo.depthData
-                let depthDataMap = avDepthData!.depthDataMap
+                //let avDepthData = photo.depthData
+            
+                
+                let avDepthData = (photo.depthData as AVDepthData?)!.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
+
+                let depthDataMap = avDepthData.depthDataMap
                 
                 CVPixelBufferLockBaseAddress(depthDataMap, CVPixelBufferLockFlags(rawValue: 0))
                 
@@ -3033,6 +3083,7 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 let principalPointX = Float(height) * (1150.0247 / Float(PHOTO_HEIGHT))
                 
                 if(isSocketConnected){
+                    
                     var data : [[Float]] = []
                     for i in 0 ..< height{
                         for j in 0 ..< width{
@@ -3043,16 +3094,24 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                             data.append(vals)
                         }
                     }
+                    print("about to send z values")
+                    print("size of data is", data.count)
                     socket!.emit("pointcloud", data)
                 }
                 
-
-                
-                let temp = photo.cgImageRepresentation()
-                let cgim = temp!.takeUnretainedValue()
-                let intrinsicMatrix = avDepthData?.cameraCalibrationData?.intrinsicMatrix
+                let intrinsicMatrix = avDepthData.cameraCalibrationData?.intrinsicMatrix
                 print("the intrinsic matrix is ", intrinsicMatrix)
                 //capturePhotoFlag4 = false
+                
+                
+                let saveImageFlag = true
+                if(saveImageFlag){
+                    let temp = photo.cgImageRepresentation()
+                    let cgim = temp!.takeUnretainedValue()
+                    let outputImage = UIImage(cgImage: cgim, scale: 1, orientation: .right)
+                    //print("saving image that we sent to server")
+                    UIImageWriteToSavedPhotosAlbum(outputImage, nil, nil, nil)
+                }
                 
             }
             
