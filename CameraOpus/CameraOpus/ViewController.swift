@@ -1106,8 +1106,12 @@ class ViewController: UIViewController, UITextFieldDelegate, AVCaptureFileOutput
             depthFormat = availableFormats.filter { format in
                 let pixelFormatType =
                     CMFormatDescriptionGetMediaSubType(format.formatDescription)
-                
-                return (pixelFormatType == kCVPixelFormatType_DepthFloat32 || pixelFormatType == kCVPixelFormatType_DepthFloat16
+                return (pixelFormatType == kCVPixelFormatType_DepthFloat32
+                    /*
+                     * this was causing an error, i think because the pixel format type was being set to float 16
+                     * this is technical debt we need to figure out later
+                    */
+                //return (pixelFormatType == kCVPixelFormatType_DepthFloat32 || pixelFormatType == kCVPixelFormatType_DepthFloat16
                     )
                 }.first!
             
@@ -3060,7 +3064,38 @@ extension ViewController: AVCapturePhotoCaptureDelegate {
                 print("in photocapture in Flag4 we should see camera info")
                 
                 //let avDepthData = photo.depthData
-            
+                //print("the depth accuracy is " , photo.depthData?.depthDataAccuracy)
+                
+                let accuracy =  photo.depthData!.depthDataAccuracy
+                
+                /*
+ 
+                 The accuracy of a depth data map is highly dependent on the camera calibration data used to generate it. If the camera's focal length cannot be precisely determined at the time of capture, scaling error in the z (depth) plane will be introduced. If the camera's optical center can't be precisely determined at capture time, principal point error will be introduced, leading to an offset error in the disparity estimate. These values report the accuracy of a map's values with respect to its reported units.
+                 
+
+                */
+                
+                
+                switch (accuracy) {
+                case .absolute:
+                    /*
+                     NOTE - Values within the depth map are absolutely
+                     accurate within the physical world.
+                     */
+                    print("depth acc is Absolute")
+                    break
+                case .relative:
+                    /*
+                     NOTE - Values within the depth data map are usable for
+                     foreground/background separation, but are not absolutely
+                     accurate in the physical world. iPhone always produces this.
+                     */
+                    print("depth acc is relative")
+                }
+                
+                
+                print("the depth quality is " , photo.depthData?.depthDataQuality)
+                print("is the depth filtered ", photo.depthData?.isDepthDataFiltered)
                 
                 let avDepthData = (photo.depthData as AVDepthData?)!.converting(toDepthDataType: kCVPixelFormatType_DepthFloat32)
 
